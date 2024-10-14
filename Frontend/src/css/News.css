@@ -1,0 +1,79 @@
+.news-container {
+    padding: 20px; /* 컨테이너 패딩 추가 */
+  }
+  
+  .news-image {
+    max-width: 50%; /* 이미지의 최대 너비 설정 (50%로 설정하여 가로 정렬) */
+    height: auto; /* 비율 유지 */
+    margin-bottom: 10px; /* 이미지 아래 여백 추가 */
+  }
+  
+  .news-content {
+    flex: 1; /* 텍스트 영역이 남은 공간을 차지하도록 설정 */
+    text-align: center; /* 텍스트를 가운데 정렬 */
+  }
+  
+  .news-title {
+    font-size: 24px; /* 제목 크기 조정 */
+    font-weight: bold; /* 제목 두껍게 */
+    margin: 10px 0; /* 제목과 내용 간의 마진 */
+  }
+  
+  .news-description {
+    font-size: 16px; /* 내용 크기 조정 */
+    line-height: 1.5; /* 줄 간격 설정 */
+    max-height: 6em; /* 최대 높이 설정 (3줄 기준) */
+    overflow: hidden; /* 넘치는 내용 숨김 */
+    text-overflow: ellipsis; /* 텍스트 넘침 시 ... 표시 */
+    display: -webkit-box; /* Flexbox와 비슷하게 작동하도록 설정 */
+    -webkit-box-orient: vertical; /* 수직 방향으로 배치 */
+    -webkit-line-clamp: 3; /* 줄 수 제한 (3줄) */
+  }
+  
+  /* 화살표 버튼 스타일 */
+  .arrow-button {
+    background: none; /* 기본 배경 없애기 */
+    border: none; /* 기본 테두리 없애기 */
+    font-size: 30px; /* 아이콘 크기 조정 */
+    cursor: pointer; /* 포인터 모양 변경 */
+    color: #007bff; /* 아이콘 색상 조정 */
+    transition: color 0.3s; /* 색상 변경 애니메이션 */
+  }
+  
+  .arrow-button:hover {
+    color: #0056b3; /* 호버 시 색상 변경 */
+  }
+  .news-date {
+    font-size: 14px; /* 날짜 크기 조정 */
+    color: #666; /* 날짜 색상 조정 */
+    margin: 5px 0; /* 날짜와 다른 요소 간의 마진 */
+  }
+  
+  /* 추가적인 반응형 디자인 설정 */
+  @media (max-width: 768px) {
+    .news-container {
+      padding: 10px; /* 모바일 패딩 조정 */
+    }
+  
+    .news-image {
+      max-width: 100%; /* 모바일에서는 이미지 너비 100% */
+      margin-bottom: 10px; /* 이미지 아래 여백 추가 */
+    }
+  
+    .news-content {
+      text-align: center; /* 모바일에서도 텍스트를 가운데 정렬 */
+    }
+  
+    .news-title {
+      font-size: 20px; /* 모바일에서 제목 크기 조정 */
+    }
+  
+    .news-description {
+      font-size: 14px; /* 모바일에서 내용 크기 조정 */
+    }
+  
+    .arrow-button {
+      font-size: 25px; /* 모바일에서 아이콘 크기 조정 */
+    }
+  }
+  

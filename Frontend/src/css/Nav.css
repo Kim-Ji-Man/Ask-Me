@@ -1,0 +1,211 @@
+/* 기본 네비게이션 바 스타일 */
+.custom-navbar {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1030;
+    transition: background-color 0.3s ease;
+    background-color: white; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+
+.custom-navbar.scrolled {
+    background-color: white;
+}
+
+.custom-navbar:hover {
+    background-color: white;
+}
+
+.nav-link {
+    position: relative;
+    padding: 0.75rem 1rem; 
+    color: black;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff;
+}
+
+.navbar-toggler-icon {
+    background-color: white; 
+}
+
+
+.nav-link::after {
+    content: '';
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background-color: transparent;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+    width: 100%;
+    background-color: black; 
+}
+
+.logo5 {
+    width: 80px;
+    height: auto;
+    object-fit: cover;
+    filter: brightness(200%);
+}
+
+.navbar-nav {
+    --bs-nav-link-hover-color: black;
+}
+
+.navbar-toggler {
+    margin-left: auto; 
+}
+
+.navbar-logo {
+    width: 1000px; 
+    height: auto; 
+    margin: 0;
+    padding: 0;
+}
+
+.icon-links {
+    display: flex;
+    gap: 15px; 
+    position: relative;
+}
+
+.icon-links svg {
+    cursor: pointer;
+    color: grey; 
+    transition: color 0.3s ease; 
+}
+
+.icon-links svg:hover {
+    color: #007bff; 
+}
+
+.notification-icon {
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: red; 
+    color: white;
+    border-radius: 50%;
+    width: 20px; 
+    height: 20px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+
+.notification-dropdown {
+    position: absolute;
+    top: 40px; 
+    right: 0;
+    width: 400px;
+    background-color: white; 
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+    z-index: 1000; 
+    overflow: hidden;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+
+.notification-header {
+    padding: 10px 15px; 
+    background-color: #f8f9fa; 
+    font-weight: bold; 
+    text-align: center; 
+    font-size: 16px;
+    color: black; 
+}
+
+/* 알림 목록 */
+.notification-dropdown ul {
+    list-style: none; 
+    padding: 0;
+    margin: 0;
+}
+
+
+.notification-dropdown li {
+    padding: 12px 15px; 
+    border-bottom: 1px solid #eee; 
+    transition: background-color 0.2s; 
+    font-size: 14px; 
+    line-height: 1.5; 
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+
+.notification-dropdown li .message {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+    max-width: 80%; 
+    color: black;
+}
+
+
+.notification-dropdown li .timestamp {
+    font-size: 12px;
+    color: gray;
+    margin-left: 10px; 
+    flex-shrink: 0; 
+}
+
+
+.notification-dropdown li:hover {
+    background-color: #f1f1f1;
+}
+
+.notification-dropdown li:last-child {
+    border-bottom: none; 
+}
+
+
+@media (max-width: 992px) {
+    .navbar-nav .nav-link::after {
+        display: none;
+    }
+    .navbar-toggler {
+        text-align: center;
+    }
+    .dropdown-menu {
+        text-align: center;
+    }
+    .custom-navbar {
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        z-index: 1030;
+        transition: background-color 0.3s ease;
+        background-color: white; 
+    }
+
+    .icon-links {
+        display: none; 
+      }
+}
