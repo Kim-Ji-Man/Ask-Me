@@ -5,7 +5,7 @@ import Navs from './components/Navs';
 import CCTV from './pages/Cctv';
 import ErrorPage from './pages/ErrorPage';
 import Member from './pages/Member';
-import Jensong from './pages/Jensong';
+// import Jensong from './pages/Jensong';
 import Alim from './pages/Alim';
 import Login from './pages/Login';
 import Map from './pages/Map';
@@ -24,7 +24,7 @@ function App() {
         <Route path="/CCTV" element={<CCTV />} />
         <Route path="/Error" element={<ErrorPage />} />
         <Route path="/Member" element={<Member />} />
-        <Route path="/Jeons" element={<Jensong />} />
+        {/* <Route path="/Jeons" element={<Jensong />} /> */}
         <Route path="/Alims" element={<Alim />} />
         <Route path="/Main" element={<Main /> } />
         <Route path='/Map' element={<Map/>}/>
