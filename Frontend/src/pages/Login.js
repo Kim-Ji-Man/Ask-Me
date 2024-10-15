@@ -82,8 +82,8 @@ const Login = () => {
       }
     
     return (
-        <div className="main-content allf">
-            <Container fluid  className='allfs '>
+        <div className="main-contents" >
+            <Container   className='mt-5'>
                 <Row className='mt-3 mb-3 '>
                     <Col md={6} className='d-flex justify-content-center align-items-center g-0'>
                         <Image src="/img/office.jpg" alt="Login Image" className="login-image" fluid  />
