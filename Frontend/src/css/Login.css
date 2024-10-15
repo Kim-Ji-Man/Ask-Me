@@ -71,7 +71,7 @@ h1#login_title {
 /* 로그인 이미지 */
 .login-image {
     /* width: 50vh;  */
-    height: 95vh; 
+    height: 100%; 
     /* max-width: 450px; */
     margin: 0 ;
     display: block;
