@@ -11,10 +11,11 @@ import Login from './pages/Login';
 import Map from './pages/Map';
 import Register from './pages/Register';
 import MyPage from './pages/MyPage';
+import FindAccount from './pages/FindAccount';
 
 function App() {
   const location = useLocation();
-  const hiddenPaths = ['/', '/Register'];
+  const hiddenPaths = ['/', '/Register', '/Findaccount'];
 
   return (
     <div className="App">
@@ -30,6 +31,7 @@ function App() {
         <Route path='/Map' element={<Map/>}/>
         <Route path='/Register' element={<Register/>}/>
         <Route path='/MyPage' element={<MyPage/>}/>
+        <Route path='/Findaccount' element={<FindAccount/>}/>
 
       </Routes>
     </div>
