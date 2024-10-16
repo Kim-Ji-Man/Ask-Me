@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button, Col, Container, Image, Row, Modal } from 'react-bootstrap';
 import PaginatedSearch from '../components/PaginatedSearch';
 import { CSVLink } from 'react-csv';
+import "../css/Alim.css"
 
 const Alim = () => {
   const [show, setShow] = useState(false);
@@ -83,7 +84,7 @@ const Alim = () => {
       <Container fluid>
         <Row>
           <Col >
-          <div className="card p-3">
+          <div className="carda p-3">
           <CSVLink
                 data={csvData}
                 filename="알림내역.csv"

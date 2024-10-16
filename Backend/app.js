@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const cameraRouter = require('./routes/camera'); // 카메라 라우터 추가
 const newsRoutes = require('./routes/newsRoutes') // 뉴스 라우터
+const MemberRouter = require('./routes/MemberRouter') 
 
 // Express 앱 초기화
 const app = express();
@@ -55,6 +56,8 @@ app.use('/', exampleRoutes);
 app.use('/auth', authRouter); 
 app.use('/api', cameraRouter);
 app.use('/api', newsRoutes);
+app.use('/Member', MemberRouter);
+
 
 app.get('/', (req, res) => {
     res.send('Welcome to the API!');

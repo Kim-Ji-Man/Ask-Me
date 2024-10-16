@@ -7,7 +7,6 @@ import PieChart from "../components/PieChart";
 import { useNavigate } from "react-router-dom";
 import axios from "../axios";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // 아이콘 추가
-
 import News from "../components/News";
 
 const Main = () => {
@@ -109,10 +108,15 @@ const Main = () => {
           </Col>
         </Row>
         <Row className="g-4 mt-3">
-          <Col >
+          <Col md={6} lg={6} >
             <div className="card p-3">
             
               <News/>
+            </div>
+          </Col>
+          <Col md={6} lg={6} >
+            <div className="card p-3">
+          
             </div>
           </Col>
         </Row>

@@ -7,109 +7,27 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Swal from "sweetalert2";
 import "../css/Member.css"
 import UserModal from '../components/UserModal';
+import axios from "../axios"
 
 const Member = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null); // 선택된 멤버 상태 추가
 
-  const [members, setMembers] = useState([
-    {
-        member_seq: 1,
-        member_id :'sdfa123456',
-        member_jic: '관리자',
-        member_at: '2024-10-01 15:30:00',
-        member_name: "관리자이름",
-        member_gender:"여",
-        member_age:45,
-        member_phone :"010-0000-1234",
-        member_stauts:'정상'
-      },
+  const [members, setMembers] = useState([]);
+  const [memberSeq ,setMemberSeq] = useState(0)
 
-      {
-          member_seq: 2,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정지'
-        },
-        
-      {
-          member_seq: 3,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정지'
-        },
-        
-      {
-          member_seq: 4,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정상'
-        },
-        
-      {
-          member_seq: 5,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정지'
-        },
-        
-      {
-          member_seq: 6,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정상'
-        },
-        
-      {
-          member_seq: 7,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정지'
-        },
-        
-      {
-          member_seq: 8,
-          member_id :'gdsgs13546',
-          member_jic: '경비원',
-          member_at: '2024-10-02 15:30:00',
-          member_name: "경비원이름",
-          member_gender:"남",
-          member_age:54,
-          member_phone :"010-0000-1234",
-          member_stauts:'정지'
-        },
-]);
+  useEffect(() => {
+    axios
+      .get("/Member") // 데이터 요청
+      .then((res) => {
+        setMembers(res.data)
+        console.log(res.data);
+      })
+      .catch(() => {
+        console.log("서버 연결 실패");
+      });
+  }, [showModal]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -129,10 +47,65 @@ const Member = () => {
     setSelectedMember(null); // 모달 닫을 때 선택된 멤버 초기화
   };
 
-  const editeClick = (member_seq) => {
-    const member = members.find((m) => m.member_seq === member_seq);
+  const editeClick = (user_id) => {
+    const member = members.find((m) => m.user_id === user_id);
     setSelectedMember(member); // 선택된 멤버 설정
     setShowModal(true); // 모달 열기
+  };
+
+  const deleteMember = (user_id) => {
+    Swal.fire({
+      icon: 'question',
+      text: '정말 삭제하시겠습니까?',
+      showCancelButton: true,
+      confirmButtonText: '확인',
+      cancelButtonText: '취소'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: '관리자 비밀번호를 입력하세요',
+          input: 'password',
+          inputAttributes: {
+            autocapitalize: 'off',
+            required: 'required',
+            minLength: 4
+          },
+          showCancelButton: true,
+          confirmButtonText: '확인',
+          cancelButtonText: '취소'
+        }).then((passwordResult) => {
+          if (passwordResult.isConfirmed) {
+            const inputPassword = passwordResult.value;
+            if (inputPassword === "0000") {
+              axios.delete(`/Member/Delete/${user_id}`)
+                .then(() => {
+                  Swal.fire({
+                    icon: 'success',
+                    text: '계정이 삭제되었습니다.',
+                    confirmButtonText: '확인'
+                  });
+                }).then(() => {
+                  window.location.href = '/Member';
+                })
+                .catch((error) => {
+                  console.error("Error deleting:", error);
+                  Swal.fire({
+                    icon: 'error',
+                    text: '계정 삭제에 실패하였습니다.',
+                    confirmButtonText: '확인'
+                  });
+                });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                text: '비밀번호가 일치하지 않습니다.',
+                confirmButtonText: '확인'
+              });
+            }
+          }
+        });
+      }
+    });
   };
 
   return (
@@ -152,22 +125,35 @@ const Member = () => {
                 <PaginatedSearch
                   data={members.map((member, cnt) => ({
                     index: cnt + 1,
-                    member_id: member.member_id,
-                    member_jic: member.member_jic,
-                    member_at: member.member_at.substring(0, 10),
-                    member_name: member.member_name,
-                    member_gender: member.member_gender,
-                    member_age: member.member_age,
-                    member_phone: member.member_phone,
-                    member_stauts: member.member_stauts,
+                    member_id: member.email,
+                    member_jic: member.role,
+                    member_at: member.created_at.substring(0, 10),
+                    member_name: member.username,
+                    member_gender: member.gender,
+                    member_age: member.age,
+                    member_phone: member.phone_number,
+                    member_stauts: member.account_status,
+                    user_id: member.user_id,  // user_id 추가
                   }))}
                   columns={[
                     { accessor: 'index', Header: '순서' },
                     { accessor: 'member_id', Header: '회원ID' },
-                    { accessor: 'member_jic', Header: '직책' },
+                    { accessor: 'member_jic', Header: '직책',
+                      Cell: ({ row }) => (
+                        <p>
+                          {row.values.member_jic === 'user' ? '사용자' : '관리자'}
+                        </p>
+                      ),
+                    },
                     { accessor: 'member_at', Header: '가입날짜' },
                     { accessor: 'member_name', Header: '이름' },
-                    !isMobile && { accessor: 'member_gender', Header: '성별' },
+                    !isMobile && { accessor: 'member_gender', Header: '성별',
+                      Cell: ({ row }) => (
+                        <p>
+                          {row.values.member_gender === 'man' ? '남' : '여'}
+                        </p>
+                      ),
+                    },
                     !isMobile && { accessor: 'member_age', Header: '나이' },
                     { accessor: 'member_phone', Header: '전화번호' },
                     {
@@ -177,19 +163,20 @@ const Member = () => {
                         <InputGroup className='justify-content-center'>
                           <Button
                             style={{
-                              backgroundColor: row.values.member_stauts === '정상' ? '#BAF2E5' : '#FFC5C5',
-                              color: row.values.member_stauts === '정상' ? '#008767' : 'red',
-                              border: row.values.member_stauts === '정상' ? '#16C098' : '#FFC5C5',
+                              backgroundColor: row.values.member_stauts === 'active' ? '#BAF2E5' : '#FFC5C5',
+                              color: row.values.member_stauts === 'active' ? '#008767' : 'red',
+                              border: row.values.member_stauts === 'active' ? '#16C098' : '#FFC5C5',
                             }}
                           >
-                            {row.values.member_stauts}
+                            {row.values.member_stauts === 'active' ? '정상' : '정지'}
                           </Button>
                           <FaRegEdit
                             style={{ width: "30px", height: "40px", marginLeft: '10px' }}
-                            onClick={() => editeClick(row.original.index)}
+                            onClick={() => editeClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
                           />
                           <MdDeleteForever
                             style={{ width: "30px", height: "40px", marginLeft: '5px' }}
+                            onClickCapture={() => deleteMember(row.original.user_id)} // 삭제 버튼 클릭 시 user_id 전달
                           />
                         </InputGroup>
                       ),

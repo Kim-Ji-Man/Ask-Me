@@ -166,12 +166,12 @@ function Navs() {
                   >
                     이상내역
                   </Nav.Link>
-                  <Nav.Link
+                  {/* <Nav.Link
                     onClick={() => navigateTo("/Jeons")}
                     style={activeMenu === "/Jeons" ? activeStyle : defaultStyle}
                   >
                     전송내역
-                  </Nav.Link>
+                  </Nav.Link> */}
                   <Nav.Link
                     onClick={() => navigateTo("/Member")}
                     style={activeMenu === "/Member" ? activeStyle : defaultStyle}
