@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Row } from 'react-bootstrap';
-import PaginatedSearch from '../components/PaginatedSearch';
+import React from 'react'
+import { Button, Col, Container, Row } from 'react-bootstrap'
+import PaginatedSearch from '../components/PaginatedSearch'
+
 
 const ErrorPage = () => {
-    const [userRole, setUserRole] = useState(null);
 
     const datass = [
         {
@@ -66,60 +66,71 @@ const ErrorPage = () => {
       );
     }
 
-    return (
-        <div className="main-content mt-5">
-            <Container fluid className='mb-3 mt-3'>
-                <Row>
-                    <Col className='d-flex justify-content-left titles'>
-                        이상내역
-                    </Col>
-                </Row>
-            </Container>
-            <Container fluid>
-                <Row>
-                    <Col>
-                        <div className="card p-3">
-                            <PaginatedSearch
-                                data={datass.map((board, cnt) => ({
-                                    index: cnt + 1,
-                                    board_seq: board.board_seq,
-                                    time: board.board_at.substring(0, 16),
-                                    board_title: board.board_title,
-                                    idcode: board.board_views,
-                                    error_stauts: board.error_stauts,
-                                }))}
-                                columns={[
-                                    { accessor: "index", Header: "순서" },
-                                    {
-                                        accessor: "board_title",
-                                        Header: "오류명",
-                                        width: "50%",
-                                    },
-                                    { accessor: "idcode", Header: "오류코드" },
-                                    { accessor: "time", Header: "날짜" },
-                                    {
-                                        accessor: 'error_stauts',
-                                        Header: '상태',
-                                        Cell: ({ row }) => (
-                                            <Button
-                                                style={{
-                                                    backgroundColor: row.values.error_stauts === "해결" ? '#BAF2E5' : '#FFC5C5',
-                                                    color: row.values.error_stauts === "해결" ? '#008767' : 'red',
-                                                    border: row.values.error_stauts === "해결" ? '#16C098' : '#FFC5C5',
-                                                }}
-                                            >
-                                                {row.values.error_stauts}
-                                            </Button>
-                                        ),
-                                    },
-                                ]}
-                            />
-                        </div>
-                    </Col>
-                </Row>
-            </Container>
-        </div>
-    );
+  return (
+   <div className="main-content mt-5">
+    <Container fluid className='mb-3 mt-3'>
+        <Row>
+            <Col className='d-flex justify-content-left titles'> 
+               이상내역
+            </Col>
+        </Row>
+    </Container>
+    <Container fluid>
+        <Row>
+            <Col>
+            <div className="card p-3">
+                <PaginatedSearch
+                     data={datass.map((board, cnt) => ({
+                        index: cnt + 1,
+                        board_seq: board.board_seq,
+                        // id: '관리자',
+                        time: board.board_at.substring(0, 16),
+                        board_title: board.board_title,
+                        idcode: board.board_views,
+                        error_stauts: board.error_stauts,
+                    }))}
+                    columns={[
+                        { accessor: "index", Header: "순서" },
+                        {
+                            accessor: "board_title",
+                            Header: "오류명",
+                            width: "50%",
+                            // Cell: ({ row }) => (
+                            //     <span
+                            //         onClick={() => handlePostClick(row.original.board_seq)}
+                            //     >
+                            //         {row.values.board_title}
+                            //     </span>
+                            // )
+                        },
+                        { accessor: "idcode", Header: "오류코드" },
+                        // { accessor: "id", Header: "직책" }, // 포매팅된 날짜 표시
+                        { accessor: "time", Header: "날짜" },
+                        {
+                            accessor: 'error_stauts',
+                            Header: '상태',
+                            Cell: ({ row }) => (
+                              <Button
+                                style={{
+                                  backgroundColor: row.values.error_stauts === "해결" ? '#BAF2E5' : '#FFC5C5',
+                                  color: row.values.error_stauts === "해결" ? '#008767' : 'red',
+                                  border: row.values.error_stauts === "해결" ? '#16C098' : '#FFC5C5',
+                                }}
+                            
+                              >
+                                {row.values.error_stauts}
+                              </Button>
+                            ),
+                          },
+                    ]}
+                />
+                </div>
+            </Col>
+        </Row>
+    </Container>
+    
+   </div>
+  )
 }
 
 export default ErrorPage;
