@@ -15,6 +15,7 @@ const Member = () => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [members, setMembers] = useState([]);
   const [memberSeq ,setMemberSeq] = useState(0)
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     // JWT에서 사용자 역할 확인

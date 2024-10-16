@@ -1,47 +1,25 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Col, Container, Row } from 'react-bootstrap'
 import PaginatedSearch from '../components/PaginatedSearch'
+import axios from '../axios'
 
 
 const ErrorPage = () => {
 
-    const datass = [
-        {
-            board_seq: 1,
-            board_at: '2024-10-01 15:30:00',
-            board_title: '서버 연결 오류',
-            board_views: 101,
-            error_stauts: "해결"
-        },
-        {
-            board_seq: 2,
-            board_at: '2024-10-02 11:45:00',
-            board_title: '로그인 실패 문제',
-            board_views: 150,
-            error_stauts: "오류"
-        },
-        {
-            board_seq: 3,
-            board_at: '2024-10-02 13:20:00',
-            board_title: '데이터베이스 연결 오류',
-            board_views: 80,
-            error_stauts: "해결"
-        },
-        {
-            board_seq: 4,
-            board_at: '2024-10-02 14:50:00',
-            board_title: '페이지 로딩 지연',
-            board_views: 65,
-            error_stauts: "해결"
-        },
-        {
-            board_seq: 5,
-            board_at: '2024-10-02 14:50:00',
-            board_title: '페이지 로딩 지연',
-            board_views: 65,
-            error_stauts: "오류"
-        }
-    ];
+  const [userRole, setUserRole] = useState(null);
+  const [errors, setErrors] = useState([]);
+  useEffect(() => {
+    axios
+      .get("/Error") // 데이터 요청
+      .then((res) => {
+        setErrors(res.data)
+        console.log(res.data);
+      })
+      .catch(() => {
+        console.log("서버 연결 실패");
+      });
+  }, []);
+
 
     useEffect(() => {
         // JWT에서 사용자 역할 확인
@@ -80,19 +58,25 @@ const ErrorPage = () => {
             <Col>
             <div className="card p-3">
                 <PaginatedSearch
-                     data={datass.map((board, cnt) => ({
+                 data={errors.map((error, cnt) => ({
                         index: cnt + 1,
-                        board_seq: board.board_seq,
+                        error_seq: error.error_id,
                         // id: '관리자',
-                        time: board.board_at.substring(0, 16),
-                        board_title: board.board_title,
-                        idcode: board.board_views,
-                        error_stauts: board.error_stauts,
+                        error_date: new Date(error.occurred_at).toLocaleString('ko-KR', {
+                          year: 'numeric',
+                          month: '2-digit',
+                          day: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                        error_name: error.error_name,
+                        error_code: error.error_code,
+                        error_stauts: error.resolved_status,
                     }))}
                     columns={[
                         { accessor: "index", Header: "순서" },
                         {
-                            accessor: "board_title",
+                          accessor: "error_name",
                             Header: "오류명",
                             width: "50%",
                             // Cell: ({ row }) => (
@@ -103,22 +87,21 @@ const ErrorPage = () => {
                             //     </span>
                             // )
                         },
-                        { accessor: "idcode", Header: "오류코드" },
                         // { accessor: "id", Header: "직책" }, // 포매팅된 날짜 표시
-                        { accessor: "time", Header: "날짜" },
+                        { accessor: "error_date", Header: "날짜" },
                         {
                             accessor: 'error_stauts',
                             Header: '상태',
                             Cell: ({ row }) => (
                               <Button
                                 style={{
-                                  backgroundColor: row.values.error_stauts === "해결" ? '#BAF2E5' : '#FFC5C5',
-                                  color: row.values.error_stauts === "해결" ? '#008767' : 'red',
-                                  border: row.values.error_stauts === "해결" ? '#16C098' : '#FFC5C5',
+                                  backgroundColor: row.values.error_stauts === "resolved" ? '#BAF2E5' : '#FFC5C5',
+                                  color: row.values.error_stauts === "resolved" ? '#008767' : 'red',
+                                  border: row.values.error_stauts === "resolved" ? '#16C098' : '#FFC5C5',
                                 }}
                             
                               >
-                                {row.values.error_stauts}
+                                {row.values.error_stauts ==="resolved" ? '해결' :'오류'}
                               </Button>
                             ),
                           },
