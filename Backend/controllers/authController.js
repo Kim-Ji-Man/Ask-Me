@@ -2,7 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 
-async function registerUser(username, password, email, phoneNumber, role, gender, age, businessNumber) {
+// 사용자 등록 함수
+async function registerUser(email, password, phoneNumber, role, gender, age, businessNumber) {
     const allowedRoles = ['user', 'admin', 'master'];
     if (!allowedRoles.includes(role)) {
         throw new Error('Invalid role');
@@ -21,13 +22,12 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     const account_status = 'active'; // 기본값으로 설정
 
     // SQL 쿼리 작성
-    const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, age, created_at, account_status, business_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (email, password, phone_number, role, gender, age, created_at, account_status, business_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     // businessNumber가 undefined인 경우 null로 설정
     const params = [
-        username,
-        hashedPassword,
         email,
+        hashedPassword,
         phoneNumber,
         role,
         gender,
@@ -41,8 +41,6 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     await db.executeQuery(query, params);
 }
 
-
-
 // JWT 토큰 생성
 function generateToken(user) {
     return jwt.sign({ userId: user.user_id, role: user.role }, 'your_jwt_secret', { expiresIn: '1h' });
@@ -50,26 +48,39 @@ function generateToken(user) {
 
 // login 함수
 async function login(req, res) {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).send('Username and password are required');
+    const { email, password } = req.body; 
+    console.log("로그인 시도:", email, password);
+    
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
     try {
-        const user = await authenticateUser(username, password);
-        const token = generateToken(user);  // 분리된 함수 사용
+        const user = await authenticateUser(email, password);
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const token = generateToken(user);  
         
-        res.send({ message: 'Login successful', token });
+        // 성공 응답에 success: true 추가
+        res.status(200).json({ 
+            success: true, 
+            message: 'Login successful', 
+            token 
+        });
+        console.log("토큰:", token);
     } catch (err) {
         console.error('Error during login:', err);
-        res.status(401).send('Invalid credentials');
+        res.status(500).json({ success: false, message: 'Internal server error' });
     }
 }
 
-async function authenticateUser(username, password) {
-    const query = `SELECT * FROM users WHERE username = ?`;
-    const users = await db.executeQuery(query, [username]);
+
+// 사용자 인증 함수
+async function authenticateUser(email, password) {
+    const query = `SELECT * FROM Users WHERE email = ?`; 
+    const users = await db.executeQuery(query, [email]); 
 
     if (users.length === 0) {
         throw new Error('Invalid credentials');
@@ -85,18 +96,15 @@ async function authenticateUser(username, password) {
     return user;
 }
 
-
-
 // 사용자 정보 업데이트
 async function updateUser(userId, updateData) {
     const query = `
         UPDATE Users
-        SET username = ?, email = ?, phone_number = ?, gender = ?, age = ?, business_number = ?
+        SET email = ?, phone_number = ?, gender = ?, age = ?, business_number = ?
         WHERE user_id = ?
     `;
 
     const params = [
-        updateData.username,
         updateData.email,
         updateData.phone_number,
         updateData.gender,
@@ -114,15 +122,14 @@ async function updateUser(userId, updateData) {
 
 // 모든 사용자 정보 조회
 async function getAllUsers() {
-    const query = `SELECT * FROM users`; // 전체 사용자 조회 쿼리
+    const query = `SELECT * FROM Users`; // 전체 사용자 조회 쿼리
     const result = await db.executeQuery(query);
     return result; // 사용자 목록 반환
 }
 
-
 // 사용자 삭제
 async function deleteUser(userId) {
-    const query = `DELETE FROM users WHERE user_id = ?`;
+    const query = `DELETE FROM Users WHERE user_id = ?`;
     const result = await db.executeQuery(query, [userId]);
 
     if (result.affectedRows === 0) {
@@ -174,4 +181,4 @@ function authorizeUser(req, res, next) {
     }
 }
 
-module.exports = { registerUser, login, authenticateToken, authorizeMaster, authorizeAdmin, authorizeUser, updateUser,deleteUser, getAllUsers };
+module.exports = { registerUser, login, authenticateToken, authorizeMaster, authorizeAdmin, authorizeUser, updateUser, deleteUser, getAllUsers };

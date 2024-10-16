@@ -1,27 +1,34 @@
-import React, { useEffect, useState } from 'react'
-import { Button, Col, Container, Row } from 'react-bootstrap'
-import PaginatedSearch from '../components/PaginatedSearch'
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Container, Row } from 'react-bootstrap';
+import PaginatedSearch from '../components/PaginatedSearch';
 import { FaRegEdit } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import InputGroup from 'react-bootstrap/InputGroup';
 import Swal from "sweetalert2";
-import "../css/Member.css"
+import "../css/Member.css";
 import UserModal from '../components/UserModal';
-import axios from "../axios"
+import axios from "../axios";
 
 const Member = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [selectedMember, setSelectedMember] = useState(null); // 선택된 멤버 상태 추가
-
+  const [selectedMember, setSelectedMember] = useState(null);
   const [members, setMembers] = useState([]);
-  const [memberSeq ,setMemberSeq] = useState(0)
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
+    // JWT에서 사용자 역할 확인
+    const token = localStorage.getItem('token');
+    if (token) {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      setUserRole(payload.role);
+    }
+
+    // 회원 데이터 요청
     axios
-      .get("/Member") // 데이터 요청
+      .get("/Member")
       .then((res) => {
-        setMembers(res.data)
+        setMembers(res.data);
         console.log(res.data);
       })
       .catch(() => {
@@ -31,7 +38,7 @@ const Member = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768); // 모바일 여부 판단
+      setIsMobile(window.innerWidth <= 768);
     };
 
     window.addEventListener('resize', handleResize);
@@ -42,17 +49,20 @@ const Member = () => {
     };
   }, []);
 
+  // 선택된 멤버 초기화 및 모달 닫기
   const handleCloseModal = () => {
     setShowModal(false);
-    setSelectedMember(null); // 모달 닫을 때 선택된 멤버 초기화
+    setSelectedMember(null);
   };
 
-  const editeClick = (user_id) => {
+  // 선택한 멤버를 수정할 수 있도록 설정하는 함수
+  const editClick = (user_id) => {  // 함수 이름 수정
     const member = members.find((m) => m.user_id === user_id);
-    setSelectedMember(member); // 선택된 멤버 설정
-    setShowModal(true); // 모달 열기
+    setSelectedMember(member);
+    setShowModal(true);
   };
 
+  // 멤버 삭제하는 함수
   const deleteMember = (user_id) => {
     Swal.fire({
       icon: 'question',
@@ -108,6 +118,20 @@ const Member = () => {
     });
   };
 
+  // 사용자 역할이 master가 아닌 경우 접근 거부 메시지 렌더링
+  if (userRole !== 'master') {
+    return (
+        <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
+            <Row>
+                <Col className="text-center">
+                    <h3>접근 거부</h3>
+                    <p>이 페이지는 시스템 관리자만 접근할 수 있습니다.</p>
+                </Col>
+            </Row>
+        </Container>
+    );
+  }
+
   return (
     <>
       <div className="main-content mt-5">
@@ -133,7 +157,7 @@ const Member = () => {
                     member_age: member.age,
                     member_phone: member.phone_number,
                     member_stauts: member.account_status,
-                    user_id: member.user_id,  // user_id 추가
+                    user_id: member.user_id,
                   }))}
                   columns={[
                     { accessor: 'index', Header: '순서' },
@@ -172,7 +196,7 @@ const Member = () => {
                           </Button>
                           <FaRegEdit
                             style={{ width: "30px", height: "40px", marginLeft: '10px' }}
-                            onClick={() => editeClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
+                            onClick={() => editClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
                           />
                           <MdDeleteForever
                             style={{ width: "30px", height: "40px", marginLeft: '5px' }}
@@ -192,7 +216,7 @@ const Member = () => {
       <UserModal
         show={showModal}
         handleClose={handleCloseModal}
-        selectedMember={selectedMember} // 선택된 멤버 전달
+        selectedMember={selectedMember}
       />
     </>
   );

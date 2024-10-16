@@ -223,7 +223,7 @@ router.delete('/delete', authController.authenticateToken, async (req, res) => {
 
 /**
  * @swagger
- * /users:
+ * /auth/users:
  *   get:
  *     summary: Retrieve all users
  *     description: Get a list of all users in the system.
@@ -277,9 +277,9 @@ router.get('/users', authController.authenticateToken, async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 username:
+ *                 email:  
  *                   type: string
- *                   example: "john"
+ *                   example: "john@example.com"  
  *                 password:
  *                   type: string
  *                   example: "password"
@@ -291,33 +291,6 @@ router.get('/users', authController.authenticateToken, async (req, res) => {
  */
 router.post('/login', authController.login);
 
-/**
- * @swagger
- * /auth/login:
- *   post:
- *     summary: Log in a user
- *     tags:
- *       - Auth
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *                 example: "john"
- *               password:
- *                 type: string
- *                 example: "password"
- *     responses:
- *       200:
- *         description: User logged in successfully
- *       401:
- *         description: Invalid credentials
- */
-router.post('/login', authController.login);
 
 /**
  * @swagger
