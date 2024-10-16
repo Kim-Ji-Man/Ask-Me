@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   MDBBtn,
   MDBContainer,
@@ -6,28 +6,31 @@ import {
   MDBCol,
   MDBCard,
   MDBCardBody,
-  MDBCardImage,
   MDBInput,
-  MDBIcon,
-  MDBCheckbox,
-} from "mdb-react-ui-kit";
-import "@fortawesome/fontawesome-free/css/all.min.css";
+  MDBRadio,
+  MDBCheckbox
+}
+from 'mdb-react-ui-kit';
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Form } from "react-bootstrap";
 import "../css/Register.css";
+
+
 
 function Register() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     mem_name: "",
     mem_id: "",
+    mem_birth: "",
     mem_pw: "",
     confirm_pw: "",
     mem_phone: "",
     mem_email: "",
     mem_busi_number: "",
     mem_busi_address: "",
+    mem_gender: "",
   });
 
   const [isIdValid, setIsIdValid] = useState(false);
@@ -90,6 +93,8 @@ function Register() {
   }
 
   const handleSubmit = async (e) => {
+ 
+
     e.preventDefault();
 
     if (!isIdValid) {
@@ -186,76 +191,80 @@ function Register() {
     return match ? `${match[1]}-${match[2]}-${match[3]}` : phoneNumber;
   }
 
+
   return (
     <MDBContainer fluid className="p-5">
-      <MDBCard className="text-black" style={{ borderRadius: "25px" }}>
-        <MDBCardBody>
-          <MDBRow>
-            {/* 회원가입 폼 */}
-            <MDBCol
-              md="10"
-              lg="6"
-              className="order-2 order-lg-1 d-flex flex-column align-items-center"
-            >
-              <Form onSubmit={handleSubmit}>
-                <p className="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">
-                  회원가입
-                </p>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="user" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="이름"
-                    id="form1"
-                    type="text"
-                    className="w-100"
-                    name="mem_name"
-                    onChange={handleInputChange}
-                    value={formData.mem_name}
-                  />
-                </div>
+      <MDBRow className='justify-content-center align-items-center m-5'>
+      <MDBCol  md="6" sm="12">
+        <MDBCard className="w-100">
+          <MDBCardBody className='px-4'>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="envelope" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="아이디(이메일)"
-                    id="form2"
-                    type="email"
+          <Form onSubmit={handleSubmit}>
+            <h3 className="fw-bold mb-4 pb-2 pb-md-0 mb-md-5">회원가입</h3>
+
+            <MDBRow>
+
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='아이디(이메일)' size='lg' id='form1' type='email'
                     name="mem_id"
                     onChange={handleInputChange}
                     value={formData.mem_id}
-                    onBlur={handleBlur}
-                  />
-                </div>
+                    onBlur={handleBlur}/>
+
                 <Form.Text
                   className={isIdValid ? "text-success" : "text-danger"}
                 >
                   {errorMessage}
                 </Form.Text>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="lock" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="비밀번호"
-                    id="form3"
-                    type="password"
+              </MDBCol>
+
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='이름' size='lg' id='form2' type='text' 
+                    className="w-100"
+                    name="mem_name"
+                    onChange={handleInputChange}
+                    value={formData.mem_name}/>
+              </MDBCol>
+
+            </MDBRow>
+            
+            
+            <MDBRow>
+
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='생년월일(6자리)' size='lg' id='form5' type='text' 
+                    name="mem_birth"
+                    onChange={handleInputChange}
+                    value={formData.mem_birth}/>
+              </MDBCol>
+
+              <MDBCol md='6' className='mb-4'>
+                <h5 className="fw-bold">Gender: </h5>
+                <MDBRadio name='mem_gender' id='genderfemale' value="여자" label='Female' onChange={handleInputChange} inline  />
+                <MDBRadio name='mem_gender' id='gendermale' value="남자" label='Male' onChange={handleInputChange} inline />
+              </MDBCol>
+
+            </MDBRow>
+
+
+
+            <MDBRow>
+
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='비밀번호' size='lg' id='form3' type='password'
                     name="mem_pw"
                     onChange={handleInputChange}
-                    value={formData.mem_pw}
-                  />
-                </div>
+                    value={formData.mem_pw}/>
+              </MDBCol>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="key" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="비밀번호 확인"
-                    id="form4"
-                    type="password"
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='비밀번호 확인' size='lg' id='form4' type='password'
                     name="confirm_pw"
                     onChange={handleInputChange}
-                    value={formData.confirm_pw}
-                  />
-                </div>
+                    value={formData.confirm_pw}/>
+
                 <Form.Text
                   className={
                     formData.mem_pw && formData.confirm_pw
@@ -272,54 +281,52 @@ function Register() {
                     : ""}
                 </Form.Text>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="phone" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="전화번호 (010-xxxx-xxxx)"
-                    id="form2"
-                    type="text"
+              </MDBCol>
+
+            </MDBRow>
+
+
+            <MDBRow>
+
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='전화번호(010-xxxx-xxxxx)' size='lg' id='form6' type='text'
                     name="mem_phone"
                     onChange={handleInputChange}
                     value={formData.mem_phone}
-                    maxLength="13"
-                  />
-                </div>
+                    maxLength="13"/>
+              </MDBCol>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="file" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="사업자 번호"
-                    id="form2"
-                    type="text"
+              <MDBCol md='6'>
+                <MDBInput wrapperClass='mb-4' placeholder='사업자 번호' size='lg' id='form7' type='text'
                     name="mem_busi_number"
                     onChange={handleInputChange}
-                    value={formData.mem_busi_number}
-                  />
-                </div>
+                    value={formData.mem_busi_number}/>
+              </MDBCol>
 
-                <div className="d-flex flex-row align-items-center mb-4">
-                  <MDBIcon fas icon="building" className="me-3" size="lg" />
-                  <MDBInput
-                    placeholder="사업자 주소"
-                    id="form2"
-                    type="text"
+            </MDBRow>
+
+
+            <MDBRow>
+
+              <MDBCol md='12'>
+                <MDBInput wrapperClass='mb-5' placeholder='사업자 주소' size='lg' id='form8' type='text'
                     name="mem_busi_address"
                     onChange={handleInputChange}
-                    value={formData.mem_busi_address}
-                  />
-                </div>
+                    value={formData.mem_busi_address}/>
+              </MDBCol>
 
-                <div className="mb-4">
+            </MDBRow>
+
+            <div className="mb-4 flex-center">
                   <MDBCheckbox
                     name="flexCheck"
                     value=""
                     id="flexCheckDefault"
                     label="서비스 이용에 동의합니다."
                   />
-                </div>
+            </div>
 
-                <MDBBtn
-                  style={{
+            <MDBBtn style={{
                     width: "150px",
                     height: "50px",
                     padding: "10px 20px",
@@ -329,11 +336,10 @@ function Register() {
                     border: "none",
                   }}
                   className="mb-4"
-                  size="lg"
-                >
-                  가입하기
-                </MDBBtn>
-                <div className="text-center">
+                  size="lg">가입하기</MDBBtn>
+
+
+            <div className="text-center">
                   <p>
                     이미 가입이 되어있으신가요?
                     <a href="/" className="text-decoration-none ms-1">
@@ -341,25 +347,11 @@ function Register() {
                     </a>
                   </p>
                 </div>
-              </Form>
-            </MDBCol>
-
-            {/* 이미지 섹션 */}
-            <MDBCol
-              md="10"
-              lg="6"
-              className="order-1 order-lg-2 d-flex align-items-center"
-            >
-              <MDBCardImage
-                src="/img/office.jpg"
-                fluid
-                style={{ borderRadius: "25px" }}
-                className="register_img"
-              />
-            </MDBCol>
-          </MDBRow>
-        </MDBCardBody>
-      </MDBCard>
+          </Form>
+          </MDBCardBody>
+        </MDBCard>
+        </MDBCol>
+      </MDBRow>
     </MDBContainer>
   );
 }

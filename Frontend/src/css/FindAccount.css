@@ -1,0 +1,121 @@
+.find-account-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; 
+  width: 100vw; 
+  background-color: #f4f4f9;
+  padding: 20px; 
+}
+
+.find-id-password-section {
+  background-color: white;
+  padding: 30px; 
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 500px;
+}
+
+.find-box {
+  margin-bottom: 30px; 
+}
+
+.find-box:last-child {
+  margin-bottom: 0; 
+}
+
+.find-box h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.find-box input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.find-box button {
+  width: 100%;
+  padding: 12px;
+  background-color: skyblue;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.find-box button:hover {
+  background-color: skyblue;
+}
+
+.login-link {
+  display: block;
+  text-align: center;
+  margin-top: 20px; 
+  font-size: 1.1rem;
+  color: #2883eb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-link:hover {
+  text-decoration: underline;
+}
+
+/* 반응형 설정 */
+@media (max-width: 768px) {
+  .find-id-password-section {
+    padding: 20px; 
+    width: 90%; 
+  }
+
+  .find-box h2 {
+    font-size: 1.3rem; 
+  }
+
+  .find-box input {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .find-box button {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .login-link {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .find-id-password-section {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .find-box h2 {
+    font-size: 1.2rem;
+  }
+
+  .find-box input {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+
+  .find-box button {
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+
+  .login-link {
+    font-size: 0.9rem;
+  }
+}
