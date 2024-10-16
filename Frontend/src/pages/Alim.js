@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Col, Container, Image, Row, Modal } from 'react-bootstrap';
 import PaginatedSearch from '../components/PaginatedSearch';
 import { CSVLink } from 'react-csv';
 import "../css/Alim.css"
+import axios from '../axios';
 
 const Alim = () => {
   const [show, setShow] = useState(false);
   const [modalImage, setModalImage] = useState('');
+
+  const [alims, setAlims] = useState([]);
+  useEffect(() => {
+    axios
+      .get("/Alim") // 데이터 요청
+      .then((res) => {
+        setAlims(res.data)
+        console.log(res.data);
+      })
+      .catch(() => {
+        console.log("서버 연결 실패");
+      });
+  }, []);
+
+
 
   const handleClose = () => setShow(false);
   const handleShow = (img) => {
@@ -14,64 +30,22 @@ const Alim = () => {
     setShow(true);
   };
 
-  const datass = [
-    {
-      alim_seq: 1,
-      alim_at: '2024-10-01 18:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv1',
-      alim_stauts: '정상',
-      alim_img: 'img/hyo1.PNG',
-    },
-    {
-      alim_seq: 2,
-      alim_at: '2024-10-01 12:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv3',
-      alim_stauts: '오류',
-      alim_img: 'img/hyo1.PNG',
-    },
-    {
-      alim_seq: 3,
-      alim_at: '2024-10-01 15:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv4',
-      alim_stauts: '정상',
-      alim_img: 'img/hyo1.PNG',
-    },
-    {
-      alim_seq: 4,
-      alim_at: '2024-10-02 10:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv2',
-      alim_stauts: '정상',
-      alim_img: 'img/hyo1.PNG',
-    },
-    {
-      alim_seq: 5,
-      alim_at: '2024-10-01 10:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv1',
-      alim_stauts: '정상',
-      alim_img: 'img/hyo1.PNG',
-    },
-    {
-      alim_seq: 6,
-      alim_at: '2024-10-01 16:30:00',
-      alim_title: '흉기관측',
-      alim_cctv: 'cctv1',
-      alim_stauts: '정상',
-      alim_img: 'img/hyo1.PNG',
-    },
-  ];
 
-  const csvData = datass.map((alim, cnt) => ({
+  console.log(modalImage,"이미지 경로");
+  
+  const csvData = alims.map((alim, cnt) => ({
     순서: cnt + 1,
-    알림명: alim.alim_title,
-    CCTV: alim.alim_cctv,
-    날짜: alim.alim_at.substring(0, 16),
-    이미지: alim.alim_img,
-    상태: alim.alim_stauts,
+    알림명: alim.message,
+    CCTV: alim.device_name,
+    날짜:new Date(alim.sent_at).toLocaleString('ko-KR', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+    이미지: alim.image_url,
+    상태: alim.status,
   }));
 
   return (
@@ -99,26 +73,32 @@ const Alim = () => {
                 
               </CSVLink>
             <PaginatedSearch
-              data={datass.map((alim, cnt) => ({
+              data={alims.map((alim, cnt) => ({
                 index: cnt + 1,
-                alim_seq: alim.alim_seq,
-                alim_at: alim.alim_at.substring(0, 16),
-                alim_title: alim.alim_title,
-                alim_cctv: alim.alim_cctv,
-                alim_img: alim.alim_img,
-                alim_stauts: alim.alim_stauts,
+                alim_seq: alim.noti_id ,
+               alim_at: new Date(alim.sent_at).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  }),
+                alim_title: alim.message,
+                alim_cctv: alim.device_name,
+                alim_img: alim.image_url,
+                alim_stauts: alim.status,
               }))}
               columns={[
                 { accessor: 'index', Header: '순서' },
                 { accessor: 'alim_title', Header: '알림명' },
-                { accessor: 'alim_cctv', Header: 'CCTV' },
+                { accessor: 'alim_cctv', Header: 'CCTV'},
                 { accessor: 'alim_at', Header: '날짜' },
                 {
                   accessor: 'alim_img',
                   Header: '이미지',
                   Cell: ({ row }) => (
                     <Image
-                      src={row.values.alim_img}
+                      src={`http://localhost:5000${row.values.alim_img}`}
                       width={'50%'}
                       style={{ cursor: 'pointer' }}
                       onClick={() => handleShow(row.values.alim_img)}
@@ -132,20 +112,20 @@ const Alim = () => {
                     <Button
                       style={{
                         backgroundColor:
-                          row.values.alim_stauts === '정상'
+                          row.values.alim_stauts === 'success'
                             ? '#BAF2E5'
                             : '#FFC5C5',
                         color:
-                          row.values.alim_stauts === '정상'
+                          row.values.alim_stauts === 'success'
                             ? '#008767'
                             : 'red',
                         border:
-                          row.values.alim_stauts === '정상'
+                          row.values.alim_stauts === 'success'
                             ? '#16C098'
                             : '#FFC5C5',
                       }}
                     >
-                      {row.values.alim_stauts}
+                      {row.values.alim_stauts === 'success' ? "정상" : "오류"}
                     </Button>
                   ),
                 },
@@ -162,7 +142,7 @@ const Alim = () => {
           <Modal.Title>이미지 확대</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Image src={modalImage} fluid />
+          <Image src={`http://localhost:5000${modalImage}`} fluid />
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleClose}>

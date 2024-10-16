@@ -15,7 +15,6 @@ const Member = () => {
   const [selectedMember, setSelectedMember] = useState(null); // 선택된 멤버 상태 추가
 
   const [members, setMembers] = useState([]);
-  const [memberSeq ,setMemberSeq] = useState(0)
 
   useEffect(() => {
     axios

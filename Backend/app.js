@@ -12,8 +12,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const cameraRouter = require('./routes/camera'); // 카메라 라우터 추가
-const newsRoutes = require('./routes/newsRoutes') // 뉴스 라우터
-const MemberRouter = require('./routes/MemberRouter') 
+const newsRoutes = require('./routes/newsRoutes') ;// 뉴스 라우터
+const MemberRouter = require('./routes/MemberRouter') ;
+const AlimRouter = require('./routes/AlimRouter') ;
+const ErrormRouter = require('./routes/ErrorRouter') ;
+
+
+
 
 // Express 앱 초기화
 const app = express();
@@ -52,11 +57,16 @@ app.use(cors());
 app.use(session(sessionConfig));
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs)); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/', exampleRoutes);
 app.use('/auth', authRouter); 
 app.use('/api', cameraRouter);
 app.use('/api', newsRoutes);
 app.use('/Member', MemberRouter);
+app.use('/Alim', AlimRouter);
+app.use('/Error', ErrormRouter);
+
+
 
 
 app.get('/', (req, res) => {

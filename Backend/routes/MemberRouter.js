@@ -7,7 +7,7 @@ router.get('/', async (req, res) => {
     try {
         const results = await db.executeQuery(sql);
         res.send(results);
-        console.log("가져와짐");
+        console.log("회원관리 라우터");
     } catch (err) {
         console.error('Error fetching cameras:', err);
         return res.status(500).send('Error fetching cameras');
