@@ -21,7 +21,7 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     const account_status = 'active'; // 기본값으로 설정
 
     // SQL 쿼리 작성
-    const query = `INSERT INTO users (username, password, email, phone_number, role, gender, age, created_at, account_status, business_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, age, created_at, account_status, business_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     // businessNumber가 undefined인 경우 null로 설정
     const params = [
@@ -90,7 +90,7 @@ async function authenticateUser(username, password) {
 // 사용자 정보 업데이트
 async function updateUser(userId, updateData) {
     const query = `
-        UPDATE users
+        UPDATE Users
         SET username = ?, email = ?, phone_number = ?, gender = ?, age = ?, business_number = ?
         WHERE user_id = ?
     `;
