@@ -6,6 +6,10 @@ import Swal from "sweetalert2";
 const CCTV = () => {
   const cctvAddresses = [
     "http://localhost:8000/video_feed",
+    "http://localhost:8000/video_feed",
+    "http://localhost:8000/video_feed",
+    "http://localhost:8000/video_feed",
+
     // "http://192.168.70.185:8000/video_feed",
     // "http://192.168.70.213:8000/video_feed",
     // "http://192.168.70.113:8000/video_feed",
@@ -88,12 +92,10 @@ const CCTV = () => {
       <Container fluid>
         <Row className="g-4">
           {cctvAddresses.map((address, index) => (
-            <Col md={6} lg={6} key={index}>
-              <div className="card p-3">
-                <h6 style={{ backgroundColor: 'black', fontWeight: 'bold', color: "white", fontSize: "20px" }}>CCTV{index + 1}</h6>
-                <div className="video-container">
-                  <img src={address} alt="Video Stream" />
-                </div>
+              <Col md={6} lg={6} key={index}>
+              <div className="video-container">
+                <div className="cctv-label">CCTV{index + 1}</div>
+                <img src={address} alt="Video Stream" />
               </div>
             </Col>
           ))}

@@ -26,7 +26,7 @@ const Main = () => {
   const [status, setStatus] = useState("정상"); // 기본 상태는 '정상'으로 설정
   const [isError, setIsError] = useState(false); // 오류 상태 변수
 
-  // 예시로 상태를 업데이트하는 함수 (실제 상황에 맞게 조정하세요)
+  // 상태 업데이트 함수
   useEffect(() => {
     axios
       .get("/") // 데이터 요청
@@ -40,7 +40,6 @@ const Main = () => {
         setStatus("오류");
         setIsError(true);
         console.log("서버 연결 실패");
-        
       });
   }, []);
 
@@ -53,28 +52,38 @@ const Main = () => {
     <div className="main-content mt-5">
       <Container fluid>
         <Row className="mt-3 mb-3">
-          <Col md={9} lg={9} className="d-flex justify-content-left titles">
+          <Col md={6} lg={6} xs={6} className="d-flex justify-content-left titles">
             <div className="dashboard-title d-flex align-items-center">
               <h2 className="mb-0 me-2 titles">대시보드</h2>
-              <div className="status-card">
-                {isError ? (
-                  <>
-                    <FaTimesCircle
-                      className="status-icon"
-                      style={{ color: "red" }}
-                    />
-                    <div className="status-message">{status}</div>
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle
-                      className="status-icon"
-                      style={{ color: "lightgreen" }}
-                    />
-                    <div className="status-message">{status}</div>
-                  </>
-                )}
-              </div>
+            </div>
+          </Col>
+          <Col md={6} lg={6} xs={6}>
+          <div className="status-card">
+          {isError ? (
+                <>
+                  
+                  <FaTimesCircle className="status-icon" style={{ color: "red" }} />
+                  <div className="status-message">상태 : {status}</div>
+                  <div className="tooltip-text">
+                    오류 발생! 서버 연결이 실패했습니다. <br />
+                    재시도 하거나 관리자에게 문의하세요.
+                    <div className="tooltip-arrow"></div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle
+                    className="status-icon"
+                    style={{ color: "lightgreen" }}
+                  />
+                  <div className="status-message">상태 : {status}</div>
+                  <div className="tooltip-text">
+                    시스템 상태가 정상입니다. <br />
+                    대시보드에서 실시간 데이터를 확인하세요.
+                    <div className="tooltip-arrow"></div>
+                  </div>
+                </>
+              )}
             </div>
           </Col>
         </Row>

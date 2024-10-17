@@ -14,7 +14,7 @@ const path = require('path');
 const cameraRouter = require('./routes/camera'); // 카메라 라우터 추가
 const newsRoutes = require('./routes/newsRoutes') ;// 뉴스 라우터
 const MemberRouter = require('./routes/MemberRouter') ;
-const AlimRouter = require('./routes/AlimRouter') ;
+const AlimRouter = require('./routes/AlimRouter');
 const ErrormRouter = require('./routes/ErrorRouter') ;
 
 

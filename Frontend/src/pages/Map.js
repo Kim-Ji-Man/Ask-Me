@@ -354,11 +354,11 @@ const displayCurrentLocation = () => {
   }, [radioValue, map]);
 
   return (
-    <div className="main-content mt-5">
+    <div className="main-content">
       <Container fluid>
-        <Row className="mt-3 mb-3">
+        {/* <Row className="mt-3 mb-3">
           <Col className="d-flex justify-content-left titles">지도</Col>
-        </Row>
+        </Row> */}
         <Row>
           <Col>
             <ButtonGroup>

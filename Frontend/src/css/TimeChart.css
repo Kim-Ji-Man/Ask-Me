@@ -1,0 +1,30 @@
+.chart_button{
+    padding: '10px 15px';
+    background-color: rgba(75, 192, 192, 0.6) ;
+    color: #fff;
+    border: 'none';
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 'background-color 0.3s';
+    width: 100px;
+} 
+
+.chart_button2{
+    padding: '10px 15px';
+    background-color:rgba(153, 102, 255, 0.6);
+    color: #fff;
+    border: 'none';
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 'background-color 0.3s';
+    width: 100px;
+} 
+.chart_select_day{
+    padding: 10px;
+    margin-right: 10px;
+    border: '1px solid #ccc';
+    border-radius: 5px;
+    font-size: 16px;
+}   

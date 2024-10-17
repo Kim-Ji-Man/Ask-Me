@@ -1,44 +1,193 @@
-.carda {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  }
+.alim-card {
+    margin-bottom: 15px; /* 각 카드 간의 간격 */
+    border-radius: 30px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s ease-in-out;
+}
 
-@media (max-width: 489px) {
+.alim-card:hover {
+    transform: scale(1.02);
+}
 
-    .carda {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      width: 475px;
-      position: relative;
-      right: 15px;
+.media-content {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.date-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.titles {
+    display: flex;
+    align-items: center;
+}
+
+.alim-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0;
+    color: #343a40;
+}
+
+.device-group {
+    margin-bottom: 30px; /* 각 장치 그룹 간의 간격 */
+}
+
+.device-title {
+    margin-bottom: 15px; /* 각 장치 제목 아래 간격 */
+    border-bottom: 2px solid #4a90e2; /* 제목 아래 선 추가 (선택사항) */
+    padding-bottom: 10px; /* 제목 아래 여백 추가 */
+}
+
+.plus-btn {
+    background-color: lightgray;
+    border: none;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    position: relative; /* 툴팁 위치를 위한 relative 속성 추가 */
+}
+
+.plus-btn:hover {
+    background-color: lightgray;
+}
+
+button {
+    cursor: pointer;
+}
+
+.alimbodymodal {
+    padding: 0;
+}
+
+.alimbodymodal .row {
+    margin: 0;
+}
+
+.video-section {
+    width: 100%;
+    height: 50vh;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0; /* 여백 제거 */
+}
+
+.full-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 영상이 모달에 맞게 꽉 차게 설정 */
+}
+
+.image-container {
+    position: relative;
+}
+
+.download-section {
+    position: absolute; /* 버튼을 절대 위치로 설정 */
+    top: 10px; /* 이미지의 상단에서 10px 아래 위치 */
+    right: 10px; /* 이미지의 오른쪽에서 10px 위치 */
+}
+
+.download-btn {
+    display: flex; /* 아이콘을 중앙에 배치 */
+    justify-content: center;
+    align-items: center;
+    width: 40px; /* 너비 */
+    height: 40px; /* 높이 */
+    background-color: #4a90e2; /* 버튼 배경색 */
+    border: none;
+    border-radius: 50%; /* 원형 버튼 */
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+    transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
+    background-color: #1c6dd0; /* 호버 시 배경색 변경 */
+}
+
+.details-section {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.details-section img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.details {
+    margin-top: 10px;
+}
+
+.details p {
+    margin: 0 0 10px;
+    font-size: 1rem;
+}
+
+.details strong {
+    color: #343a40;
+}
+
+.tooltip-textalim {
+    visibility: hidden;
+    width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 50;
+    bottom: 100%; /* 버튼 위쪽에 위치하도록 조정 */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s ease, bottom 0.3s ease;
+    font-size: 14px;
+}
+
+.tooltip-arrowalim {
+    position: absolute;
+    top: 100%; /* 툴팁 아래쪽에 화살표 추가 */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+/* 호버 시 툴팁 보이도록 설정 */
+.plus-btn:hover .tooltip-textalim {
+    visibility: visible;
+    opacity: 1;
+    bottom: 150%; /* 호버 시 부드럽게 아래로 나타나도록 애니메이션 */
+}
+
+@media (max-width: 767px) {
+    .alimsearch {
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
-  }
-
-  @media (max-width: 370px) {
-
-    .carda {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      width: 350px;
-      position: relative;
-      right: 15px;
-    }
-  }
-
-
-
-
-  @media (max-width: 345px) {
-
-    .carda {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-      width: 343px;
-      position: relative;
-      right: 15px;
-    }
-  }
+}

@@ -24,17 +24,56 @@
   font-weight: bold;
 }
 
+.tooltip-text {
+  visibility: hidden;
+  width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 10px;
+  position: absolute;
+  z-index: 1;
+  bottom: -60px; /* 툴팁이 status-card 아래에 위치하도록 조정 */
+  left: 8%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+  font-size: 14px;
+}
+
+.tooltip-arrow {
+  position: absolute;
+  top: -5px; /* 툴팁 위쪽에 화살표 추가 */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
+}
+
+/* 호버 시 툴팁 보이도록 설정 */
+.status-card:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+  bottom: -80px; /* 호버 시 부드럽게 아래로 나타나도록 애니메이션 */
+}
+
+/* status-card 관련 스타일 */
 .status-card {
-  background-color: #f8f9fa;
-  border-radius: 8px; 
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); 
-  padding: 15px; 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  max-width: 200px; 
+  position: relative; /* 툴팁 위치 조정을 위한 상대 위치 설정 */
+  /* background-color: #f8f9fa; */
+  border-radius: 8px;
+  /* box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); */
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 200px;
   margin: 0 auto;
-  margin-left: 30px;
+  float: right;
+  margin-right: 0;
+  border: none;
 }
 
 .status-message {
@@ -44,39 +83,20 @@
 }
 
 .status-icon {
-  font-size: 30px; 
+  font-size: 24px; 
 }
 
 
-@media (max-width: 343px) {
+
+
+@media (max-width: 391px) {
   .titles{
-    font-size: 25px;
+    font-size: 21px;
     font-weight: bold;
   }
 
   .status-card {
-    background-color: #f8f9fa; 
-    border-radius: 8px;
-    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-    padding: 15px; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    max-width: 200px;
-    margin: 0 auto;
-    margin-left: 63px;
-  }
-}
-
-
-@media (max-width: 343px) {
-  .titles{
-    font-size: 20px;
-    font-weight: bold;
-  }
-
-  .status-card {
-    background-color: #f8f9fa; 
+    background-color: #f8f9fa;
     border-radius: 8px; 
     box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1); 
     padding: 15px; 
@@ -84,10 +104,26 @@
     align-items: center; 
     justify-content: center; 
     max-width: 200px; 
-    margin: 0 auto; 
-    margin-left: 70px;
+    margin: 0 auto;
+    /* margin-left: 50px; */
+    float: right; /* 오른쪽으로 플로팅 */
+    margin-right: 0; /* 오른쪽 여백 없음 */
   }
+
+  .status-message {
+    font-size: 13px; 
+    font-weight: bold;
+    margin-left: 10px; 
+  }
+
+  .status-icon {
+    font-size: 25px; 
+  }
+
 }
+
+
+
 
 
 

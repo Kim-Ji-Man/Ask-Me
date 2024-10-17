@@ -186,12 +186,12 @@ function Navs() {
               >
                 알림내역
               </Nav.Link>
-              <Nav.Link
+              {/* <Nav.Link
                 onClick={() => navigateTo("/Map")}
                 style={activeMenu === "/Map" ? activeStyle : defaultStyle}
               >
                 지도
-              </Nav.Link>
+              </Nav.Link> */}
             </Nav>
             <Nav className="align-items-center">
               <div className="icon-links">

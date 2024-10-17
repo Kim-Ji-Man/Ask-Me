@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import "../css/TimeChart.css"
 
 // Chart.js 모듈 등록
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -40,7 +41,6 @@ const options = {
     },
     title: {
       display: true,
-      // text: '시간별 (오전/오후)',
     },
   },
 };
@@ -53,8 +53,12 @@ const Barchart = () => {
     setSelectedDate(event.target.value);
   };
 
-  const handleToggle = () => {
-    setShowMorning(!showMorning); // 오전/오후 토글
+  const handleMorningClick = () => {
+    setShowMorning(true); // 오전 데이터 표시
+  };
+
+  const handleAfternoonClick = () => {
+    setShowMorning(false); // 오후 데이터 표시
   };
 
   // 현재 선택된 날짜를 기준으로 데이터 가져오기
@@ -75,38 +79,36 @@ const Barchart = () => {
 
   return (
     <div style={{ width: '100%', height: '420px', padding: '20px', boxSizing: 'border-box' }}>
-      <select
-        onChange={handleDateChange}
-        value={selectedDate}
-        style={{
-          padding: '10px',
-          marginRight: '10px',
-          border: '1px solid #ccc',
-          borderRadius: '5px',
-          fontSize: '16px',
-        }}
-      >
-        {Array.from({ length: 31 }, (_, i) => (
-          <option key={i} value={i + 1}>
-            {i + 1}일
-          </option>
-        ))}
-      </select>
-      <button
-        onClick={handleToggle}
-        style={{
-          padding: '10px 15px',
-          backgroundColor: showMorning ? 'rgba(75, 192, 192, 0.6)' : 'rgba(153, 102, 255, 0.6)', // 그래프 색깔에 맞게 변경
-          color: '#fff',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          transition: 'background-color 0.3s',
-        }}
-      >
-        {showMorning ? '오전' : '오후'}
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' ,float:'right'}} >
+        <select
+          onChange={handleDateChange}
+          value={selectedDate}
+          className='chart_select_day'
+        >
+          {Array.from({ length: 31 }, (_, i) => (
+            <option key={i} value={i + 1}>
+              {i + 1}일
+            </option>
+          ))}
+        </select>
+
+        <div style={{ display: 'flex', gap: '10px' }} >
+          <button
+            onClick={handleMorningClick}
+            className='chart_button'
+          >
+            오전
+          </button>
+
+          <button
+            onClick={handleAfternoonClick}
+            className='chart_button2'
+          >
+            오후
+          </button>
+        </div>
+      </div>
+
       <Bar data={data} options={options} />
     </div>
   );
