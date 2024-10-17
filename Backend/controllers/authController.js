@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 
 // 사용자 등록 함수
-async function registerUser(email, password, phoneNumber, role, gender, age, businessNumber) {
+async function registerUser(username, password, email, phoneNumber, role, gender, businessNumber, birth) {
+    console.log("register:",username, password, email, phoneNumber, role, gender, businessNumber, birth);
+
     const allowedRoles = ['user', 'admin', 'master'];
     if (!allowedRoles.includes(role)) {
         throw new Error('Invalid role');
@@ -22,19 +24,20 @@ async function registerUser(email, password, phoneNumber, role, gender, age, bus
     const account_status = 'active'; // 기본값으로 설정
 
     // SQL 쿼리 작성
-    const query = `INSERT INTO Users (email, password, phone_number, role, gender, age, created_at, account_status, business_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, created_at, account_status, business_number, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     // businessNumber가 undefined인 경우 null로 설정
     const params = [
-        email,
+        username,
         hashedPassword,
+        email,
         phoneNumber,
         role,
         gender,
-        age,
         created_at,
         account_status,
-        businessNumber !== undefined ? businessNumber : null // businessNumber가 undefined일 때 null로 설정
+        businessNumber !== undefined ? businessNumber : null, // businessNumber가 undefined일 때 null로 설정
+        birth
     ];
 
     // 쿼리 실행
@@ -100,7 +103,7 @@ async function authenticateUser(email, password) {
 async function updateUser(userId, updateData) {
     const query = `
         UPDATE Users
-        SET email = ?, phone_number = ?, gender = ?, age = ?, business_number = ?
+        SET email = ?, phone_number = ?, gender = ?, business_number= ?, birth = ? 
         WHERE user_id = ?
     `;
 
@@ -108,8 +111,8 @@ async function updateUser(userId, updateData) {
         updateData.email,
         updateData.phone_number,
         updateData.gender,
-        updateData.age,
         updateData.business_number || null,
+        updateData.birth,
         userId
     ];
 
