@@ -3,21 +3,29 @@ const router = express.Router();
 const db = require('../models/db');
 router.get('/', async (req, res) => {
     const sql = `
-        SELECT 
-            n.noti_id, 
-            n.user_id, 
-            n.alert_id, 
-            n.device_id, 
-            d.device_name,
-            n.noti_method, 
-            n.sent_at, 
-            n.message, 
-            n.image_url, 
-            n.status 
-        FROM 
-            Notification n
-        JOIN 
-            Detection_Devices d ON n.device_id = d.device_id;
+ SELECT 
+    n.noti_id, 
+    n.user_id, 
+    n.alert_id, 
+    d.device_id, 
+    d.device_name, 
+    d.device_type, 
+    d.location, 
+    n.noti_method, 
+    n.sent_at, 
+    n.message, 
+    n.image, 
+    n.status
+FROM 
+    Notification n
+JOIN 
+    Alert_Log a ON n.alert_id = a.alert_id
+JOIN 
+    Detection_Device d ON a.device_id = d.device_id
+ORDER BY 
+    n.sent_at DESC;
+
+
     `;
     
     try {

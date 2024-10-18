@@ -179,7 +179,7 @@ const Member = () => {
                         </p>
                       ),
                     },
-                    !isMobile && { accessor: 'member_age', Header: '나이' },
+                    // !isMobile && { accessor: 'member_age', Header: '나이' },
                     { accessor: 'member_phone', Header: '전화번호' },
                     {
                       accessor: 'member_stauts',
@@ -196,11 +196,11 @@ const Member = () => {
                             {row.values.member_stauts === 'active' ? '정상' : '정지'}
                           </Button>
                           <FaRegEdit
-                            style={{ width: "30px", height: "40px", marginLeft: '10px' }}
+                            style={{ width: "30px", height: "40px", marginLeft: '10px',  color: 'lightgreen' }}
                             onClick={() => editClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
                           />
                           <MdDeleteForever
-                            style={{ width: "30px", height: "40px", marginLeft: '5px' }}
+                            style={{ width: "30px", height: "40px", marginLeft: '5px',color: 'red' }}
                             onClickCapture={() => deleteMember(row.original.user_id)} // 삭제 버튼 클릭 시 user_id 전달
                           />
                         </InputGroup>

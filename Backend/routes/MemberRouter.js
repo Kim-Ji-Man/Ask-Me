@@ -65,4 +65,11 @@ router.delete('/Delete/:memberSeq', async (req, res) => {
     }
   });
 
+
+
+
+
+
+
+
 module.exports = router;

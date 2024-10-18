@@ -66,6 +66,22 @@ app.use('/Member', MemberRouter);
 app.use('/Alim', AlimRouter);
 app.use('/Error', ErrormRouter);
 
+app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정--- 
+
+app.post('/upload_image', (req, res) => {
+  const imgData = req.body.image;
+  const base64Data = imgData.replace(/^data:image\/png;base64,/, "");
+
+  const imgPath = path.join(__dirname, 'public/img/captured_image.png');
+  
+  fs.writeFile(imgPath, base64Data, 'base64', (err) => {
+    if (err) {
+      console.error('이미지 저장 실패:', err);
+      return res.status(500).send({ success: false, message: '이미지 저장 실패' });
+    }
+    res.send({ success: true, message: '이미지 저장 성공', path: imgPath });
+  });
+});
 
 
 

@@ -115,7 +115,7 @@ const Alim = () => {
                         })}
                       </div>
                       <img
-                        src={`http://localhost:5000${alim.image_url}`}
+                        src={`http://localhost:5000${alim.image}`}
                         onClick={() => handleShow(alim)}
                         className="media-content"
                         alt="알림 이미지"
@@ -147,13 +147,13 @@ const Alim = () => {
                   <Col xs={6}>
                     <div className="image-container">
                       <img
-                        src={`http://localhost:5000${selectedAlim?.image_url}`}
+                        src={`http://localhost:5000${selectedAlim?.image}`}
                         alt="알림 이미지"
                       />
                       <div className="download-section">
                         <Button
                           className="download-btn"
-                          onClick={() => handleDownload(selectedAlim?.image_url)}
+                          onClick={() => handleDownload(selectedAlim?.image)}
                           variant="light"
                         >
                           <BsDownload size={24} />
@@ -171,6 +171,7 @@ const Alim = () => {
                           backgroundColor: selectedAlim?.status === 'success' ? '#BAF2E5' : '#FFC5C5',
                           color: selectedAlim?.status === 'success' ? '#008767' : 'red',
                           border: selectedAlim?.status === 'success' ? '#16C098' : '#FFC5C5',
+                          marginLeft:'15px'
                         }}
                       >
                         {selectedAlim?.status === 'success' ? "정상" : "오류"}
