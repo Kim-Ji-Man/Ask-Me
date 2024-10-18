@@ -30,9 +30,9 @@ function App() {
 
   return (
     <div className="App">
-      <Appdata.Provider value={{ user, setUser, store, setStore }}>
+      {/* <Appdata.Provider value={{ user, setUser, store, setStore }}>
       {children}
-    </Appdata.Provider>
+    </Appdata.Provider> */}
 
        {!hiddenPaths.includes(location.pathname) && <Navs />} 
 
