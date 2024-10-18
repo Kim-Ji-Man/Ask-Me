@@ -36,24 +36,20 @@ const authController = require('../controllers/authController');
  *                 gender:
  *                   type: string
  *                   example: "man"
- *                 business_number:
- *                   type: string
- *                   example: ""
- *                   description: "Business number is required for admin role"
  *                 birth:
- *                   type: integer
- *                   example: 991213
+ *                   type: string
+ *                   example: "991213"
  *       responses:
  *         201:
  *           description: User registered successfully
  *         400:
- *           description: Username, password, phone number, role, gender, birth, and business number (for admin) are required
+ *           description: Username, password, phone number, role, gender, and birth are required
  *         500:
  *           description: Error registering user
  */
 
 router.post('/register', async (req, res) => {
-    const { username, password, email, phone_number, role, gender, business_number, birth } = req.body;
+    const { username, password, email, phone_number, role, gender, birth } = req.body;
     
     if (!username || !password || !phone_number || !role || !gender || !birth) {
         return res.status(400).send('Username, password, phone number, role, gender, and birth are required');
@@ -65,13 +61,8 @@ router.post('/register', async (req, res) => {
         return res.status(400).send('Invalid role');
     }
 
-    // admin 역할인 경우 business_number 필드가 필요
-    if (role === 'admin' && !business_number) {
-        return res.status(400).send('Business number is required for admin role');
-    }
-
     try {
-        await authController.registerUser(username, password, email, phone_number, role, gender, business_number, birth);
+        await authController.registerUser(username, password, email, phone_number, role, gender, birth);
         res.status(201).send('User registered successfully');
     } catch (err) {
         console.error('Error during registration:', err);
@@ -95,9 +86,6 @@ router.post('/register', async (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               username:
- *                 type: string
- *                 example: "john"
  *               email:
  *                 type: string
  *                 example: "john@example.com"
@@ -107,57 +95,9 @@ router.post('/register', async (req, res) => {
  *               gender:
  *                 type: string
  *                 example: "man"
- *               business_number:
- *                 type: string
- *                 example: ""
- *                 description: "Business number is required for admin role"
  *               birth:
- *                 type: integer
- *                 example: 991213
- *     responses:
- *       200:
- *         description: User information updated successfully
- *       400:
- *         description: Invalid input or missing required fields
- *       500:
- *         description: Error updating user information
- */
-
-/**
- * @swagger
- * /auth/update:
- *   put:
- *     summary: Update user information
- *     tags:
- *       - Auth
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
  *                 type: string
- *                 example: "john"
- *               email:
- *                 type: string
- *                 example: "john@example.com"
- *               phone_number:
- *                 type: string
- *                 example: "123-456-7890" 
- *               gender:
- *                 type: string
- *                 example: "man"
- *               business_number:
- *                 type: string
- *                 example: ""
- *                 description: "Business number is required for admin role"
- *               birth:
- *                 type: integer
- *                 example: 991213
+ *                 example: "991213"
  *     responses:
  *       200:
  *         description: User information updated successfully
@@ -169,20 +109,18 @@ router.post('/register', async (req, res) => {
 
 // 사용자 정보 업데이트
 router.put('/update', authController.authenticateToken, async (req, res) => {
-    const { username, email, phone_number, gender, business_number , birth} = req.body;
+    const { email, phone_number, gender, birth } = req.body;
 
-    if (!username || !phone_number || !gender || !birth) {
-        return res.status(400).send('Username, phone number, gender, and birth are required');
+    if (!phone_number || !gender || !birth) {
+        return res.status(400).send('Phone number, gender, and birth are required');
     }
 
     try {
         await authController.updateUser(req.user.userId, { 
-            username, 
             email, 
             phone_number, 
             gender, 
-            business_number: business_number || null, // business_number가 없으면 null로 설정
-            birth, 
+            birth 
         });
         res.status(200).send('User information updated successfully');
     } catch (err) {
