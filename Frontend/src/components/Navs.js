@@ -160,12 +160,12 @@ function Navs() {
               </Nav.Link>
               {memberGrade === 0 && (
                 <>
-                  <Nav.Link
+                  {/* <Nav.Link
                     onClick={() => navigateTo("/Error")}
                     style={activeMenu === "/Error" ? activeStyle : defaultStyle}
                   >
                     이상내역
-                  </Nav.Link>
+                  </Nav.Link> */}
                   {/* <Nav.Link
                     onClick={() => navigateTo("/Jeons")}
                     style={activeMenu === "/Jeons" ? activeStyle : defaultStyle}

@@ -1,57 +1,170 @@
+/* 메인 컨테이너 */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease-in-out;
+}
+
+.split-view {
+  flex-direction: row; /* 반반 나누기일 때 좌우로 나열 */
+}
+
+.titles {
+  text-align: left;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+/* CCTV 컨테이너 */
+.cctv-container {
+  width: 100%;
+  transition: width 0.3s ease-in-out;
+}
+
+.half-width {
+  width: 50%; /* 반반 나누기일 때 절반 너비 */
+}
+
 /* 비디오 컨테이너 */
 .video-container {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%; /* Aspect ratio 16:9 */
+  padding-bottom: 56.25%; /* 16:9 화면 비율 */
   overflow: hidden;
 }
 
-.video-container img,
-.video-container video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Maintain aspect ratio and cover the container */
-}
-
-.tr-container #trimg {
+.video-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
-}
-
-.titles {
-  font-size: 35px;
-  font-weight: bold;
-}
-
-/* 버튼 스타일 */
-.t2btn {
-  float: right; /* 오른쪽으로 플로팅 */
-  margin-right: 0; /* 오른쪽 여백 없음 */
-  border: none; /* 테두리 제거 */
-  max-width: 115px;
-  background-color: black;
-  border-radius: 45px;
-  color: white; /* 텍스트 흰색 */
+  height: 100%;
+  object-fit: cover; /* 비율을 유지하고 화면을 채움 */
+  border-radius: 15px;
 }
 
 /* CCTV 라벨 스타일 */
 .cctv-label {
   position: absolute;
-  top: 10px; /* 위쪽에서 10px */
-  left: 10px; /* 왼쪽에서 10px */
-  background-color: #d3d3d3; /* 밝은 회색 배경 */
-  color: white; /* 흰색 텍스트 */
+  top: 10px;
+  left: 10px;
+  background-color: lightgrey;
+  color: white;
   font-weight: bold;
   font-size: 20px;
-  padding: 10px 20px; /* 여백 추가 */
-  border-radius: 30px; /* 둥근 모서리 */
-  z-index: 10; /* 위에 표시되도록 */
+  padding: 10px 20px;
+  border-radius: 30px;
+  z-index: 10;
 }
 
-/* 비디오에 둥근 모서리 추가 */
-.video-container img {
-  border-radius: 15px;
+.alert-items.scrollable {
+  max-height: 500px; /* 스크롤 높이 제한 */
+  overflow-y: auto; /* 세로 스크롤 추가 */
+}
+
+/* 알림 섹션 */
+.alert-section {
+  position: relative;
+  width: 100%;
+  max-height: 300px; /* 스크롤 높이 제한 */
+  transition: width 0.3s ease-in-out;
+}
+
+.half-width {
+  width: 50%; /* 반반 나누기일 때 절반 너비 */
+}
+
+.alert-section h5 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* 알림 아이템 */
+.alert-item {
+  display: flex;
+  align-items: center; /* 세로 가운데 정렬 */
+  justify-content: space-between; /* 요소 간 공간을 균등하게 배치 */
+  padding: 15px;
+  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 알림 이미지 */
+.alert-image {
+  width: 200px; /* 원하는 이미지 크기 */
+  height: 130px; /* 원하는 이미지 크기 */
+  object-fit: cover; /* 이미지를 잘라내지 않고 크기 조정 */
+  margin-right: 15px; /* 이미지와 텍스트 간의 간격 */
+}
+
+
+/* 알림 상세 정보 */
+.alert-details {
+  display: flex;
+  flex-direction: column; /* 세로로 정렬 */
+  justify-content: center; /* 세로 가운데 정렬 */
+  flex-grow: 1; /* 나머지 공간을 차지하도록 설정 */
+}
+
+/* 알림 버튼 및 이름을 포함하는 컨테이너 */
+.alert-info {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: center; /* 가운데 정렬 */
+}
+.cctv-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* 날짜를 오른쪽 끝으로 정렬 */
+.alert-timestamp {
+  margin-left: auto; /* 오른쪽 끝으로 이동 */
+  align-self: flex-end; /* 세로 가운데 정렬 */
+}
+
+.alert-btn {
+  background-color: orange;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+/* 반응형 스타일링 */
+@media (max-width: 768px) {
+
+  .error_title{
+    margin-top: 30px;
+  }
+
+  .alert-items.scrollable {
+    max-height: 100%;
+    overflow-y: hidden; /* 세로 스크롤 추가 */
+  }
+  
+
+  .split-view {
+    flex-direction: column; /* 모바일에서 화면 분할을 세로로 변경 */
+  }
+
+  .half-width {
+    width: 100%; /* 모바일에서는 100% 너비로 설정 */
+  }
+
+  .video-container {
+    padding-bottom: 75%; /* 모바일에서 더 긴 화면 비율 */
+  }
+
+  .alert-section {
+    max-height: 200px; /* 모바일에서 더 작은 높이 */
+  }
 }
