@@ -23,7 +23,7 @@ const ErrorPage = () => {
 
     useEffect(() => {
         // JWT에서 사용자 역할 확인
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('jwtToken');
         if (token) {
             const payload = JSON.parse(atob(token.split('.')[1]));
             setUserRole(payload.role);
