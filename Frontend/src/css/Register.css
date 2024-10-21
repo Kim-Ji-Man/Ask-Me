@@ -3,3 +3,27 @@
     justify-content: center; /* 수평 가운데 정렬 */
     align-items: center;      /* 수직 가운데 정렬 */
   }
+
+.form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+.form-input {
+    width: 100%;
+  }
+
+
+
+@media (max-width: 576px) {
+   .form-input {
+    font-size: 14px;
+  }
+
+  .btn-custom {
+    width: 100%;
+    font-size: 16px;
+  }
+
+
+  }

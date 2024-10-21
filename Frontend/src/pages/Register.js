@@ -193,7 +193,7 @@ function Register() {
 
 
   return (
-    <MDBContainer fluid className="p-5">
+    <MDBContainer fluid className="p-5 form-container">
 
       <MDBRow className='justify-content-center align-items-center m-5'>
       <MDBCol  md="6" sm="12">
@@ -205,23 +205,22 @@ function Register() {
 
             <MDBRow>
 
-              <MDBCol md='6'>
-                <MDBInput wrapperClass='mb-4' placeholder='아이디(이메일)' size='lg' id='form1' type='email'
+              <MDBCol md='6' sm='12'>
+                <MDBInput wrapperClass='mb-4 form-input' placeholder='아이디(이메일)' size='lg' id='form1' type='email'
                     name="mem_id"
                     onChange={handleInputChange}
                     value={formData.mem_id}
                     onBlur={handleBlur}/>
 
                 <Form.Text
-                  className={isIdValid ? "text-success" : "text-danger"}
-                >
+                  className={isIdValid ? "text-success" : "text-danger"}>
                   {errorMessage}
                 </Form.Text>
 
               </MDBCol>
 
-              <MDBCol md='6'>
-                <MDBInput wrapperClass='mb-4' placeholder='이름' size='lg' id='form2' type='text' 
+              <MDBCol md='6' sm='12'>
+                <MDBInput wrapperClass='mb-4 form-input' placeholder='이름' size='lg' id='form2' type='text' 
                     className="w-100"
                     name="mem_name"
                     onChange={handleInputChange}
@@ -326,16 +325,17 @@ function Register() {
                   />
             </div>
 
-            <MDBBtn style={{
-                    width: "150px",
-                    height: "50px",
-                    padding: "10px 20px",
-                    transition: "none",
+            <MDBBtn 
+            style={{
+                    // width: "150px",
+                    // height: "50px",
+                    // padding: "10px 20px",
+                    // transition: "none",
                     backgroundColor: "skyblue",
                     color: "white",
                     border: "none",
                   }}
-                  className="mb-4"
+                  className="btn-custom mb-4"
                   size="lg">가입하기</MDBBtn>
 
 
@@ -347,7 +347,7 @@ function Register() {
                     </a>
                   </p>
                 </div>
-          </Form>
+            </Form>
           </MDBCardBody>
         </MDBCard>
         </MDBCol>
