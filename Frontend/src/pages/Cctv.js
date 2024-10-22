@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Col, Container, Row, Modal, Form } from "react-bootstrap";
 import "../css/Cctv.css";
 import Swal from "sweetalert2";
@@ -48,6 +48,37 @@ const CCTV = () => {
   const handleCommentChange = (e) => {
     setAdminComment(e.target.value);
   };
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:8082");
+    
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+  
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Message from server:", data.message);
+      
+      // 알림을 표시하는 부분
+      Swal.fire({
+        title: '흉기 감지 알림!',
+        text: data.message,
+        icon: 'warning',
+        confirmButtonText: '확인'
+      });
+    };
+  
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+  
+    // 컴포넌트 언마운트 시 WebSocket 연결 종료
+    return () => {
+      socket.close();
+    };
+  }, []);
+  
 
   function alimClick() {
 

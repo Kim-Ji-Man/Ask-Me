@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const storeController = require('../controllers/storeController');
 
 /**
  * @swagger
@@ -67,6 +68,77 @@ router.post('/register', async (req, res) => {
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).send('Error registering user');
+    }
+});
+
+
+/**
+ * @swagger
+ * paths:
+ *   /auth/stores:
+ *     post:
+ *       summary: Register a new store
+ *       tags:
+ *         - Stores
+ *       requestBody:
+ *         required: true
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                   example: "My Store"
+ *                   description: "The name of the store"
+ *                 address:
+ *                   type: string
+ *                   example: "address"
+ *                   description: "The store's address"
+ *                 phone_number:
+ *                   type: string
+ *                   example: "123-456-7890"
+ *                   description: "The store's phone number (optional)"
+ *                 business_number:
+ *                   type: string
+ *                   example: "123456789"
+ *                   description: "The store's business number (optional)"
+ *                 latitude:
+ *                   type: number
+ *                   example: 37.7749
+ *                   description: "The store's latitude"
+ *                 longitude:
+ *                   type: number
+ *                   example: -122.4194
+ *                   description: "The store's longitude"
+ *                 user_id:
+ *                   type: integer
+ *                   example: 1
+ *                   description: "The user ID of the store owner"
+ *       responses:
+ *         201:
+ *           description: Store registered successfully
+ *         400:
+ *           description: Missing required fields (name, address, latitude, longitude, or user ID)
+ *         500:
+ *           description: Error registering store
+ */
+
+router.post('/stores', async (req, res) => {
+    const { name, address, phone_number, business_number, latitude, longitude, user_id } = req.body;
+
+    // 필수 필드 확인
+    if (!name || !address || !latitude || !longitude || !user_id) {
+        return res.status(400).send('Name, address, latitude, longitude, and user ID are required.');
+    }
+
+    try {
+        // 매장 등록 로직 호출
+        await storeController.registerStore(name, address, phone_number, business_number, latitude, longitude, user_id);
+        res.status(201).send('Store registered successfully');
+    } catch (err) {
+        console.error('Error during store registration:', err);
+        res.status(500).send('Error registering store');
     }
 });
 

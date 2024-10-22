@@ -144,7 +144,7 @@ function Navs() {
     <Navbar expand="lg" className={`custom-navbar ${isScrolled ? 'scrolled' : ''}`} expanded={expanded} onToggle={() => setExpanded(!expanded)}>
       <Container style={{ maxWidth: "80%" }}>
         <Navbar.Brand onClick={() => navigateTo("/Main")}>
-          <img src="img/WDP_b.png" alt="로고" className="navbar-logo" />
+          <img src="img/AskMeLogo1.png" alt="로고" className="navbar-logo" />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">

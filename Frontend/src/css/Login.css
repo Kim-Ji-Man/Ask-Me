@@ -6,9 +6,18 @@ div h5 {
 
 
 /* 로그인 폼 스타일 */
+.main-contents {
+    display: flex;
+    justify-content: center; /* 로그인 폼을 가로 중앙 정렬 */
+    align-items: center;     /* 로그인 폼을 세로 중앙 정렬 */
+    height: 100vh;          /* 화면 전체 높이 사용 */
+}
+
+
+
+/* 로그인 폼 스타일 */
 .loginForm {
-    width: 600px;
-    /* min-height: 40vh; */
+    width: 400px;           /* 폼 너비 설정 */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -18,6 +27,12 @@ div h5 {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
+/* 로그인 제목 */
+h1#login_title {
+    margin-bottom: 30px; /* 제목 간격 조정 */
+}
+
 
 /* 로그인 제목 */
 h1#login_title {
@@ -48,6 +63,13 @@ h1#login_title {
 
 #loginBut:hover {
     background-color: #2883eb;
+}
+
+/* 로그인 이미지 */
+.login-image {
+    height: 100%; 
+    display: block;
+    padding: 0;
 }
 
 .vertical-line {
@@ -81,7 +103,7 @@ h1#login_title {
 
 
 /* 반응형 미디어 쿼리 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .login-image {
         display: none; /* 화면 크기가 768px 이하일 때 이미지 숨김 */
     }
@@ -94,3 +116,11 @@ h1#login_title {
         height: 100vh; /* 화면 전체 높이 사용 */
     }
 }
+
+
+
+
+
+
+
+

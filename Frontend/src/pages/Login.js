@@ -80,7 +80,12 @@ const Login = () => {
             <Form className='loginForm' style={{ width: '100%' }} onSubmit={handleLogin}>
               <Row>
                 <Col>
-                  <Image src='img/loginlogo.png' style={{ width: '90%' }} />
+                  <Image src='img/AskMeLogo.png' style={{ width: '100%' ,height:'250px',marginBottom:"25px"}} />
+                </Col>
+              </Row>
+              <Row>
+                <Col style={{marginBottom:"25px"}}>
+                  <p style={{fontSize:"4.0rem"}}>로그인</p>
                 </Col>
               </Row>
               <Row>
