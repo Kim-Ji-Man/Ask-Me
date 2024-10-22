@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import {
   MDBBtn,
   MDBContainer,
@@ -15,11 +15,17 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { Form } from "react-bootstrap";
 import "../css/Register.css";
+import { Appdata } from "../App";
+
 
 
 
 function RegisterStore() {
   const navigate = useNavigate();
+  
+  const data = useContext(Appdata);
+
+  console.log(data.user);
   const [formData, setFormData] = useState({
     mem_name: "",
     mem_id: "",

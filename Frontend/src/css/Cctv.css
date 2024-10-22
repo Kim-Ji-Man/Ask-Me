@@ -42,7 +42,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #333;
+  background-color:lightgrey;
   color: white;
   font-weight: bold;
   font-size: 20px;
@@ -194,8 +194,8 @@ textarea:focus {
   overflow-y: auto;
 }
 
-/* 반응형 스타일링 */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
+
 
   .error_title{
     margin-top: 30px;
@@ -221,5 +221,54 @@ textarea:focus {
 
   .alert-section {
     max-height: 200px; /* 모바일에서 더 작은 높이 */
+  }
+
+  .alert-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2개의 컬럼으로 설정 */
+    gap: 10px; /* 아이템 간의 간격 */
+  }
+
+  .alert-item {
+    flex-direction: column; /* 각 아이템은 세로로 정렬 */
+    align-items: flex-start;
+    width: 100%; /* 각 아이템이 100% 너비를 차지하도록 */
+  }
+
+  .alert-image {
+    width: 100%; /* 이미지를 100% 너비로 */
+    height: auto;
+    margin-bottom: 10px;
+  }
+
+  .alert-details {
+    width: 100%;
+  }
+
+  .alert-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .alert-timestamp {
+    margin-top: 10px;
+    text-align: right;
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .alert-items {
+    grid-template-columns: 1fr; /* 480px 이하에서는 1개의 컬럼으로 */
+  }
+
+  .alert-item {
+    padding: 10px;
+  }
+
+  .alert-timestamp {
+    margin-top: 10px;
+    text-align: right;
+    width: 100%;
   }
 }

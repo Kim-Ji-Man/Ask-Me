@@ -173,6 +173,7 @@ const Alim = () => {
                           border: selectedAlim?.status === 'success' ? '#16C098' : '#FFC5C5',
                           marginLeft:'15px'
                         }}
+
                       >
                         {selectedAlim?.status === 'success' ? "정상" : "오류"}
                       </Button>
