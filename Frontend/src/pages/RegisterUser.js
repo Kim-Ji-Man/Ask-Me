@@ -3,6 +3,9 @@ import {
   faEnvelope,
   faLock,
   faUser,
+  faVenusMars,
+  faCalendarDays,
+  faMobile
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "../axios";
@@ -279,7 +282,7 @@ function RegisterUser() {
           
               <InputGroup className="mb-3">
                 <InputGroup.Text>
-                  <FontAwesomeIcon icon={faCommentDots} />
+                <FontAwesomeIcon icon={faCalendarDays} />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
@@ -292,7 +295,7 @@ function RegisterUser() {
               </InputGroup>
               <InputGroup className="mb-3">
                 <InputGroup.Text>
-                  <FontAwesomeIcon icon={faCommentDots} />
+                <FontAwesomeIcon icon={faVenusMars} />
                 </InputGroup.Text>
                 <Form.Select  name="mem_gender"  value={formData.mem_gender} onChange={handleInputChange} className="genderselect">
                   <option value="">선택하세요</option>
@@ -314,7 +317,7 @@ function RegisterUser() {
 
               <InputGroup className="mb-3">
                 <InputGroup.Text>
-                  <FontAwesomeIcon icon={faCommentDots} />
+                  <FontAwesomeIcon icon={faMobile} />
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
