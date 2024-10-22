@@ -40,6 +40,20 @@ def generate_frames():
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
+@app.get('/video_feed')
+async def video_feed():
+    # 스트리밍 응답을 생성하고 반환
+    return StreamingResponse(generate_frames(),
+                             media_type='multipart/x-mixed-replace; boundary=frame')
+
+@app.get('/')
+async def index():
+    return {"message": "웹캠 스트리밍 서버가 실행 중입니다. /video_feed 에 접속하세요."}
+
+# FastAPI 애플리케이션 실행
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host='127.0.0.1', port=8000)
 
 
 # 칼라
@@ -107,17 +121,3 @@ def generate_frames():
 #                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
         
         
-@app.get('/video_feed')
-async def video_feed():
-    # 스트리밍 응답을 생성하고 반환
-    return StreamingResponse(generate_frames(),
-                             media_type='multipart/x-mixed-replace; boundary=frame')
-
-@app.get('/')
-async def index():
-    return {"message": "웹캠 스트리밍 서버가 실행 중입니다. /video_feed 에 접속하세요."}
-
-# FastAPI 애플리케이션 실행
-if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8000)
