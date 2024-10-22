@@ -29,6 +29,7 @@ function RegisterUser() {
     mem_phone: "",
     mem_email: "",
     mem_birth:"",
+    mem_gender:"",
     mem_role:"admin",
   });
 
@@ -149,11 +150,21 @@ function RegisterUser() {
     if (!formData.mem_birth.trim()) {
       Swal.fire({
         icon: 'error',
-        text: '생년월일(7자리)를 입력해주세요.',
+        text: '생년월일(6자리)를 입력해주세요.',
         confirmButtonText: '확인'
       });
       return;
     }
+
+    
+  if (formData.mem_gender === '') {
+    Swal.fire({
+        icon: 'error',
+        text: '성별을 선택해주세요',
+        confirmButtonText: '확인'
+    });
+    return;
+}
 
     const userData = {
       mem_id: formData.mem_id,
@@ -162,6 +173,7 @@ function RegisterUser() {
       mem_email: formData.mem_email,
       mem_birth:formData.mem_birth,
       mem_role: formData.mem_role,
+      mem_gender:formData.mem_gender
     };
 
       setUser(userData); 
@@ -271,12 +283,22 @@ function RegisterUser() {
                 </InputGroup.Text>
                 <Form.Control
                   type="text"
-                  placeholder="생년월일(000000-0)"
+                  placeholder="생년월일(000000)"
                   name="mem_birth"
                   value={formData.mem_birth}
                   onChange={handleInputChange}
-                  maxLength="7"
+                  maxLength="6"
                 />
+              </InputGroup>
+              <InputGroup className="mb-3">
+                <InputGroup.Text>
+                  <FontAwesomeIcon icon={faCommentDots} />
+                </InputGroup.Text>
+                <Form.Select  name="mem_gender"  value={formData.mem_gender} onChange={handleInputChange} className="genderselect">
+                  <option value="">선택하세요</option>
+                  <option value='man'>남자</option>
+                  <option value='woman'>여자</option>
+                </Form.Select>
               </InputGroup>
               <InputGroup className="mb-3" style={{display:"none"}}>
                 <InputGroup.Text>

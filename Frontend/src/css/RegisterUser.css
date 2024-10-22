@@ -93,6 +93,7 @@
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
   }
+
   
   .input-group-text {
     display: flex; /* flexbox를 사용하여 내부 요소를 정렬 */
@@ -105,6 +106,14 @@
   /* 입력 필드 오른쪽 둥근 모서리 */
   .form-control {
     border-radius: 0 0.25rem 0.25rem 0; /* 오른쪽 상단과 하단에만 둥근 모서리 적용 */
+  }
+  .input-group
+  .genderselect {
+    height: 40px; /* 아이콘과 인풋 필드의 높이를 동일하게 설정 */
+    font-size: 16px; /* 폰트 사이즈도 일치시킵니다 */
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-top: 0px;
   }
   
   /* 버튼과 링크의 너비도 조절할 수 있습니다. */
@@ -143,6 +152,8 @@
     font-size: 0.8rem; /* 글자 크기 줄임 */
     width: fit-content !important;
   }
+
+  
   
   /* 인풋 그룹 내부의 아이콘을 인풋 필드와 동일한 높이와 중앙 정렬로 맞춥니다. */
   
