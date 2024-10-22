@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaUserCircle, FaBell, FaCog, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa'; // 추가 아이콘 임포트
+import { FaUserCircle, FaBell, FaCog, FaInfoCircle, FaExclamationTriangle } from 'react-icons/fa';
+import { jwtDecode } from 'jwt-decode';
 import "../css/Nav.css";
 
 function Navs() {
@@ -13,7 +14,7 @@ function Navs() {
   const [expanded, setExpanded] = useState(false);
   const [notifications, setNotifications] = useState(3);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [memberGrade, setMemberGrade] = useState(0);
+  const [memberGrade, setMemberGrade] = useState(2); // 기본값을 user로 설정
 
   // 알림 리스트 (시간 포함 및 타입 추가)
   const notificationList = [
@@ -75,16 +76,23 @@ function Navs() {
     return "방금 전";
   };
 
-  let mem_id = sessionStorage.getItem('mem_id');
-
-  // 로그인 상태 확인 및 스크롤 감지
   useEffect(() => {
-    if (mem_id === null) {
-      console.log('isLogin ?? :: ', isLoggedIn);
-    } else {
-      console.log('isLogin ?? :: ', isLoggedIn);
+    const jwtToken = localStorage.getItem('jwtToken');
+
+    if (jwtToken) {
+      const decodedToken = jwtDecode(jwtToken);
+      // decodedToken의 role 필드를 기반으로 memberGrade 설정
+      if (decodedToken.role === 'master') {
+        setMemberGrade(0);
+      } else if (decodedToken.role === 'admin') {
+        setMemberGrade(1);
+      } else {
+        setMemberGrade(2);
+      }
       setIsLoggedIn(true);
-      setMemberGrade(1);
+    } else {
+      setIsLoggedIn(false);
+      setMemberGrade(2); // 로그인하지 않은 경우 기본값을 user(2)로 설정
     }
 
     const savedActiveMenu = localStorage.getItem("activeMenu") || "/";
@@ -98,11 +106,11 @@ function Navs() {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.pathname, isLoggedIn]);
+  }, [location.pathname]);
 
   // 로그아웃 함수
   const logout = () => {
-    sessionStorage.clear();
+    localStorage.removeItem('jwtToken');
     setIsLoggedIn(false);
     localStorage.removeItem("activeMenu");
     window.location.href = "/";
@@ -133,101 +141,70 @@ function Navs() {
   };
 
   return (
-    <>
-      <Navbar expand="lg" className={`custom-navbar ${isScrolled ? 'scrolled' : ''}`} expanded={expanded} onToggle={() => setExpanded(!expanded)}>
-        <Container style={{ maxWidth: "80%" }}>
-          <Navbar.Brand onClick={() => navigateTo("/Main")}>
-            <img
-              src="img/WDP_b.png"
-              alt="로고"
-              className="navbar-logo"
-            />
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="me-auto justify-content-center">
-              <Nav.Link
-                onClick={() => navigateTo("/Main")}
-                style={activeMenu === "/Main" ? activeStyle : defaultStyle}
-              >
-                대시보드
-              </Nav.Link>
-              <Nav.Link
-                onClick={() => navigateTo("/CCTV")}
-                style={activeMenu === "/CCTV" ? activeStyle : defaultStyle}
-              >
-                CCTV
-              </Nav.Link>
-              {memberGrade === 0 && (
-                <>
-                  {/* <Nav.Link
-                    onClick={() => navigateTo("/Error")}
-                    style={activeMenu === "/Error" ? activeStyle : defaultStyle}
-                  >
-                    이상내역
-                  </Nav.Link> */}
-                  {/* <Nav.Link
-                    onClick={() => navigateTo("/Jeons")}
-                    style={activeMenu === "/Jeons" ? activeStyle : defaultStyle}
-                  >
-                    전송내역
-                  </Nav.Link> */}
-                  <Nav.Link
-                    onClick={() => navigateTo("/Member")}
-                    style={activeMenu === "/Member" ? activeStyle : defaultStyle}
-                  >
-                    회원관리
-                  </Nav.Link>
-                </>
-              )}
-              <Nav.Link
-                onClick={() => navigateTo("/Alims")}
-                style={activeMenu === "/Alims" ? activeStyle : defaultStyle}
-              >
-                알림내역
-              </Nav.Link>
-              {/* <Nav.Link
-                onClick={() => navigateTo("/Map")}
-                style={activeMenu === "/Map" ? activeStyle : defaultStyle}
-              >
-                지도
-              </Nav.Link> */}
-            </Nav>
-            <Nav className="align-items-center">
-              <div className="icon-links">
-                <FaUserCircle size={24} onClick={() => navigateTo("/Mypage")} style={activeMenu === "/Mypage" ? activeStyle : defaultStyle} />
+    <Navbar expand="lg" className={`custom-navbar ${isScrolled ? 'scrolled' : ''}`} expanded={expanded} onToggle={() => setExpanded(!expanded)}>
+      <Container style={{ maxWidth: "80%" }}>
+        <Navbar.Brand onClick={() => navigateTo("/Main")}>
+          <img src="img/WDP_b.png" alt="로고" className="navbar-logo" />
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="me-auto justify-content-center">
+            <Nav.Link onClick={() => navigateTo("/Main")} style={activeMenu === "/Main" ? activeStyle : defaultStyle}>
+              대시보드
+            </Nav.Link>
+            <Nav.Link onClick={() => navigateTo("/CCTV")} style={activeMenu === "/CCTV" ? activeStyle : defaultStyle}>
+              CCTV
+            </Nav.Link>
+            {isLoggedIn && memberGrade === 0 && ( // master 사용자만 표시
+              <>
+                <Nav.Link onClick={() => navigateTo("/Error")} style={activeMenu === "/Error" ? activeStyle : defaultStyle}>
+                  이상내역
+                </Nav.Link>
+                <Nav.Link onClick={() => navigateTo("/Member")} style={activeMenu === "/Member" ? activeStyle : defaultStyle}>
+                  회원관리
+                </Nav.Link>
+              </>
+            )}
+            <Nav.Link onClick={() => navigateTo("/Alims")} style={activeMenu === "/Alims" ? activeStyle : defaultStyle}>
+              알림내역
+            </Nav.Link>
+          </Nav>
+          <Nav className="align-items-center">
+            <div className="icon-links">
+            {/* 마스터가 아닐 때만 사용자 아이콘 보이기 */}
+            {memberGrade !== 0 && (
+            <FaUserCircle size={24} onClick={() => navigateTo("/Mypage")} style={defaultStyle} />)}
 
-                <div className="notification-icon" onClick={toggleNotification} ref={notificationRef}>
-                  <FaBell size={24} style={defaultStyle} />
-                  {notifications > 0 && <span className="badge">{notifications}</span>}
-                  
-                  {isNotificationOpen && (
-                    <div className="notification-dropdown">
-                      <div className="notification-header">
-                        <strong>알림</strong>
-                      </div>
-                      <ul>
-                        {notificationList.slice(0, 5).map(notification => (
-                          <li key={notification.id} className={notification.type}>
-                            {renderIcon(notification.type)} {/* 타입에 따른 아이콘 렌더링 */}
-                            <span className="message">{notification.message}</span>
-                            <br />
-                            <small className="timestamp">{timeSince(notification.time)}</small>
-                          </li>
-                        ))}
-                      </ul>
+              <div className="notification-icon" onClick={toggleNotification} ref={notificationRef}>
+                <FaBell size={24} style={defaultStyle} />
+                {notifications > 0 && <span className="badge">{notifications}</span>}
+                
+                {isNotificationOpen && (
+                  <div className="notification-dropdown">
+                    <div className="notification-header">
+                      <strong>알림</strong>
                     </div>
-                  )}
-                </div>
-
-                <FaCog size={24} onClick={() => navigateTo("/Settings")} style={defaultStyle} />
+                    <ul>
+                      {notificationList.slice(0, 5).map(notification => (
+                        <li key={notification.id} className={notification.type}>
+                          {renderIcon(notification.type)}
+                          <span className="message">{notification.message}</span>
+                          <br />
+                          <small className="timestamp">{timeSince(notification.time)}</small>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-              <Nav.Link onClick={logout} style={defaultStyle}>로그아웃</Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-    </>
+
+              <FaCog size={24} onClick={() => navigateTo("/Settings")} style={defaultStyle} />
+            </div>
+            <Nav.Link onClick={logout} style={defaultStyle}>로그아웃</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }
 
