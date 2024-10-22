@@ -202,7 +202,7 @@ function RegisterUser() {
           <Col md={6} className="login-form-container">
           <div className="text-center mb-2">
                 <img
-                  src="/img/AskMeLogo.png"
+                  src="/img/AskMeLogo1.png"
                   alt="Read Fit 로고"
                   className="login-logo"
                 />

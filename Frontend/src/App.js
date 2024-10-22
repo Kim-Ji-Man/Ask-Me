@@ -30,7 +30,7 @@ function App({ children }) {  // children을 props로 받기
   const [user, setUser] = useState({ nick: '냉면' });
   const [store, setStore] = useState({ nick: '냉면' });
 
-  const hiddenPaths = ['/', '/RegisterUser', '/Findaccount'];
+  const hiddenPaths = ['/', '/RegisterUser','/RegisterStore', '/Findaccount'];
 
   return (
     <div className="App">
