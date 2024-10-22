@@ -1,3 +1,4 @@
+// db.js
 const pool = require('../config/dbConfig');
 
 const getMySQLConnection = () => pool;
