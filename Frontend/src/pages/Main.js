@@ -116,7 +116,7 @@ const Main = () => {
             </div>
           </Col>
         </Row>
-        <Row className="g-4 mt-3">
+        {/* <Row className="g-4 mt-3">
           <Col md={6} lg={6} >
             <div className="card p-3">
             
@@ -128,7 +128,7 @@ const Main = () => {
           
             </div>
           </Col>
-        </Row>
+        </Row> */}
       </Container>
     </div>
   );

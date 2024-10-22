@@ -80,7 +80,7 @@ const Barchart = () => {
   return (
     <div style={{ width: '100%', height: '420px', padding: '20px', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' ,float:'right'}} >
-        <select
+        {/* <select
           onChange={handleDateChange}
           value={selectedDate}
           className='chart_select_day'
@@ -90,7 +90,7 @@ const Barchart = () => {
               {i + 1}일
             </option>
           ))}
-        </select>
+        </select> */}
 
         <div style={{ display: 'flex', gap: '10px' }} >
           <button
