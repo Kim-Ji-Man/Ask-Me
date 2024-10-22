@@ -65,7 +65,7 @@ const db = require('../models/db');
 router.post('/cameras', async (req, res) => {
     const { device_name, device_type, location, rtsp_url } = req.body;
 
-    const sql = 'INSERT INTO Detection_Devices (device_name, device_type, location, rtsp_url, last_checked_at) VALUES (?, ?, ?, ?, NOW())';
+    const sql = 'INSERT INTO Detection_Device (device_name, device_type, location, rtsp_url, last_checked_at) VALUES (?, ?, ?, ?, NOW())';
     try {
         const results = await db.executeQuery(sql, [device_name, device_type, location, rtsp_url]);
         res.status(201).send({ device_id: results.insertId, device_name, device_type, location, rtsp_url });
@@ -106,7 +106,7 @@ router.post('/cameras', async (req, res) => {
  *         description: Error fetching cameras
  */
 router.get('/cameras', async (req, res) => {
-    const sql = 'SELECT * FROM Detection_Devices';
+    const sql = 'SELECT * FROM Detection_Device';
     try {
         const results = await db.executeQuery(sql);
         res.send(results);
