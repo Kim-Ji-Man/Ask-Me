@@ -118,7 +118,7 @@ const Login = () => {
               <div className="link">
                 <Link to={"/Findaccount"}>아이디ㆍ비밀번호 찾기</Link>
                 <span className="vertical-line"></span>
-                <Link to={"/Register"}>회원가입</Link>
+                <Link to={"/RegisterUser"}>회원가입</Link>
               </div>
             </Form>
           </Col>

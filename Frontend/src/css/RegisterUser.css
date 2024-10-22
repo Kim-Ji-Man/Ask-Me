@@ -1,0 +1,162 @@
+#content {
+    max-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    padding-bottom: 80px;
+  }
+  
+  
+  
+  .my-custom-content {
+    padding-top: 100px;
+  }
+  
+  .login-form-container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login-logo {
+    width: 100%;
+    max-width: 230px; 
+    margin-bottom: 2rem;
+    height: auto;
+  }
+  
+  .form1 .form-control, .form1 .btn {
+    width: 100%; 
+    margin-bottom: 1rem; 
+  }
+  
+  .btn-success {
+    background-color: #DAC4FB;
+    border-color: #DAC4FB;
+    color: black;
+    font-weight: bold;
+    --bs-btn-hover-color : #DAC4FB;
+    --bs-btn-active-bg : #DAC4FB;
+    --bs-btn-active-color : black;
+    --bs-btn-active-border-color : #DAC4FB;
+  
+  
+  
+  }
+  
+  .btn-success:active {
+    background-color: #DAC4FB;
+    border-color: #DAC4FB;
+    color: black;
+    font-weight: bold;
+   
+  }
+  
+  .btn-success:hover {
+    background-color: #DAC4FB;
+    border-color: #DAC4FB;
+    color: black;
+    font-weight: bold;
+   
+  }
+  
+  .btn-warning {
+    background-color: #FEE500; /* 카카오 색상 */
+    color: #391B1B; /* 텍스트 색상 */
+    /* 필요한 경우 여기에 더 많은 스타일링을 추가하세요. */
+  }
+  
+  
+  .login-link {
+    color: #D0D0D0;
+  }
+  
+  
+  .fa-icon {
+    font-size: 1rem; /* 아이콘 크기를 조정 */
+  }
+  
+  .input-group {
+    width: calc(100% - 30px); /* 아이콘의 너비를 고려하여 조정 */
+    margin: 0 auto; /* 자동 마진을 통해 가운데 정렬 */
+  }
+  
+  /* 인풋 필드와 아이콘 사이의 경계선을 없애고 전체적인 스타일링을 일치시킵니다. */
+  
+  .input-group-text,
+  .form-control {
+    height: 40px; /* 아이콘과 인풋 필드의 높이를 동일하게 설정 */
+    font-size: 16px; /* 폰트 사이즈도 일치시킵니다 */
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+  }
+
+  
+  .input-group-text {
+    display: flex; /* flexbox를 사용하여 내부 요소를 정렬 */
+    align-items: center; /* 세로 축 중앙 정렬 */
+    justify-content: center; /* 가로 축 중앙 정렬 */
+    border-right: none; /* 오른쪽 테두리 제거 */
+    background-color: #e9ecef;
+    border-radius: 0.25rem 0 0 0.25rem;
+  }
+  /* 입력 필드 오른쪽 둥근 모서리 */
+  .form-control {
+    border-radius: 0 0.25rem 0.25rem 0; /* 오른쪽 상단과 하단에만 둥근 모서리 적용 */
+  }
+  .input-group
+  .genderselect {
+    height: 40px; /* 아이콘과 인풋 필드의 높이를 동일하게 설정 */
+    font-size: 16px; /* 폰트 사이즈도 일치시킵니다 */
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-top: 0px;
+  }
+  
+  /* 버튼과 링크의 너비도 조절할 수 있습니다. */
+  .login-button,
+  .kakao-login-button,
+  .login-link {
+    width: calc(100% - 30px); /* 아이콘의 너비를 고려하여 조정 */
+    display: block; /* 블록 레벨 요소로 만들어 가운데 정렬을 가능하게 합니다. */
+    margin: 10px auto; /* 위, 아래 마진으로 여백을 주고 좌우 자동 마진으로 가운데 정렬 */
+  }
+  
+  .kakao-login-button{
+    width: 75%;
+  }
+  
+  .login-button{
+    width: 75%;
+  }
+  
+  
+  .nlink{
+    color: black;
+  }
+  
+  .nlink:hover{
+    color: black;
+  }
+  
+  /* Login.css */
+  .another-login-button {
+    /* padding-left: 200px !important;  */
+    border: 0.5px solid #fdfcfc; /*테두리*/
+    background-color: transparent; /* 투명 배경 */
+    color: #000; /* 검정색 텍스트 */
+    padding: 0.2rem 0.1rem; /* 패딩 줄임 */
+    font-size: 0.8rem; /* 글자 크기 줄임 */
+    width: fit-content !important;
+  }
+
+  
+  
+  /* 인풋 그룹 내부의 아이콘을 인풋 필드와 동일한 높이와 중앙 정렬로 맞춥니다. */
+  
+  
+  /* FontAwesome 아이콘에 대한 추가적인 스타일 조정 */
+  

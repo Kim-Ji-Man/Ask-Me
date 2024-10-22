@@ -25,6 +25,8 @@ const CCTV = () => {
     {seq : 4 , name: "CCTV5", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:20:00" },
   ];
 
+  const videoUrl = cctvAddresses[0];
+
   const handleShowAlert = () => {
     setShowAlert(!showAlert);
   };
@@ -47,6 +49,63 @@ const CCTV = () => {
     setAdminComment(e.target.value);
   };
 
+  function alimClick() {
+
+    Swal.bindClickHandler();
+    Swal.fire({
+      title: '흉기거수자 확인!!',
+      text: '알림이 갔습니다.',
+      imageUrl: 'img/hyo1.PNG',
+      imageWidth: 400,
+      imageHeight: 200,
+      imageAlt: 'Custom image',
+      confirmButtonText: '트래킹모드',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false
+    }).then(result => {
+      if (result.isConfirmed) {
+        Swal.bindClickHandler();
+        Swal.fire({
+          width: '70%',
+          title: '<strong>트래킹모드</strong>',
+          html:
+            '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
+            ' <div className="tr-container">' +
+             `<img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>` +
+            '</div>',
+          focusConfirm: true,
+          confirmButtonText: '확인',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          allowEnterKey: false
+        }).then(result => {
+          Swal.bindClickHandler();
+          Swal.fire({
+            title: '이미지 or 영상을 저장하시겠습니까?',
+            imageUrl: 'img/hyo1.PNG',
+            imageWidth: 400,
+            imageHeight: 200,
+            imageAlt: 'Custom image',
+            showCancelButton: true,
+            cancelButtonColor: '#d33',
+            confirmButtonText: '확인',
+            cancelButtonText: '취소',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false
+          }).then(result => {
+            if (result.isConfirmed) {
+              Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
+            } else {
+              Swal.fire('종료합니다', '화끈하시네요~!', 'success');
+            }
+          });
+        });
+      }
+    });
+  }
+
   return (
     <div className="main-content mt-5">
       <Container fluid className="mt-3 mb-3">
@@ -55,7 +114,7 @@ const CCTV = () => {
             CCTV
           </Col>
           <Col lg={3} md={6} sm={6} className="text-lg-right text-md-left">
-            <Button className="t2btns">더보기</Button>
+            <Button className="t2btns" onClick={() => alimClick()} >더보기</Button>
           </Col>
           <Col lg={3} md={6} sm={6} className="text-lg-right text-md-left">
             <Button className="t2btns" onClick={handleCombinedAction}>
@@ -108,7 +167,7 @@ const CCTV = () => {
         {/* 선택된 이미지 모달 */}
         <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
           <Modal.Header closeButton>
-            <Modal.Title>감지된 CCTV 이미지</Modal.Title>
+            <Modal.Title>이상내역</Modal.Title>
           </Modal.Header>
           <Modal.Body className="cctvmodalerror_body">
             {selectedAlert && (
@@ -118,20 +177,20 @@ const CCTV = () => {
                 <table className="table table-bordered mt-3">
                   <tbody>
                     <tr>
-                      <th>역 이름</th>
+                      <th>cctv이름</th>
                       <td>{selectedAlert.name}</td>
                     </tr>
                     <tr>
                       <th>발생 위치</th>
-                      <td>6번 출구</td> {/* 임의로 추가된 정보 */}
+                      <td>입구</td> {/* 임의로 추가된 정보 */}
                     </tr>
                     <tr>
                       <th>이상 행동</th>
                       <td>
                         <Form.Select aria-label="Default select example">
                           <option>종류 선택</option>
-                          <option value="1">흉기 의심</option>
-                          <option value="2">폭력 의심</option>
+                          <option value="1">흉기</option>
+                          <option value="2">오류</option>
                           <option value="3">기타</option>
                         </Form.Select>
                       </td>

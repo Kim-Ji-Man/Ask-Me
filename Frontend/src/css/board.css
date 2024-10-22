@@ -1,7 +1,7 @@
 /* board.css에 추가 */
 
 #board{
-  max-width: 80%;
+  max-width: 100%;
 }
 
 .custom-table {
@@ -18,9 +18,9 @@
   text-align: center;
 }
 
-.custom-table th {
-  white-space: nowrap; /* 텍스트가 줄 바꿈되지 않도록 설정 */
-}
+/* .custom-table th {
+  white-space: nowrap;
+} */
 
 /* 헤더 스타일링 */
 .header1 {
@@ -60,24 +60,6 @@
   background-color: black; /* 버튼 호버 시 색상 변경 */
 }
 
-/* "글쓰기" 버튼 스타일링 */
-#write-button {
-  width: 100px; /* 버튼 너비 설정 */
-  float: right; /* 오른쪽 정렬 */
-  background-color: black;
-  border: none;
-  color: black;
-  font-weight: bold;
-}
-
-/* "커뮤니티" 제목 스타일링 */
-.community-title {
-  float: left; /* 왼쪽 정렬 */
-  font-size: 50px;
-  font-weight: bold;
-}
-
-
 
 /* 페이지네이션 컨테이너 스타일링 */
 .pagination-container {
@@ -115,19 +97,6 @@
 
 /* 반응형 디자인을 위해 "글쓰기" 버튼 스타일 재조정 */
 @media (max-width: 768px) {
-  .write-button {
-    width: auto; /* 모바일에서 버튼 너비를 자동으로 조정 */
-    float: none; /* 모바일에서는 float 적용 제거 */
-    display: block; /* 모바일에서 버튼을 블록 요소로 표시 */
-    margin: 0 auto; /* 모바일에서 버튼을 가운데 정렬 */
-    margin-top: 10px; /* 제목과의 간격 조정 */
-  }
-
-  .community-title {
-    float: none; /* 모바일에서는 float 적용 제거 */
-    display: block; /* 모바일에서 제목을 블록 요소로 표시 */
-    margin-bottom: 10px; /* 버튼과의 간격 조정 */
-  }
 
   .search-input {
     width: 100%; /* 모바일 화면에서 검색창 너비를 100%로 조정 */
@@ -139,11 +108,11 @@
   }
 
   .custom-table th, .custom-table td {
-    padding: .3rem; /* 모바일에서 패딩 줄이기 */
+    padding: .2rem; /* 모바일에서 패딩 줄이기 */
   }
 
   .header1 {
-    font-size: 14px; /* 모바일에서 폰트 크기 조정 */
+    font-size: 12px; /* 모바일에서 폰트 크기 조정 */
   }
 }
 
@@ -159,7 +128,3 @@
 
 
 
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  
-}
