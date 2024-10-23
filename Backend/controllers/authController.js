@@ -2,10 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 
-async function registerUser(username, password, email, phoneNumber, role, gender, birth, storeId) {
+async function registerUser(username, password, email, phoneNumber, role, gender, birth, storeId = null) {
     console.log("register:", username, password, email, phoneNumber, role, gender, birth);
 
-    const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 추가
+    const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 포함
     if (!allowedRoles.includes(role)) {
         throw new Error('Invalid role');
     }
@@ -17,7 +17,7 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     const created_at = new Date(); // 현재 시간
 
     // account_status 설정
-    const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active로 설정
+    const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active
 
     // SQL 쿼리 작성
     const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, created_at, account_status, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -37,12 +37,12 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     // 쿼리 실행
     await db.executeQuery(query, params);
 
-    // 경비원인 경우 Guards_Stores 테이블에 추가
-    if (role === 'guard') {
+    // 경비원인 경우 매장에 배정하는 로직은 나중에 처리 가능
+    if (role === 'guard' && storeId) {
         const user = await db.executeQuery(`SELECT user_id FROM Users WHERE email = ?`, [email]);
         const guardId = user[0].user_id;
 
-        // 경비원이 속한 매장에 추가
+        // 경비원이 속한 매장에 추가 (storeId가 제공된 경우에만 실행)
         const guardStoreQuery = `INSERT INTO Guards_Stores (user_id, store_id) VALUES (?, ?)`;
         await db.executeQuery(guardStoreQuery, [guardId, storeId]);
     }

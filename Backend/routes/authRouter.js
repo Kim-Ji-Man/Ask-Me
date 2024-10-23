@@ -40,14 +40,15 @@ const storeController = require('../controllers/storeController');
  *                 birth:
  *                   type: string
  *                   example: "991213"
- *                 storeId:  
+ *                 storeId:
  *                   type: string
  *                   example: "1"
+ *                   description: "Required only for guards"
  *       responses:
  *         201:
  *           description: User registered successfully
  *         400:
- *           description: Username, password, phone number, role, gender, birth, and storeId are required
+ *           description: "Missing required fields. For guards, storeId is required."
  *         500:
  *           description: Error registering user
  */
@@ -55,14 +56,20 @@ const storeController = require('../controllers/storeController');
 router.post('/register', async (req, res) => {
     const { username, password, email, phone_number, role, gender, birth, storeId } = req.body;
     
-    if (!username || !password || !phone_number || !role || !gender || !birth || !storeId) {
-        return res.status(400).send('Username, password, phone number, role, gender, birth, and storeId are required');
+    // 기본적인 필수 값 검증 (storeId는 경비원일 때만 필수)
+    if (!username || !password || !phone_number || !role || !gender || !birth) {
+        return res.status(400).send('Username, password, phone number, role, gender, and birth are required');
     }
 
     // 역할이 올바른지 확인
     const allowedRoles = ['user', 'admin', 'master', 'guard'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).send('Invalid role');
+    }
+
+    // 경비원일 경우 storeId가 필수
+    if (role === 'guard' && !storeId) {
+        return res.status(400).send('storeId is required for guards');
     }
 
     try {
