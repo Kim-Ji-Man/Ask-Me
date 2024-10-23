@@ -55,32 +55,34 @@ const storeController = require('../controllers/storeController');
 
 router.post('/register', async (req, res) => {
     const { username, password, email, phone_number, role, gender, birth, storeId } = req.body;
-    
-    // 기본적인 필수 값 검증 (storeId는 경비원일 때만 필수)
+
+    // 필수 값 검증
     if (!username || !password || !phone_number || !role || !gender || !birth) {
         return res.status(400).send('Username, password, phone number, role, gender, and birth are required');
     }
 
-    // 역할이 올바른지 확인
+    // 역할 검증
     const allowedRoles = ['user', 'admin', 'master', 'guard'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).send('Invalid role');
     }
 
-    // 경비원일 경우 storeId가 필수
+    // 경비원일 경우 storeId 필수
     if (role === 'guard' && !storeId) {
         return res.status(400).send('storeId is required for guards');
     }
 
     try {
-        await authController.registerUser(username, password, email, phone_number, role, gender, birth, storeId); 
-        res.status(201).send('User registered successfully');
+        // 유저 등록 및 user_id 반환
+        const userId = await authController.registerUser(username, password, email, phone_number, role, gender, birth, storeId);
+
+        // 성공 시 user_id와 함께 응답
+        res.status(201).send({ message: 'User registered successfully', user_id: userId });
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).send('Error registering user');
     }
 });
-
 
 
 

@@ -7,6 +7,10 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 
 
+const script = document.createElement('script');
+script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.REACT_APP_KAKAOMAP_KEY}`;
+script.async = true;
+document.head.appendChild(script);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

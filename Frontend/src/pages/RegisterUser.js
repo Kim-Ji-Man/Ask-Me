@@ -181,7 +181,6 @@ function RegisterUser() {
       birth:formData.mem_birth,
       role: formData.mem_role,
       gender:formData.mem_gender,
-      storeId : 6
       // mem_nick :formData.mem_name,
     };
 

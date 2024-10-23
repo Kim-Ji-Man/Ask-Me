@@ -46,6 +46,12 @@ async function registerUser(username, password, email, phoneNumber, role, gender
         const guardStoreQuery = `INSERT INTO Guards_Stores (user_id, store_id) VALUES (?, ?)`;
         await db.executeQuery(guardStoreQuery, [guardId, storeId]);
     }
+
+      // 방금 추가된 유저의 user_id 가져오기
+      const [result] = await db.executeQuery('SELECT LAST_INSERT_ID() as user_id');
+
+      // user_id 반환
+      return result.user_id;
 }
 
 // JWT 토큰 생성
