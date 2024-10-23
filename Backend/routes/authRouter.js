@@ -44,6 +44,9 @@ const storeController = require('../controllers/storeController');
  *                   type: string
  *                   example: "1"
  *                   description: "Required only for guards"
+ *                 mem_name:
+ *                   type: string
+ *                   example: "John"
  *       responses:
  *         201:
  *           description: User registered successfully
@@ -54,11 +57,11 @@ const storeController = require('../controllers/storeController');
  */
 
 router.post('/register', async (req, res) => {
-    const { username, password, email, phone_number, role, gender, birth, storeId } = req.body;
+    const { username, mem_name, password, email, phone_number, role, gender, birth, storeId } = req.body;
 
     // 필수 값 검증
-    if (!username || !password || !phone_number || !role || !gender || !birth) {
-        return res.status(400).send('Username, password, phone number, role, gender, and birth are required');
+    if (!username || !mem_name || !password || !phone_number || !role || !gender || !birth ) {
+        return res.status(400).send('Username, mem_name,password, phone number, role, gender, birth, and storeId are required');
     }
 
     // 역할 검증
@@ -74,7 +77,7 @@ router.post('/register', async (req, res) => {
 
     try {
         // 유저 등록 및 user_id 반환
-        const userId = await authController.registerUser(username, password, email, phone_number, role, gender, birth, storeId);
+        const userId = await authController.registerUser( username, mem_name, password, email, phone_number, role, gender, birth, storeId);
 
         // 성공 시 user_id와 함께 응답
         res.status(201).send({ message: 'User registered successfully', user_id: userId });
@@ -184,6 +187,9 @@ router.post('/stores', async (req, res) => {
  *               birth:
  *                 type: string
  *                 example: "991213"
+ *               mem_name:
+ *                 type: string
+ *                 example: "John"
  *     responses:
  *       200:
  *         description: User information updated successfully
@@ -195,10 +201,10 @@ router.post('/stores', async (req, res) => {
 
 // 사용자 정보 업데이트
 router.put('/update', authController.authenticateToken, async (req, res) => {
-    const { email, phone_number, gender, birth } = req.body;
+    const { email, phone_number, gender, birth, mem_name } = req.body;
 
-    if (!phone_number || !gender || !birth) {
-        return res.status(400).send('Phone number, gender, and birth are required');
+    if (!phone_number || !gender || !birth || !mem_name) {
+        return res.status(400).send('Phone number, gender, birth, and mem_name are required');
     }
 
     try {
@@ -206,7 +212,8 @@ router.put('/update', authController.authenticateToken, async (req, res) => {
             email, 
             phone_number, 
             gender, 
-            birth 
+            birth,
+            mem_name
         });
         res.status(200).send('User information updated successfully');
     } catch (err) {
@@ -214,7 +221,6 @@ router.put('/update', authController.authenticateToken, async (req, res) => {
         res.status(500).send('Error updating user information');
     }
 });
-
 
 /**
  * @swagger
@@ -301,12 +307,12 @@ router.get('/users', authController.authenticateToken, async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 email:  
+ *                 username:  
  *                   type: string
- *                   example: "john@example.com"  
+ *                   example: "master"  
  *                 password:
  *                   type: string
- *                   example: "password"
+ *                   example: "0000"
  *       responses:
  *         200:
  *           description: User logged in successfully

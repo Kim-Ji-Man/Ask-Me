@@ -2,8 +2,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 
-async function registerUser(username, password, email, phoneNumber, role, gender, birth, storeId = null) {
-    console.log("register:", username, password, email, phoneNumber, role, gender, birth);
+async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null) {
+    console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth);
 
     const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 포함
     if (!allowedRoles.includes(role)) {
@@ -20,10 +20,11 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active
 
     // SQL 쿼리 작성
-    const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, created_at, account_status, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (username, mem_name, password, email, phone_number, role, gender, created_at, account_status, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     const params = [
         username,
+        mem_name, 
         hashedPassword,
         email,
         phoneNumber,
@@ -47,11 +48,11 @@ async function registerUser(username, password, email, phoneNumber, role, gender
         await db.executeQuery(guardStoreQuery, [guardId, storeId]);
     }
 
-      // 방금 추가된 유저의 user_id 가져오기
-      const [result] = await db.executeQuery('SELECT LAST_INSERT_ID() as user_id');
+    // 방금 추가된 유저의 user_id 가져오기
+    const [result] = await db.executeQuery('SELECT LAST_INSERT_ID() as user_id');
 
-      // user_id 반환
-      return result.user_id;
+    // user_id 반환
+    return result.user_id;
 }
 
 // JWT 토큰 생성
@@ -61,15 +62,15 @@ function generateToken(user) {
 
 // 로그인 함수
 async function login(req, res) {
-    const { email, password } = req.body; 
-    console.log("로그인 시도:", email, password);
+    const { username, password } = req.body;  
+    console.log("로그인 시도:", username, password);
     
-    if (!email || !password) {
-        return res.status(400).json({ success: false, message: 'Email and password are required' });
+    if (!username || !password) {  
+        return res.status(400).json({ success: false, message: 'Username and password are required' });
     }
 
     try {
-        const user = await authenticateUser(email, password);
+        const user = await authenticateUser(username, password);  
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
@@ -89,9 +90,9 @@ async function login(req, res) {
 }
 
 // 사용자 인증 함수
-async function authenticateUser(email, password) {
-    const query = `SELECT * FROM Users WHERE email = ?`; 
-    const users = await db.executeQuery(query, [email]); 
+async function authenticateUser(username, password) {
+    const query = `SELECT * FROM Users WHERE username = ?`; 
+    const users = await db.executeQuery(query, [username]);  
 
     if (users.length === 0) {
         throw new Error('Invalid credentials');
@@ -116,12 +117,13 @@ async function authenticateUser(email, password) {
 
 // 사용자 정보 업데이트
 async function updateUser(userId, updateData) {
-    const query = `UPDATE Users SET email = ?, phone_number = ?, gender = ?, birth = ? WHERE user_id = ?`;
+    const query = `UPDATE Users SET email = ?, phone_number = ?, gender = ?, birth = ?, mem_name = ? WHERE user_id = ?`;
     const params = [
         updateData.email,
         updateData.phone_number,
         updateData.gender,
         updateData.birth,
+        updateData.mem_name, 
         userId
     ];
 
