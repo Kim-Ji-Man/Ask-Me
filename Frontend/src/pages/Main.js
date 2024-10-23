@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../axios";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // 아이콘 추가
 import News from "../components/News";
+import CombinedChart from "../components/CombinedChart";
 
 const Main = () => {
   const navigate = useNavigate();
@@ -97,7 +98,7 @@ const Main = () => {
             >
               {/* 차트 컴포넌트 삽입 */}
               <div className="mt-4">
-                <LineChart />
+                  <CombinedChart/>
               </div>
             </div>
           </Col>
