@@ -60,12 +60,59 @@ const CCTV = () => {
       const data = JSON.parse(event.data);
       console.log("Message from server:", data.message);
       
-      // 알림을 표시하는 부분
+      // 실시간 탐지 알림 표시
+      Swal.bindClickHandler();
       Swal.fire({
-        title: '흉기 감지 알림!',
-        text: data.message,
-        icon: 'warning',
-        confirmButtonText: '확인'
+        title: '흉기거수자 확인!!',
+        text: '알림이 갔습니다.',
+        imageUrl: 'img/hyo1.PNG',
+        imageWidth: 400,
+        imageHeight: 200,
+        imageAlt: 'Custom image',
+        confirmButtonText: '트래킹모드',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        allowEnterKey: false
+      }).then(result => {
+        if (result.isConfirmed) {
+          Swal.bindClickHandler();
+          Swal.fire({
+            width: '70%',
+            title: '<strong>트래킹모드</strong>',
+            html:
+              '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
+              ' <div className="tr-container">' +
+              `<img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>` +
+              '</div>',
+            focusConfirm: true,
+            confirmButtonText: '확인',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            allowEnterKey: false
+          }).then(result => {
+            Swal.bindClickHandler();
+            Swal.fire({
+              title: '이미지 or 영상을 저장하시겠습니까?',
+              imageUrl: 'img/hyo1.PNG',
+              imageWidth: 400,
+              imageHeight: 200,
+              imageAlt: 'Custom image',
+              showCancelButton: true,
+              cancelButtonColor: '#d33',
+              confirmButtonText: '확인',
+              cancelButtonText: '취소',
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              allowEnterKey: false
+            }).then(result => {
+              if (result.isConfirmed) {
+                Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
+              } else {
+                Swal.fire('종료합니다', '화끈하시네요~!', 'success');
+              }
+            });
+          });
+        }
       });
     };
   

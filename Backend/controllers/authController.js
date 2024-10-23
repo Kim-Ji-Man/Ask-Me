@@ -2,11 +2,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 
-// 사용자 등록 함수
-async function registerUser(username, password, email, phoneNumber, role, gender, birth) {
+async function registerUser(username, password, email, phoneNumber, role, gender, birth, storeId) {
     console.log("register:", username, password, email, phoneNumber, role, gender, birth);
 
-    const allowedRoles = ['user', 'admin', 'master'];
+    const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 추가
     if (!allowedRoles.includes(role)) {
         throw new Error('Invalid role');
     }
@@ -14,9 +13,11 @@ async function registerUser(username, password, email, phoneNumber, role, gender
     // 비밀번호 해시화
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 현재 시간 및 기본 계정 상태 설정
+    // 현재 시간 설정
     const created_at = new Date(); // 현재 시간
-    const account_status = 'active'; // 기본값으로 설정
+
+    // account_status 설정
+    const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active로 설정
 
     // SQL 쿼리 작성
     const query = `INSERT INTO Users (username, password, email, phone_number, role, gender, created_at, account_status, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -35,14 +36,24 @@ async function registerUser(username, password, email, phoneNumber, role, gender
 
     // 쿼리 실행
     await db.executeQuery(query, params);
+
+    // 경비원인 경우 Guards_Stores 테이블에 추가
+    if (role === 'guard') {
+        const user = await db.executeQuery(`SELECT user_id FROM Users WHERE email = ?`, [email]);
+        const guardId = user[0].user_id;
+
+        // 경비원이 속한 매장에 추가
+        const guardStoreQuery = `INSERT INTO Guards_Stores (user_id, store_id) VALUES (?, ?)`;
+        await db.executeQuery(guardStoreQuery, [guardId, storeId]);
+    }
 }
 
 // JWT 토큰 생성
 function generateToken(user) {
-    return jwt.sign({ userId: user.user_id, role: user.role }, 'your_jwt_secret', { expiresIn: '1h' });
+    return jwt.sign({ userId: user.user_id, role: user.role, storeId: user.store_id }, 'your_jwt_secret', { expiresIn: '1h' });
 }
 
-// login 함수
+// 로그인 함수
 async function login(req, res) {
     const { email, password } = req.body; 
     console.log("로그인 시도:", email, password);
@@ -59,7 +70,6 @@ async function login(req, res) {
 
         const token = generateToken(user);  
         
-        // 성공 응답에 success: true 추가
         res.status(200).json({ 
             success: true, 
             message: 'Login successful', 
@@ -88,17 +98,19 @@ async function authenticateUser(email, password) {
         throw new Error('Invalid credentials');
     }
 
+    // Guards_Stores에서 경비원과 매장 정보 조회
+    if (user.role === 'guard') {
+        const storeQuery = `SELECT store_id FROM Guards_Stores WHERE user_id = ?`;
+        const store = await db.executeQuery(storeQuery, [user.user_id]);
+        user.store_id = store[0].store_id; // 매장 ID 추가
+    }
+
     return user;
 }
 
 // 사용자 정보 업데이트
 async function updateUser(userId, updateData) {
-    const query = `
-        UPDATE Users
-        SET email = ?, phone_number = ?, gender = ?, birth = ?
-        WHERE user_id = ?
-    `;
-
+    const query = `UPDATE Users SET email = ?, phone_number = ?, gender = ?, birth = ? WHERE user_id = ?`;
     const params = [
         updateData.email,
         updateData.phone_number,
@@ -112,6 +124,13 @@ async function updateUser(userId, updateData) {
     if (result.affectedRows === 0) {
         throw new Error('Invalid user ID or update data');
     }
+}
+
+// 매장에 소속된 모든 경비원 조회
+async function getGuardsByStore(storeId) {
+    const query = `SELECT U.* FROM Users U JOIN Guards_Stores GS ON U.user_id = GS.user_id WHERE GS.store_id = ?`;
+    const result = await db.executeQuery(query, [storeId]);
+    return result; // 경비원 목록 반환
 }
 
 // 모든 사용자 정보 조회
@@ -137,7 +156,7 @@ function authenticateToken(req, res, next) {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' }); // Unauthorized
+        return res.status(401).json({ success: false, message: 'Unauthorized: No token provided' });
     }
 
     jwt.verify(token, 'your_jwt_secret', (err, user) => {
@@ -146,8 +165,7 @@ function authenticateToken(req, res, next) {
                 // 토큰이 만료된 경우
                 return res.status(401).json({ success: false, message: 'Unauthorized: Token has expired' });
             }
-            // 그 외의 에러
-            return res.status(403).json({ success: false, message: 'Forbidden: Invalid token' }); // Forbidden
+            return res.status(403).json({ success: false, message: 'Forbidden: Invalid token' });
         }
 
         req.user = user; // 사용자 정보를 요청 객체에 저장
@@ -173,6 +191,14 @@ function authorizeAdmin(req, res, next) {
     }
 }
 
+function authorizeGuard(req, res, next) {
+    if (req.user && req.user.role === 'guard') {
+        next();
+    } else {
+        res.status(403).send('Forbidden: Guard access required');
+    }
+}
+
 function authorizeUser(req, res, next) {
     if (req.user) {
         next();
@@ -181,4 +207,16 @@ function authorizeUser(req, res, next) {
     }
 }
 
-module.exports = { registerUser, login, authenticateToken, authorizeMaster, authorizeAdmin, authorizeUser, updateUser, deleteUser, getAllUsers };
+module.exports = {
+    registerUser,
+    login,
+    authenticateToken,
+    authorizeMaster,
+    authorizeAdmin,
+    authorizeGuard,
+    authorizeUser,
+    updateUser,
+    deleteUser,
+    getAllUsers,
+    getGuardsByStore 
+};
