@@ -119,8 +119,8 @@ const Member = () => {
     });
   };
 
-  // 사용자 역할이 master가 아닌 경우 접근 거부 메시지 렌더링
-  if (userRole !== 'master') {
+  // 사용자 역할이 master 또는 admin이 아닌 경우 접근 거부 메시지 렌더링
+  if (userRole !== 'master' & 'admin') {
     return (
         <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
             <Row>

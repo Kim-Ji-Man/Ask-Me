@@ -86,13 +86,15 @@ function Navs() {
         setMemberGrade(0);
       } else if (decodedToken.role === 'admin') {
         setMemberGrade(1);
-      } else {
+      } else if (decodedToken.role === 'guard') {
         setMemberGrade(2);
+      } else {
+        setMemberGrade(3);
       }
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);
-      setMemberGrade(2); // 로그인하지 않은 경우 기본값을 user(2)로 설정
+      setMemberGrade(3); // 로그인하지 않은 경우 기본값을 user(3)로 설정
     }
 
     const savedActiveMenu = localStorage.getItem("activeMenu") || "/";
@@ -155,13 +157,18 @@ function Navs() {
             <Nav.Link onClick={() => navigateTo("/CCTV")} style={activeMenu === "/CCTV" ? activeStyle : defaultStyle}>
               CCTV
             </Nav.Link>
+            {isLoggedIn && (memberGrade === 0 || memberGrade === 1) && ( // master 와 admin 사용자만 표시
+              <>
+                <Nav.Link onClick={() => navigateTo("/Member")} style={activeMenu === "/Member" ? activeStyle : defaultStyle}>
+                  회원관리
+                </Nav.Link>
+              </>
+            )}
+           
             {isLoggedIn && memberGrade === 0 && ( // master 사용자만 표시
               <>
                 <Nav.Link onClick={() => navigateTo("/Error")} style={activeMenu === "/Error" ? activeStyle : defaultStyle}>
                   이상내역
-                </Nav.Link>
-                <Nav.Link onClick={() => navigateTo("/Member")} style={activeMenu === "/Member" ? activeStyle : defaultStyle}>
-                  회원관리
                 </Nav.Link>
               </>
             )}
