@@ -8,34 +8,58 @@ import Swal from "sweetalert2";
 import "../css/Member.css";
 import UserModal from '../components/UserModal';
 import axios from "../axios";
+import { jwtDecode } from 'jwt-decode';
 
 const Member = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
   const [members, setMembers] = useState([]);
-  const [memberSeq ,setMemberSeq] = useState(0)
   const [userRole, setUserRole] = useState(null);
-
+  const [storeId, setStoreId] = useState(null); // 매장 ID 상태 추가
+  
+  
   useEffect(() => {
-    // JWT에서 사용자 역할 확인
     const token = localStorage.getItem('jwtToken');
+    
     if (token) {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUserRole(payload.role);
+      const decodedToken = jwtDecode(token);
+      
+      // 만료 시간 체크
+      if (decodedToken.exp * 1000 < Date.now()) {
+        console.log("토큰이 만료되었습니다.");
+        return; // 토큰 만료 시 리디렉션 추가
+      }
+  
+      setUserRole(decodedToken.role);
+      setStoreId(decodedToken.storeId);
+  
+      // 사용자 역할이 admin 또는 master인지 확인
+      if (decodedToken.role === 'admin' || decodedToken.role === 'master') {
+        console.log(decodedToken.storeId);
+        
+        if (decodedToken.storeId) {
+          axios
+            .get(`http://localhost:5000/Member/guards/all/${decodedToken.storeId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            })
+            .then((res) => {
+              setMembers(res.data);
+              console.log(res.data);
+            })
+            .catch((error) => {
+              console.error("서버 연결 실패:", error.response ? error.response.data : error.message);
+            });
+        }
+      } else {
+        console.log("접근 권한이 없습니다.");
+      }
+    } else {
+      console.log("토큰이 없습니다.");
     }
-
-    // 회원 데이터 요청
-    axios
-      .get("/Member")
-      .then((res) => {
-        setMembers(res.data);
-        console.log(res.data);
-      })
-      .catch(() => {
-        console.log("서버 연결 실패");
-      });
-  }, [showModal]);
+  }, [showModal, storeId]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -57,7 +81,7 @@ const Member = () => {
   };
 
   // 선택한 멤버를 수정할 수 있도록 설정하는 함수
-  const editClick = (user_id) => {  // 함수 이름 수정
+  const editClick = (user_id) => {
     const member = members.find((m) => m.user_id === user_id);
     setSelectedMember(member);
     setShowModal(true);
@@ -120,16 +144,16 @@ const Member = () => {
   };
 
   // 사용자 역할이 master 또는 admin이 아닌 경우 접근 거부 메시지 렌더링
-  if (userRole !== 'master' & 'admin') {
+  if (userRole !== 'master' && userRole !== 'admin') { // 조건 수정
     return (
-        <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
-            <Row>
-                <Col className="text-center">
-                    <h3>접근 거부</h3>
-                    <p>이 페이지는 시스템 관리자만 접근할 수 있습니다.</p>
-                </Col>
-            </Row>
-        </Container>
+      <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
+        <Row>
+          <Col className="text-center">
+            <h3>접근 거부</h3>
+            <p>이 페이지는 시스템 관리자만 접근할 수 있습니다.</p>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 
@@ -150,23 +174,24 @@ const Member = () => {
                 <PaginatedSearch
                   data={members.map((member, cnt) => ({
                     index: cnt + 1,
-                    member_id: member.email,
+                    member_id: member.username,
                     member_jic: member.role,
                     member_at: member.created_at.substring(0, 10),
-                    member_name: member.username,
+                    member_name: member.mem_name,
                     member_gender: member.gender,
                     member_age: member.age,
                     member_phone: member.phone_number,
                     member_stauts: member.account_status,
                     user_id: member.user_id,
                   }))}
+
                   columns={[
                     { accessor: 'index', Header: '순서' },
                     { accessor: 'member_id', Header: '회원ID' },
                     { accessor: 'member_jic', Header: '직책',
                       Cell: ({ row }) => (
                         <p>
-                          {row.values.member_jic === 'user' ? '사용자' : '관리자'}
+                          {row.values.member_jic === 'guard' ? '경비원' : '사용자'}
                         </p>
                       ),
                     },
@@ -179,7 +204,6 @@ const Member = () => {
                         </p>
                       ),
                     },
-                    // !isMobile && { accessor: 'member_age', Header: '나이' },
                     { accessor: 'member_phone', Header: '전화번호' },
                     {
                       accessor: 'member_stauts',
@@ -196,11 +220,11 @@ const Member = () => {
                             {row.values.member_stauts === 'active' ? '정상' : '정지'}
                           </Button>
                           <FaRegEdit
-                            style={{ width: "30px", height: "40px", marginLeft: '10px',  color: 'lightgreen' }}
+                            style={{ width: "30px", height: "40px", marginLeft: '10px', color: 'lightgreen' }}
                             onClick={() => editClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
                           />
                           <MdDeleteForever
-                            style={{ width: "30px", height: "40px", marginLeft: '5px',color: 'red' }}
+                            style={{ width: "30px", height: "40px", marginLeft: '5px', color: 'red' }}
                             onClickCapture={() => deleteMember(row.original.user_id)} // 삭제 버튼 클릭 시 user_id 전달
                           />
                         </InputGroup>

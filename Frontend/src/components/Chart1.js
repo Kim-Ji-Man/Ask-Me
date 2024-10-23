@@ -1,87 +1,116 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels'; // 데이터 레이블 플러그인 추가
+import "../css/TimeChart.css";
+import { Form } from 'react-bootstrap';
 
-// chart.js 등록
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+// Chart.js 모듈 등록
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
+
+const options = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top',
+    },
+    datalabels: {
+      color: '#000', // 데이터 레이블 색상
+      anchor: 'center', // 데이터 레이블 위치 조정
+      align: 'center', // 데이터 레이블 정렬
+    },
+  },
+  scales: {
+    x: {
+      stacked: false, // 스택형 해제
+      ticks: {
+        align: 'center', // x축 레이블 가운데 정렬
+      },
+    },
+    y: {
+      beginAtZero: true,
+    },
+  },
+};
+
+// 랜덤 데이터 생성 함수
+const generateRandomData = () => {
+  return Array.from({ length: 4 }, () => Math.floor(Math.random() * 200));
+};
 
 const Chart1 = () => {
-  // CCTV별 데이터를 각각의 데이터셋으로 분리
-  const data = {
-    labels: ['CCTV 01', 'CCTV 02', 'CCTV 03', 'CCTV 04'], // x축에 각각의 CCTV 이름을 표시
+  const [selectedDay, setSelectedDay] = useState(1); // 선택된 날짜
+  const [data, setData] = useState({
+    labels: ['CCTV1', 'CCTV2', 'CCTV3', 'CCTV4'],
     datasets: [
       {
-        label: 'CCTV 01', // CCTV 01
-        data: [12], // CCTV 01의 감지 숫자
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'CCTV 02', // CCTV 02
-        data: [8], // CCTV 02의 감지 숫자
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'CCTV 03', // CCTV 03
-        data: [4], // CCTV 03의 감지 숫자
-        backgroundColor: 'rgba(255, 206, 86, 0.6)',
-        borderColor: 'rgba(255, 206, 86, 1)',
-        borderWidth: 1,
-      },
-      {
-        label: 'CCTV 04', // CCTV 04
-        data: [2], // CCTV 04의 감지 숫자
+        label: '들어온 사람',
+        data: generateRandomData(), // 랜덤 데이터 생성
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
+        barPercentage: 0.8,
+        categoryPercentage: 1.0,
+      },
+      {
+        label: '나간 사람',
+        data: generateRandomData(), // 랜덤 데이터 생성
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1,
+        barPercentage: 0.8,
+        categoryPercentage: 1.0,
       },
     ],
-  };
+  });
 
-  // 옵션 설정
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-        onClick: (e, legendItem, legend) => {
-          // 클릭 시 해당 데이터셋을 토글합니다.
-          const index = legendItem.datasetIndex;
-          const chart = legend.chart;
-          const dataset = chart.data.datasets[index];
-
-          dataset.hidden = !dataset.hidden; // 토글 기능
-          chart.update();
+  // 날짜 변경 핸들러
+  const handleDayChange = (event) => {
+    const day = event.target.value;
+    setSelectedDay(day);
+    setData({
+      labels: ['CCTV1', 'CCTV2', 'CCTV3', 'CCTV4'],
+      datasets: [
+        {
+          label: '들어온 사람',
+          data: generateRandomData(), // 새로운 랜덤 데이터 생성
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1,
+          barPercentage: 0.8,
+          categoryPercentage: 1.0,
         },
-      },
-      title: {
-        display: true,
-        text: 'CCTV Detected Numbers',
-      },
-    },
-    scales: {
-      x: {
-        stacked: true, // x축을 스택으로 설정하여 바가 겹치게 만듭니다.
-        title: {
-          display: true,
-          text: 'CCTV Names', // x축에 표시될 텍스트
+        {
+          label: '나간 사람',
+          data: generateRandomData(), // 새로운 랜덤 데이터 생성
+          backgroundColor: 'rgba(255, 99, 132, 0.6)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+          barPercentage: 0.8,
+          categoryPercentage: 1.0,
         },
-      },
-      y: {
-        stacked: true, // y축을 스택으로 설정하여 바가 겹치게 만듭니다.
-        title: {
-          display: true,
-          text: 'Detected Count', // y축에 표시될 텍스트
-        },
-      },
-    },
+      ],
+    });
   };
 
   return (
-    <div>
+    <div style={{ width: '100%', height: '420px', padding: '20px', boxSizing: 'border-box' }}>
+      <div style={{ display: 'flex', alignItems: 'center',justifyContent: 'right' }}>
+        <label htmlFor="day-select" style={{ marginRight: '10px' }}>날짜 선택:</label>
+        <Form.Select
+          aria-label="Select day"
+          onChange={handleDayChange} // 핸들러 연결
+          style={{ width: "150px", margin: "0" }}
+        >
+          <option value="">일 선택</option>
+          {[...Array(31).keys()].map((i) => (
+            <option key={i + 1} value={i + 1}>
+              {i + 1}일
+            </option>
+          ))}
+        </Form.Select>
+      </div>
       <Bar data={data} options={options} />
     </div>
   );

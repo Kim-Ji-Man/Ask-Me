@@ -21,10 +21,10 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
 
   useEffect(() => {
     if (selectedMember) {
-      setMemberId(selectedMember.email);
-      setMemberJic(selectedMember.role === "admin" ? "admin" : "user");
+      setMemberId(selectedMember.username);
+      setMemberJic(selectedMember.role === "guard" ? "guard" : "user");
       setMemberAt(selectedMember.created_at.substring(0, 10));
-      setMemberName(selectedMember.username);
+      setMemberName(selectedMember.mem_name);
       setMemberGender(selectedMember.gender);
       setMemberPhone(selectedMember.phone_number);
       setMemberStatus(selectedMember.account_status);
@@ -60,9 +60,9 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
           console.log(memberName, "바뀔까?");
           
           const updatedInfo = {
-            email: memberId,
+            username: memberId,
             role: memberJic,
-            username :memberName,
+            mem_name :memberName,
             gender:memberGender,
             phone_number: memberPhone,
             account_status:memberStatus,
@@ -124,8 +124,8 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
               value={memberJic}
               onChange={(e) => setMemberJic(e.target.value)}
             >
+              <option value="guard">경비원</option>
               <option value="user">사용자</option>
-              <option value="admin">관리자</option>
               
             </Form.Control>
           </Form.Group>

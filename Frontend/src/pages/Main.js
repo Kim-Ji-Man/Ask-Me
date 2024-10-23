@@ -94,8 +94,7 @@ const Main = () => {
         <Row className="g-4 mb-5">
           <Col md={12} lg={12}>
             <div
-              className="card p-4 shadow-sm"
-              style={{ borderRadius: "10px" }}
+              className="card p-4"
             >
               {/* 차트 컴포넌트 삽입 */}
               <div className="mt-4">
@@ -107,14 +106,14 @@ const Main = () => {
         <Row className="g-4">
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: '500px'}}>
-              <h6>cctv 통계</h6>
+              <h6 style={{fontSize:'24px'}}>cctv 통계</h6>
               {/* <Barchart /> */}
               <Chart1/>
             </div>
           </Col>
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: '500px'}}>
-              <h6>알림결과 및 조치</h6>
+              <h6 style={{fontSize:'24px'}}>알림결과 및 조치</h6>
               <PieChart />
             </div>
           </Col>

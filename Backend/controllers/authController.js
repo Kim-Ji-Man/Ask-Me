@@ -56,8 +56,8 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
 }
 
 // JWT 토큰 생성
-function generateToken(user) {
-    return jwt.sign({ userId: user.user_id, role: user.role, storeId: user.store_id }, 'your_jwt_secret', { expiresIn: '1h' });
+function generateToken(payload) {
+    return jwt.sign(payload, 'your-secret-key', { expiresIn: '1h' }); // payload에 userId, storeId 포함
 }
 
 // 로그인 함수
@@ -75,7 +75,17 @@ async function login(req, res) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        const token = generateToken(user);  
+        // userId와 role을 기본으로 포함, admin일 경우 storeId도 포함
+        const tokenPayload = {
+            userId: user.user_id,  // userId 추가
+            role: user.role,
+        };
+
+        if (user.role === 'admin' && user.store_id) {
+            tokenPayload.storeId = user.store_id;  // store_id 추가
+        }
+
+        const token = generateToken(tokenPayload);  // JWT 생성
         
         res.status(200).json({ 
             success: true, 
@@ -110,6 +120,14 @@ async function authenticateUser(username, password) {
         const storeQuery = `SELECT store_id FROM Guards_Stores WHERE user_id = ?`;
         const store = await db.executeQuery(storeQuery, [user.user_id]);
         user.store_id = store[0].store_id; // 매장 ID 추가
+    }
+
+    if (user.role === 'admin') {
+        const storeQuery = `SELECT store_id FROM Stores WHERE user_id = ?`;
+        const store = await db.executeQuery(storeQuery, [user.user_id]);
+        if (store.length > 0) {
+            user.store_id = store[0].store_id; // store_id 추가
+        }
     }
 
     return user;

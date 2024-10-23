@@ -1,0 +1,21 @@
+.chart_buttons {
+    background-color: #ddd;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .chart_buttons2 {
+    background-color: #ddd;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .chart_buttons_selected {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+  }

@@ -81,6 +81,20 @@ router.get("/checkId/:mem_id", async (req, res) => {
     }
   });
 
+  router.get('/guards/all/:store_id', async (req, res) => {
+    const store_id = req.params.store_id
+    console.log("되니?");
+    const sql = `SELECT U.* FROM Users U JOIN Guards_Stores GS ON U.user_id = GS.user_id WHERE GS.store_id = ?`;
+    try {
+        const results = await db.executeQuery(sql,[store_id]); 
+        res.send(results);
+
+    } catch (err) {
+        console.error('Error fetching cameras:', err);
+        return res.status(500).send('Error fetching cameras');
+    }
+
+});
 
 
 
