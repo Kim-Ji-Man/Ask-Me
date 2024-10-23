@@ -33,11 +33,11 @@ function RegisterUser() {
     mem_email: "",
     mem_birth:"",
     mem_gender:"",
-    mem_name:"",
+    // mem_name:"",
     mem_role:"admin",
   });
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // 이메일 형식을 검증하는 정규식
+
 
   const [isIdValid, setIsIdValid] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,34 +51,28 @@ function RegisterUser() {
     } else {
       setFormData({ ...formData, [name]: value });
     }
-
-    // 아이디 입력시 유효성 검사 및 중복 체크
     if (name === "mem_id") {
-      if (!emailRegex.test(value)) {
-        setIsIdValid(false);
-        setErrorMessage("아이디는 이메일 형식이어야 합니다!");
+      const validId = validateId(value);
+      setIsIdValid(validId);
+      if (validId) {
+        const response = await axios.get(`/Member/checkId/${value}`);
+        console.log(response.data);
+        
+        // response.data.count를 사용하여 아이디 사용 여부를 명확하게 확인
+        setIsIdValid(response.data[0].count === 0);
+        setErrorMessage(response.data[0].count !== 0 ? "이미 사용중인 아이디입니다." : "사용 가능한 아이디입니다.");
       } else {
-        setIsIdValid(true);
-        // 아이디 중복 체크
-        try {
-          const response = await axios.get(`/Member/checkId/${value}`);
-          // 예시 응답: { count: 1 } 중복된 아이디가 존재할 경우 count가 1
-          const isDuplicate = response.data[0].count === 1;
-          console.log(response.data[0].count);
-          
-          setIsIdValid(!isDuplicate); // 중복이 아니면 유효한 아이디로 처리
-          setErrorMessage(
-            isDuplicate
-              ? "이미 사용중인 아이디입니다."
-              : "사용 가능한 아이디입니다."
-          );
-        } catch (error) {
-          console.error("아이디 중복 체크 중 오류 발생:", error);
-          setErrorMessage("아이디 중복 체크 중 오류가 발생했습니다.");
-        }
+        setErrorMessage("아이디는 영문과 숫자만 포함하며, 최소 8자 이상이어야 합니다.");
       }
     }
   };
+
+  
+  
+  function validateId(id) {
+    const re = /^[A-Za-z0-9]{8,}$/;
+    return re.test(id);
+  }
 
 
   function isPasswordMatching(password, confirmPassword) {
@@ -87,15 +81,13 @@ function RegisterUser() {
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
-
-    // 이메일 형식 유효성 검증
-    if (name === "mem_id" && !emailRegex.test(value)) {
+    if (name === "mem_id" && value.length < 8) {
       Swal.fire({
         icon: "warning",
-        text: "아이디는 이메일 형식이어야 합니다.",
+        text: "아이디는 8글자 이상이어야 합니다.",
         confirmButtonText: "확인",
       });
-      setIsIdValid(false); // 유효성 검사 실패 시 상태 업데이트
+      setIsIdValid(false);
     }
   };
 
@@ -103,14 +95,14 @@ function RegisterUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.mem_name.trim()) {
-      Swal.fire({
-        icon: 'error',
-        text: '이름을 읿력해주세요.',
-        confirmButtonText: '확인'
-      });
-      return;
-    }
+    // if (!formData.mem_name.trim()) {
+    //   Swal.fire({
+    //     icon: 'error',
+    //     text: '이름을 읿력해주세요.',
+    //     confirmButtonText: '확인'
+    //   });
+    //   return;
+    // }
 
     if (!isIdValid) {
       Swal.fire({
@@ -182,14 +174,15 @@ function RegisterUser() {
 }
 
     const userData = {
-      mem_id: formData.mem_id,
-      mem_pw: formData.mem_pw,
-      mem_phone: formData.mem_phone,
-      mem_email: formData.mem_email,
-      mem_birth:formData.mem_birth,
-      mem_role: formData.mem_role,
-      mem_gender:formData.mem_gender,
-      mem_name :formData.mem_name,
+      username: formData.mem_id,
+      password: formData.mem_pw,
+      phone_number: formData.mem_phone,
+      email: formData.mem_email,
+      birth:formData.mem_birth,
+      role: formData.mem_role,
+      gender:formData.mem_gender,
+      storeId : 6
+      // mem_nick :formData.mem_name,
     };
 
       setUser(userData); 
@@ -222,7 +215,7 @@ function RegisterUser() {
               </div>
             {/* <h2 className="text-center mb-1">회원가입</h2> */}
             <Form onSubmit={handleSubmit}>
-            <InputGroup className="mb-3">
+            {/* <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faUser} />
                 </InputGroup.Text>
@@ -233,13 +226,13 @@ function RegisterUser() {
                   value={formData.mem_name}
                   onChange={handleInputChange}
                 />
-              </InputGroup>
+              </InputGroup> */}
               <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faUser} />
                 </InputGroup.Text>
                 <Form.Control
-                  type="email"
+                  type="text"
                   placeholder="아이디"
                   name="mem_id"
                   value={formData.mem_id}

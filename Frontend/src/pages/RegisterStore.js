@@ -6,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "../axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useContext } from 'react';
@@ -21,7 +21,20 @@ function RegisterStore() {
   const navigate = useNavigate();
   const { store, setStore } = useContext(Appdata);
   const data = useContext(Appdata);
-  console.log(data.user);
+  console.log(data.user,"datauser");
+
+    // 로그인 확인 useEffect 추가
+    useEffect(() => {
+      if (!data.user || Object.keys(data.user).length === 0) {
+        Swal.fire({
+          icon: "warning",
+          text: "회원가입 페이지로 이동합니다. ",
+          confirmButtonText: "확인",
+        }).then(() => {
+          navigate("/RegisterUser"); // 로그인 페이지로 리다이렉트
+        });
+      }
+    }, [data.user, navigate]);
   
 
   const [formData, setFormData] = useState({
@@ -87,9 +100,53 @@ function RegisterStore() {
     setStore(storeData);
     console.log("회원가입 성공");
     // navigate("/");
-  };
+    try {
+      // 1. 사용자 등록 (user 데이터)
+      console.log(data.user,"들어와지?");
 
-  console.log(store);
+      
+      const userResponse = await axios.post("/auth/register", data.user,{
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("User 등록 완료:", userResponse.data[0]);
+      console.log(userResponse.data.user_id,"제대로 가지고와지니??");
+      
+
+      // 2. 매장 등록 (store 데이터)
+      const storeData = {
+        store_name: formData.store_name,
+        store_address: formData.store_address,
+        business_number: formData.business_number,
+        store_phone: formData.store_phone,
+        user_id: userResponse.data.user_id  // 사용자와 매장을 연결하기 위한 user_id
+      };
+
+      const storeResponse = await axios.post("/auth/stores", storeData);
+      console.log("Store 등록 완료:", storeResponse.data);
+
+      // 스토어 정보를 상태로 업데이트
+      setStore(storeData);
+
+      // 성공 알림 및 페이지 이동
+      Swal.fire({
+        icon: "success",
+        text: "회원가입 및 매장 등록이 완료되었습니다.",
+        confirmButtonText: "확인",
+      }).then(() => {
+        navigate("/");  // 메인 페이지로 이동
+      });
+
+    } catch (error) {
+      console.error("등록 중 오류 발생:", error);
+      Swal.fire({
+        icon: "error",
+        text: "회원가입 중 오류가 발생했습니다.",
+        confirmButtonText: "확인",
+      });
+    }
+  };
 
   return (
     <>

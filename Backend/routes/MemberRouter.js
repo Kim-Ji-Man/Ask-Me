@@ -69,7 +69,7 @@ router.delete('/Delete/:memberSeq', async (req, res) => {
 router.get("/checkId/:mem_id", async (req, res) => {
     const mem_id = req.params.mem_id;
   
-    let sql = "SELECT COUNT(*) AS count FROM Users WHERE email = ?";
+    let sql = "SELECT COUNT(*) AS count FROM Users WHERE username = ?";
 
     try {
         const results = await db.executeQuery(sql,[mem_id]); 
