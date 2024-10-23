@@ -32,7 +32,7 @@ const storeController = require('../controllers/storeController');
  *                   example: "123-456-7890" 
  *                 role:
  *                   type: string
- *                   enum: ["user", "admin", "master"]
+ *                   enum: ["user", "admin", "master", "guard"] 
  *                   example: "admin"
  *                 gender:
  *                   type: string
@@ -40,36 +40,41 @@ const storeController = require('../controllers/storeController');
  *                 birth:
  *                   type: string
  *                   example: "991213"
+ *                 storeId:  
+ *                   type: string
+ *                   example: "1"
  *       responses:
  *         201:
  *           description: User registered successfully
  *         400:
- *           description: Username, password, phone number, role, gender, and birth are required
+ *           description: Username, password, phone number, role, gender, birth, and storeId are required
  *         500:
  *           description: Error registering user
  */
 
 router.post('/register', async (req, res) => {
-    const { username, password, email, phone_number, role, gender, birth } = req.body;
+    const { username, password, email, phone_number, role, gender, birth, storeId } = req.body;
     
-    if (!username || !password || !phone_number || !role || !gender || !birth) {
-        return res.status(400).send('Username, password, phone number, role, gender, and birth are required');
+    if (!username || !password || !phone_number || !role || !gender || !birth || !storeId) {
+        return res.status(400).send('Username, password, phone number, role, gender, birth, and storeId are required');
     }
 
     // 역할이 올바른지 확인
-    const allowedRoles = ['user', 'admin', 'master'];
+    const allowedRoles = ['user', 'admin', 'master', 'guard'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).send('Invalid role');
     }
 
     try {
-        await authController.registerUser(username, password, email, phone_number, role, gender, birth);
+        await authController.registerUser(username, password, email, phone_number, role, gender, birth, storeId); 
         res.status(201).send('User registered successfully');
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).send('Error registering user');
     }
 });
+
+
 
 
 /**

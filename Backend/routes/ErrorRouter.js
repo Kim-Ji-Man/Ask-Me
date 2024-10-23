@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../models/db');
 router.get('/', async (req, res) => {
     const sql = `
-        SELECT * FROM Error_Log;
+        SELECT * FROM Error_Logs;
     `;
     
     try {
