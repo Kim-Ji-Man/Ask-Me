@@ -65,6 +65,22 @@ router.delete('/Delete/:memberSeq', async (req, res) => {
     }
   });
 
+  
+router.get("/checkId/:mem_id", async (req, res) => {
+    const mem_id = req.params.mem_id;
+  
+    let sql = "SELECT COUNT(*) AS count FROM Users WHERE email = ?";
+
+    try {
+        const results = await db.executeQuery(sql,[mem_id]); 
+        res.send(results);
+        console.log("아이디 중복검사 완료");
+    } catch (err) {
+        console.error('Error fetching cameras:', err);
+        return res.status(500).send('Error fetching cameras');
+    }
+  });
+
 
 
 

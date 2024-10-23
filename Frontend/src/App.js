@@ -27,8 +27,8 @@ function App({ children }) {  // children을 props로 받기
 
   const handleShowMap = () => setShowMapModal(true); // 모달 열기
   const handleCloseMap = () => setShowMapModal(false); // 모달 닫기
-  const [user, setUser] = useState({ nick: '냉면' });
-  const [store, setStore] = useState({ nick: '냉면' });
+  const [user, setUser] = useState({});
+  const [store, setStore] = useState({});
 
   const hiddenPaths = ['/', '/RegisterUser','/RegisterStore', '/Findaccount'];
 

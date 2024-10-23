@@ -20,6 +20,10 @@ import { Appdata } from "../App";
 function RegisterStore() {
   const navigate = useNavigate();
   const { store, setStore } = useContext(Appdata);
+  const data = useContext(Appdata);
+  console.log(data.user);
+  
+
   const [formData, setFormData] = useState({
     store_name: "",
     store_address: "",

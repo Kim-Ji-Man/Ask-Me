@@ -33,6 +33,7 @@ function RegisterUser() {
     mem_email: "",
     mem_birth:"",
     mem_gender:"",
+    mem_name:"",
     mem_role:"admin",
   });
 
@@ -60,9 +61,11 @@ function RegisterUser() {
         setIsIdValid(true);
         // 아이디 중복 체크
         try {
-          // const response = await axios.get(`/checkId/${value}`);
-          const response = { data: "master@gmail.com" }; // 예시 응답
-          const isDuplicate = response.data === value;
+          const response = await axios.get(`/Member/checkId/${value}`);
+          // 예시 응답: { count: 1 } 중복된 아이디가 존재할 경우 count가 1
+          const isDuplicate = response.data[0].count === 1;
+          console.log(response.data[0].count);
+          
           setIsIdValid(!isDuplicate); // 중복이 아니면 유효한 아이디로 처리
           setErrorMessage(
             isDuplicate
@@ -99,6 +102,15 @@ function RegisterUser() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!formData.mem_name.trim()) {
+      Swal.fire({
+        icon: 'error',
+        text: '이름을 읿력해주세요.',
+        confirmButtonText: '확인'
+      });
+      return;
+    }
 
     if (!isIdValid) {
       Swal.fire({
@@ -176,7 +188,8 @@ function RegisterUser() {
       mem_email: formData.mem_email,
       mem_birth:formData.mem_birth,
       mem_role: formData.mem_role,
-      mem_gender:formData.mem_gender
+      mem_gender:formData.mem_gender,
+      mem_name :formData.mem_name,
     };
 
       setUser(userData); 
@@ -209,6 +222,18 @@ function RegisterUser() {
               </div>
             {/* <h2 className="text-center mb-1">회원가입</h2> */}
             <Form onSubmit={handleSubmit}>
+            <InputGroup className="mb-3">
+                <InputGroup.Text>
+                  <FontAwesomeIcon icon={faUser} />
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="이름"
+                  name="mem_name"
+                  value={formData.mem_name}
+                  onChange={handleInputChange}
+                />
+              </InputGroup>
               <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faUser} />
