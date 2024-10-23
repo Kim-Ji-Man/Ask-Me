@@ -9,6 +9,7 @@ import axios from "../axios";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // 아이콘 추가
 import News from "../components/News";
 import CombinedChart from "../components/CombinedChart";
+import Chart1 from "../components/Chart1";
 
 const Main = () => {
   const navigate = useNavigate();
@@ -106,8 +107,9 @@ const Main = () => {
         <Row className="g-4">
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: '500px'}}>
-              <h6>시간별 통계</h6>
-              <Barchart />
+              <h6>cctv 통계</h6>
+              {/* <Barchart /> */}
+              <Chart1/>
             </div>
           </Col>
           <Col md={6} lg={6}>

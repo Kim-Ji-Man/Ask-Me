@@ -33,7 +33,7 @@ function RegisterUser() {
     mem_email: "",
     mem_birth:"",
     mem_gender:"",
-    // mem_name:"",
+    mem_name:"",
     mem_role:"admin",
   });
 
@@ -95,14 +95,14 @@ function RegisterUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // if (!formData.mem_name.trim()) {
-    //   Swal.fire({
-    //     icon: 'error',
-    //     text: '이름을 읿력해주세요.',
-    //     confirmButtonText: '확인'
-    //   });
-    //   return;
-    // }
+    if (!formData.mem_name.trim()) {
+      Swal.fire({
+        icon: 'error',
+        text: '이름을 읿력해주세요.',
+        confirmButtonText: '확인'
+      });
+      return;
+    }
 
     if (!isIdValid) {
       Swal.fire({
@@ -214,7 +214,7 @@ function RegisterUser() {
               </div>
             {/* <h2 className="text-center mb-1">회원가입</h2> */}
             <Form onSubmit={handleSubmit}>
-            {/* <InputGroup className="mb-3">
+            <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faUser} />
                 </InputGroup.Text>
@@ -225,7 +225,7 @@ function RegisterUser() {
                   value={formData.mem_name}
                   onChange={handleInputChange}
                 />
-              </InputGroup> */}
+              </InputGroup>
               <InputGroup className="mb-3">
                 <InputGroup.Text>
                   <FontAwesomeIcon icon={faUser} />
