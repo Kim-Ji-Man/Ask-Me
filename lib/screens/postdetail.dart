@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'community.dart';
+import 'package:flutter_askme/screens/community.dart';
+import 'package:intl/intl.dart'; // 시간을 포맷팅하기 위한 패키지
+
+// 클래스 외부에 Comment 클래스를 선언
+class Comment {
+  String content;
+  String time;
+  String nickname;
+
+  Comment(this.content, this.time, this.nickname);
+}
 
 class PostDetail extends StatefulWidget {
   final Post post;
@@ -12,135 +21,190 @@ class PostDetail extends StatefulWidget {
 }
 
 class _PostDetailState extends State<PostDetail> {
-  final List<String> comments = []; // 댓글 목록
+  final List<Comment> comments = []; // 댓글 목록을 List<Comment>로 변경
   final TextEditingController commentController = TextEditingController(); // 댓글 입력 컨트롤러
+
+  bool isLiked = false;
+  int likeCount = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(widget.post.title),
         actions: [
           IconButton(icon: Icon(Icons.notifications), onPressed: () {}),
           IconButton(icon: Icon(Icons.share), onPressed: () {}),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'edit') {
+                // 게시글 수정 기능
+              } else if (value == 'delete') {
+                // 게시글 삭제 기능
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(value: 'edit', child: Text('수정')),
+              PopupMenuItem(value: 'delete', child: Text('삭제')),
+            ],
+          ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 프로필 사진과 닉네임, 시간
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundImage: AssetImage('assets/profile.jpg'), // 프로필 사진
-                  radius: 20,
-                ),
-                SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("닉네임", style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(widget.post.time),
-                  ],
-                ),
-              ],
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("닉네임", style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(widget.post.time),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 10),
+                  Text(widget.post.content),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('조회 ${widget.post.views}', style: TextStyle(color: Colors.grey)),
+                      SizedBox(width: 16),
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            isLiked = !isLiked;
+                            if (isLiked) {
+                              likeCount++;
+                            } else {
+                              likeCount--;
+                            }
+                          });
+                        },
+                        icon: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border, // 공감 여부에 따른 하트 아이콘
+                          color: isLiked ? Colors.red : Colors.grey, // 색상 변경
+                        ),
+                        label: Text('공감 $likeCount',
+                          style: TextStyle(color: Colors.grey),),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size(0, 0),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Divider(),
+                  SizedBox(height: 10),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    reverse: true, // 댓글이 아래에서 위로 쌓이도록 설정
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: Text(
+                          comments[index].nickname,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(comments[index].content),
+                            SizedBox(height: 5),
+                            Text(
+                              comments[index].time,
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              // 댓글 수정 기능
+                            } else if (value == 'delete') {
+                              setState(() {
+                                comments.removeAt(index); // 댓글 삭제
+                              });
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(value: 'edit', child: Text('수정')),
+                            PopupMenuItem(value: 'delete', child: Text('삭제')),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            // 제목 및 내용
-            Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text(widget.post.content),
-            SizedBox(height: 20),
-            // 조회수
-            Text('조회수: ${widget.post.views}', style: TextStyle(color: Colors.grey)),
-            SizedBox(height: 20),
-            // "궁금해요", "답변하기", "관심" 버튼들
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          ),
+          // 댓글 입력창 및 사진/위치 버튼
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.help_outline),
-                  label: Text('궁금해요'),
+                IconButton(
+                  icon: Icon(Icons.photo),
+                  onPressed: () {
+                    // 사진 추가 기능
+                  },
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.chat_bubble_outline),
-                  label: Text('답변하기'),
+                IconButton(
+                  icon: Icon(Icons.location_on),
+                  onPressed: () {
+                    // 위치 추가 기능
+                  },
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.favorite_border),
-                  label: Text('관심'),
-                ),
-              ],
-            ),
-            Divider(),
-            SizedBox(height: 10),
-            // 댓글 목록
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(comments[index]),
-                );
-              },
-            ),
-            SizedBox(height: 10),
-            // 댓글 입력창
-            Row(
-              children: [
                 Expanded(
                   child: TextField(
                     controller: commentController,
                     decoration: InputDecoration(
-                      hintText: '댓글을 입력하세요',
-                      border: OutlineInputBorder(),
+                      hintText: '댓글을 입력해주세요',
+                      hintStyle: TextStyle(color: Colors.grey[400]),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // 패딩 조정
                     ),
+                    onSubmitted: (value) {
+                      setState(() {
+                        // 닉네임 설정 (여기서는 고정된 "사용자"로 설정)
+                        String nickname = "사용자";
+                        // 현재 시간을 포맷하여 저장
+                        String formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+                        comments.add(Comment(value, formattedTime, nickname));
+                        commentController.clear();
+                      });
+                    },
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    setState(() {
-                      comments.add(commentController.text);
-                      commentController.clear();
-                    });
-                  },
-                ),
               ],
             ),
-            // 사진 및 위치 버튼
-            SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.photo),
-                  label: Text('사진'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {},
-                  icon: Icon(Icons.location_on),
-                  label: Text('위치'),
-                ),
-              ],
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
-
-// Post 클래스는 community.dart에서 정의되어 있으므로 중복 정의 필요 없음

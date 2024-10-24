@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // 토큰 저장을 위한 패키지
+import 'package:flutter_askme/screens/homepage.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -7,59 +11,54 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>(); // Form의 상태를 추적하는 Key
-  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  
   bool _isLoading = false; // 로그인 중 로딩 상태 관리
+  String _message = '';
 
   @override
   void dispose() {
-    _idController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  // 아이디 유효성 검사
-  String? _validateId(String? value) {
-    if (value == null || value.isEmpty) {
-      return '아이디를 입력하세요';
-    } else if (value.length < 4) { // 아이디가 최소 4자 이상이어야 한다는 예시 조건
-      return '아이디는 최소 4자 이상이어야 합니다';
-    }
-    return null;
-  }
+  // 로그인 처리 로직
+  Future<void> loginUser(String username, String password) async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  // 비밀번호 유효성 검사
-  String? _validatePassword(String? value) {
-    if (value == null || value.isEmpty) {
-      return '비밀번호를 입력하세요';
-    } else if (value.length < 8) {
-      return '비밀번호는 최소 8자 이상이어야 합니다';
-    }
-    return null;
-  }
+    final response = await http.post(
+      Uri.parse('http://localhost:5000/auth/login'), 
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'password': password,
+      }),
+    );
 
-  // 로그인 처리 로직 (예시: 네트워크 요청)
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      // 토큰 저장
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', data['token']);
+      
+      // 로그인 성공 시 홈 페이지로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Homepage()),
+      );
+    } else {
       setState(() {
-        _isLoading = true;
+        _message = '로그인 실패';
       });
-
-      try {
-        // 네트워크 요청 예시 (실제 API 요청 코드는 추가해야 함)
-        await Future.delayed(Duration(seconds: 2)); // 로딩 중 시뮬레이션
-        print('로그인 성공');
-        // 서버에서 로그인 성공 시 처리
-      } catch (error) {
-        print('로그인 실패: $error');
-        // 에러 처리
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
+
+    setState(() {
+      _isLoading = false; // 로딩 상태 업데이트
+    });
   }
 
   @override
@@ -94,55 +93,64 @@ class _LoginState extends State<Login> {
               ),
               SizedBox(height: 10),
               // 아이디 입력 필드
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '아이디',
                 ),
-                child: TextFormField(
-                  controller: _idController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    labelText: '아이디 입력',
-                  ),
-                  validator: _validateId,
-                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '아이디를 입력하세요';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               // 비밀번호 입력 필드
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: '비밀번호',
                 ),
-                child: TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    labelText: '비밀번호 입력',
-                  ),
-                  obscureText: true,
-                  validator: _validatePassword,
-                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '비밀번호를 입력하세요';
+                  } else if (value.length < 4) {
+                    return '비밀번호는 최소 4자 이상이어야 합니다';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               // 로그인 버튼
               _isLoading
                   ? CircularProgressIndicator() // 로딩 중일 때 보여줄 로딩 표시
                   : ElevatedButton(
-                onPressed: _login,
-                child: Text(
-                  '로그인',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 50),
-                  backgroundColor: Color(0xFF0F148D),
-                ),
-              ),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          loginUser(
+                            _usernameController.text,
+                            _passwordController.text,
+                          );
+                        }
+                      },
+                      child: Text(
+                        '로그인',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(double.infinity, 50),
+                        backgroundColor: Color(0xFF0F148D),
+                      ),
+                    ),
               SizedBox(height: 20),
+              Text(
+                _message,
+                style: TextStyle(color: Colors.red),
+              ),
               GestureDetector(
                 onTap: () {
                   // 비밀번호 찾기 로직 추가
