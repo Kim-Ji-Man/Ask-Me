@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // 토큰 저장을 위한 패키지
 import 'package:flutter_askme/screens/homepage.dart';
 
 class Login extends StatefulWidget {
+
   @override
   _LoginState createState() => _LoginState();
 }
@@ -13,7 +15,7 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>(); // Form의 상태를 추적하는 Key
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+  String BaseUrl = dotenv.get("BASE_URL");
   bool _isLoading = false; // 로그인 중 로딩 상태 관리
   String _message = '';
 
@@ -31,7 +33,7 @@ class _LoginState extends State<Login> {
     });
 
     final response = await http.post(
-      Uri.parse('http://localhost:5000/auth/login'), 
+      Uri.parse('$BaseUrl/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,

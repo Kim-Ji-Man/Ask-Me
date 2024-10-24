@@ -1,8 +1,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/initial.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 
-void main() {
+
+void main() async {
+  await dotenv.load(fileName: "assets/.env");
+  String key = dotenv.get("KAKAOMAP_KEY");
+  AuthRepository.initialize(appKey: '$key');
+
   runApp(const MyApp());
 }
 
