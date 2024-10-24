@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'signup.dart'; // 회원가입 페이지 추가
+import 'signup_folder/signup.dart'; // 회원가입 페이지 추가
 import 'login.dart';
 
 class Initial extends StatelessWidget {
@@ -63,26 +63,7 @@ class _InitialScreenState extends State<InitialScreen> {
             Spacer(),
             Column(
               children: [
-                // 카카오톡 가입하기 버튼을 위로 이동
-                ElevatedButton(
-                  onPressed: () {
-                    // 카카오톡 가입하기 동작 추가
-                    // 여기에 카카오톡 가입하기 로직을 추가하세요
-                  },
-                  child: Text(
-                    '카카오톡으로 시작하기',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    backgroundColor: Color(0xFF0F148D), // 기존 버튼과 동일한 색상
-                  ),
-                ),
-                SizedBox(height: 20),
-                // 가입하기 버튼을 아래로 이동
+                // 가입하기 버튼
                 ElevatedButton(
                   onPressed: () {
                     // 회원가입 페이지로 이동
