@@ -18,13 +18,12 @@ const Member = () => {
   const [userRole, setUserRole] = useState(null);
   const [storeId, setStoreId] = useState(null); // 매장 ID 상태 추가
   
-  
   useEffect(() => {
     const token = localStorage.getItem('jwtToken');
-    
+  
     if (token) {
       const decodedToken = jwtDecode(token);
-      
+  
       // 만료 시간 체크
       if (decodedToken.exp * 1000 < Date.now()) {
         console.log("토큰이 만료되었습니다.");
@@ -37,10 +36,26 @@ const Member = () => {
       // 사용자 역할이 admin 또는 master인지 확인
       if (decodedToken.role === 'admin' || decodedToken.role === 'master') {
         console.log(decodedToken.storeId);
-        
-        if (decodedToken.storeId) {
+  
+        if (decodedToken.role === 'admin' && decodedToken.storeId) {
+          // admin 역할일 때 storeId에 맞는 회원 목록 요청
           axios
             .get(`http://localhost:5000/Member/guards/all/${decodedToken.storeId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            })
+            .then((res) => {
+              setMembers(res.data);
+              console.log(res.data);
+            })
+            .catch((error) => {
+              console.error("서버 연결 실패:", error.response ? error.response.data : error.message);
+            });
+        } else if (decodedToken.role === 'master') {
+          // master 역할일 때 전체 회원 목록 요청
+          axios
+            .get(`http://localhost:5000/Member`, {
               headers: {
                 Authorization: `Bearer ${token}`
               }
@@ -60,7 +75,6 @@ const Member = () => {
       console.log("토큰이 없습니다.");
     }
   }, [showModal, storeId]);
-
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
