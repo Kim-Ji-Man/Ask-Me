@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
-// import 'package:flutter_askme/screens/initial.dart';
+import 'package:flutter_askme/screens/initial.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white, // 흰색으로 설정
       ),
-      home: Homepage(),
+      home: InitialScreen(),
     );
   }
 }
