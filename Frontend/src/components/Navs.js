@@ -151,19 +151,34 @@ function Navs() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto justify-content-center">
+          {isLoggedIn && ( memberGrade === 1) && (
             <Nav.Link onClick={() => navigateTo("/Main")} style={activeMenu === "/Main" ? activeStyle : defaultStyle}>
               대시보드
             </Nav.Link>
+                   )}
+            {isLoggedIn && ( memberGrade === 0) && (
+            <Nav.Link onClick={() => navigateTo("/MainMaster")} style={activeMenu === "/MainMaster" ? activeStyle : defaultStyle}>
+              대시보드
+            </Nav.Link>
+                   )}
             <Nav.Link onClick={() => navigateTo("/CCTV")} style={activeMenu === "/CCTV" ? activeStyle : defaultStyle}>
               CCTV
             </Nav.Link>
-            {isLoggedIn && (memberGrade === 0 || memberGrade === 1) && ( // master 와 admin 사용자만 표시
+            {isLoggedIn && (memberGrade === 0) && ( 
+              <>
+                <Nav.Link onClick={() => navigateTo("/MemberMaster")} style={activeMenu === "/MemberMaster" ? activeStyle : defaultStyle}>
+                  회원관리
+                </Nav.Link>
+              </>
+            )}
+              {isLoggedIn && (memberGrade === 1) && (
               <>
                 <Nav.Link onClick={() => navigateTo("/Member")} style={activeMenu === "/Member" ? activeStyle : defaultStyle}>
                   회원관리
                 </Nav.Link>
               </>
             )}
+           
            
             {isLoggedIn && memberGrade === 0 && ( // master 사용자만 표시
               <>

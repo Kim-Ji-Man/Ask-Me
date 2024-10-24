@@ -10,7 +10,7 @@ import UserModal from '../components/UserModal';
 import axios from "../axios";
 import { jwtDecode } from 'jwt-decode';
 
-const Member = () => {
+const MemberMaster = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
@@ -35,25 +35,10 @@ const Member = () => {
       setStoreId(decodedToken.storeId);
   
       // 사용자 역할이 admin 또는 master인지 확인
-      if (decodedToken.role === 'admin' || decodedToken.role === 'master') {
+      if (decodedToken.role === 'master') {
         console.log(decodedToken.storeId);
   
-        if (decodedToken.role === 'admin' && decodedToken.storeId) {
-          // admin 역할일 때 storeId에 맞는 회원 목록 요청
-          axios
-            .get(`http://localhost:5000/Member/guards/all/${decodedToken.storeId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            })
-            .then((res) => {
-              setMembers(res.data);
-              console.log(res.data);
-            })
-            .catch((error) => {
-              console.error("서버 연결 실패:", error.response ? error.response.data : error.message);
-            });
-        } else if (decodedToken.role === 'master') {
+       if (decodedToken.role === 'master') {
           // master 역할일 때 전체 회원 목록 요청
           axios
             .get(`http://localhost:5000/Member`, {
@@ -181,7 +166,7 @@ const Member = () => {
   };
 
   // 사용자 역할이 master 또는 admin이 아닌 경우 접근 거부 메시지 렌더링
-  if (userRole !== 'master' && userRole !== 'admin') { // 조건 수정
+  if (userRole !== 'master') { // 조건 수정
     return (
       <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
         <Row>
@@ -285,4 +270,4 @@ const Member = () => {
   );
 };
 
-export default Member;
+export default MemberMaster;

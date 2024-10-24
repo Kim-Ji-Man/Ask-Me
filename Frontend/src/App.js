@@ -17,6 +17,10 @@ import { Modal } from 'react-bootstrap';
 import { useState, createContext } from 'react';
 import RegisterUser from './pages/RegisterUser';
 import RegisterStore from './pages/RegisterStore';
+import MainMaster from './pages/MainMaster';
+import { jwtDecode } from 'jwt-decode';
+import MemberMaster from './pages/MemberMaster';
+
 
 // Appdata context 생성
 export const Appdata = createContext(null);
@@ -31,6 +35,8 @@ function App({ children }) {  // children을 props로 받기
   const [store, setStore] = useState({});
 
   const hiddenPaths = ['/', '/RegisterUser','/RegisterStore', '/Findaccount'];
+  
+  const token = localStorage.getItem('jwtToken');
 
   return (
     <div className="App">
@@ -60,9 +66,13 @@ function App({ children }) {  // children을 props로 받기
           <Route path="/CCTV" element={<CCTV />} />
           <Route path="/Error" element={<ErrorPage />} />
           <Route path="/Member" element={<Member />} />
+          <Route path="/MemberMaster" element={<MemberMaster />} />
+
           {/* <Route path="/Jeons" element={<Jensong />} /> */}
           <Route path="/Alims" element={<Alim />} />
           <Route path="/Main" element={<Main />} />
+          <Route path="/MainMaster" element={<MainMaster />} />
+
           {/* <Route path='/Map' element={<Map/>}/> */}
           <Route path='/RegisterUser' element={<RegisterUser />} />
           <Route path='/RegisterStore' element={<RegisterStore />} />

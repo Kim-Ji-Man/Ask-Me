@@ -1,0 +1,39 @@
+.chart-container {
+    width: 100%;
+    height: 500px;
+    padding: 20px;
+    box-sizing: border-box;
+    /* background-color: #f9f9f9; */
+    border-radius: 10px;
+    /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+  }
+  
+  .chart-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .form-select {
+    width: 150px;
+    margin: 0;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  
+  .bar-tooltip {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .bar-legend {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  

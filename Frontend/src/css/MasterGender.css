@@ -1,0 +1,27 @@
+.chart_button {
+    padding: 10px 20px;
+    background-color: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #333;
+    transition: background-color 0.3s ease;
+  }
+  
+  .chart_button:hover {
+    background-color: #ddd;
+  }
+  
+  .chart_button_selected {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    border: 1px solid #4caf50;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .chart_button_selected:hover {
+    background-color: #45a049;
+  }
+  
