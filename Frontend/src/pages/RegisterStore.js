@@ -117,6 +117,7 @@ function RegisterStore() {
 
       setStore(storeData);
       console.log("회원가입 성공");
+      console.log("회원가입 성공",data.user);
 
       // 1. 사용자 등록 (user 데이터)
       const userResponse = await axios.post("/auth/register", data.user, {
