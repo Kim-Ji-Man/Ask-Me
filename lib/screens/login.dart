@@ -13,7 +13,7 @@ class _LoginState extends State<Login> {
   final _formKey = GlobalKey<FormState>(); // Form의 상태를 추적하는 Key
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  
+  String BaseUrl = dotenv.get("BASE_URL");
   bool _isLoading = false; // 로그인 중 로딩 상태 관리
   String _message = '';
 
@@ -31,7 +31,7 @@ class _LoginState extends State<Login> {
     });
 
     final response = await http.post(
-      Uri.parse('http://192.168.70.155:5000/auth/login'),
+      Uri.parse('$BaseUrl/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
