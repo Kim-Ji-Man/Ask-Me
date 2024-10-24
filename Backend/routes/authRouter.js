@@ -362,6 +362,27 @@ router.get('/admin/protected', authController.authenticateToken, authController.
 
 /**
  * @swagger
+ * /auth/guard/protected:
+ *   get:
+ *     summary: Access protected route for general guard
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Access granted to authorized guard
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access forbidden for unauthorized guard
+ */
+router.get('/guard/protected', authController.authenticateToken, authController.authorizeGuard, (req, res) => {
+    res.send('This is a protected route for authorized guard');
+});
+
+/**
+ * @swagger
  * /auth/user/protected:
  *   get:
  *     summary: Access protected route for general users

@@ -57,7 +57,7 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
 
 // JWT 토큰 생성
 function generateToken(payload) {
-    return jwt.sign(payload, 'your-secret-key', { expiresIn: '1h' }); // payload에 userId, storeId 포함
+    return jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1h' }); // payload에 userId, storeId 포함
 }
 
 // 로그인 함수
@@ -218,7 +218,7 @@ function authorizeAdmin(req, res, next) {
 }
 
 function authorizeGuard(req, res, next) {
-    if (req.user && req.user.role === 'guard') {
+    if (req.user && (req.user.role === 'master' || req.user.role === 'admin' || req.user.role === 'guard')) {
         next();
     } else {
         res.status(403).send('Forbidden: Guard access required');

@@ -16,7 +16,7 @@ const newsRoutes = require('./routes/newsRoutes') ;// 뉴스 라우터
 const MemberRouter = require('./routes/MemberRouter') ;
 const AlimRouter = require('./routes/AlimRouter');
 const ErrormRouter = require('./routes/ErrorRouter') ;
-
+const authFindRoutes = require('./routes/authFindRoutes');
 
 
 
@@ -65,6 +65,7 @@ app.use('/api', newsRoutes);
 app.use('/Member', MemberRouter);
 app.use('/Alim', AlimRouter);
 app.use('/Error', ErrormRouter);
+app.use('/find', authFindRoutes);
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정--- 
 
