@@ -31,7 +31,7 @@ class _LoginState extends State<Login> {
     });
 
     final response = await http.post(
-      Uri.parse('http://localhost:5000/auth/login'), 
+      Uri.parse('http://192.168.70.155:5000/auth/login'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
