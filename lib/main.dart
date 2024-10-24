@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
-import 'package:flutter_askme/screens/initial.dart';
+// import 'package:flutter_askme/screens/initial.dart';
 
 void main() {
   runApp(const MyApp());
