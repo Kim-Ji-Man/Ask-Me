@@ -18,42 +18,38 @@ const MemberMaster = () => {
   const [userRole, setUserRole] = useState(null);
   const [storeId, setStoreId] = useState(null); // 매장 ID 상태 추가
   const token = localStorage.getItem('jwtToken');
-  
 
   useEffect(() => {
-  
     if (token) {
       const decodedToken = jwtDecode(token);
-  
+
       // 만료 시간 체크
       if (decodedToken.exp * 1000 < Date.now()) {
         console.log("토큰이 만료되었습니다.");
         return; // 토큰 만료 시 리디렉션 추가
       }
-  
+
       setUserRole(decodedToken.role);
       setStoreId(decodedToken.storeId);
-  
+
       // 사용자 역할이 admin 또는 master인지 확인
       if (decodedToken.role === 'master') {
         console.log(decodedToken.storeId);
-  
-       if (decodedToken.role === 'master') {
-          // master 역할일 때 전체 회원 목록 요청
-          axios
-            .get(`http://localhost:5000/Member`, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            })
-            .then((res) => {
-              setMembers(res.data);
-              console.log(res.data);
-            })
-            .catch((error) => {
-              console.error("서버 연결 실패:", error.response ? error.response.data : error.message);
-            });
-        }
+        
+        // master 역할일 때 전체 회원 목록 요청
+        axios
+          .get(`http://localhost:5000/Member`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          .then((res) => {
+            setMembers(res.data);
+            console.log(res.data);
+          })
+          .catch((error) => {
+            console.error("서버 연결 실패:", error.response ? error.response.data : error.message);
+          });
       } else {
         console.log("접근 권한이 없습니다.");
       }
@@ -61,6 +57,7 @@ const MemberMaster = () => {
       console.log("토큰이 없습니다.");
     }
   }, [showModal, storeId]);
+
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -88,7 +85,9 @@ const MemberMaster = () => {
   };
 
   // 멤버 삭제하는 함수
-  const deleteMember = (user_id) => {
+  const deleteMember = (user_id, member_jic) => {
+    console.log(user_id, member_jic, '로그야 나오라');
+
     Swal.fire({
       icon: 'question',
       text: '정말 삭제하시겠습니까?',
@@ -111,7 +110,7 @@ const MemberMaster = () => {
         }).then((passwordResult) => {
           if (passwordResult.isConfirmed) {
             const inputPassword = passwordResult.value;
-  
+
             // 비밀번호 확인 API 호출
             axios.post(
               'http://localhost:5000/Member/VerifyPassword',
@@ -125,24 +124,36 @@ const MemberMaster = () => {
             )
             .then((response) => {
               if (response.data.isValid) {  // 비밀번호가 유효한 경우
-                axios.delete(`/Member/Delete/${user_id}`)
-                  .then(() => {
-                    Swal.fire({
-                      icon: 'success',
-                      text: '계정이 삭제되었습니다.',
-                      confirmButtonText: '확인'
-                    }).then(() => {
-                      window.location.href = '/Member';  // 삭제 후 페이지 리다이렉트
-                    });
-                  })
-                  .catch((error) => {
-                    console.error("Error deleting:", error);
-                    Swal.fire({
-                      icon: 'error',
-                      text: '계정 삭제에 실패하였습니다.',
-                      confirmButtonText: '확인'
-                    });
+                console.log(member_jic, '나오니??? 직책');
+
+                // 통합된 삭제 API 호출
+                const deleteEndpoint = `http://localhost:5000/Member/Master/Delete/${user_id}`;
+                
+                axios.delete(deleteEndpoint, {
+                  headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  },
+                  data: { member_jic } // member_jic을 요청 본문에 포함
+                })
+                .then(() => {
+                  Swal.fire({
+                    icon: 'success',
+                    text: '계정이 삭제되었습니다.',
+                    confirmButtonText: '확인'
+                  }).then(() => {
+                    window.location.href = '/Member';  // 삭제 후 페이지 리다이렉트
                   });
+                })
+                .catch((error) => {
+                  console.error("Error deleting:", error);
+                  Swal.fire({
+                    icon: 'error',
+                    text: '계정 삭제에 실패하였습니다.',
+                    confirmButtonText: '확인'
+                  });
+                });
+
               } else {
                 Swal.fire({
                   icon: 'error',
@@ -166,7 +177,7 @@ const MemberMaster = () => {
   };
 
   // 사용자 역할이 master 또는 admin이 아닌 경우 접근 거부 메시지 렌더링
-  if (userRole !== 'master') { // 조건 수정
+  if (userRole !== 'master') {
     return (
       <Container fluid className="d-flex align-items-center justify-content-center" style={{ height: '100vh' }}>
         <Row>
@@ -206,7 +217,6 @@ const MemberMaster = () => {
                     member_stauts: member.account_status,
                     user_id: member.user_id,
                   }))}
-
                   columns={[
                     { accessor: 'index', Header: '순서' },
                     { accessor: 'member_id', Header: '회원ID' },
@@ -247,7 +257,7 @@ const MemberMaster = () => {
                           />
                           <MdDeleteForever
                             style={{ width: "30px", height: "40px", marginLeft: '5px', color: 'red' }}
-                            onClickCapture={() => deleteMember(row.original.user_id)} // 삭제 버튼 클릭 시 user_id 전달
+                            onClickCapture={() => deleteMember(row.original.user_id, row.original.member_jic)} // 삭제 버튼 클릭 시 user_id 전달
                           />
                         </InputGroup>
                       ),
@@ -264,7 +274,6 @@ const MemberMaster = () => {
         show={showModal}
         handleClose={handleCloseModal}
         selectedMember={selectedMember}
- 
       />
     </>
   );

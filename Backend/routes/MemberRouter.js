@@ -107,37 +107,28 @@ router.get("/checkId/:mem_id", async (req, res) => {
 
 router.post('/VerifyPassword', async (req, res) => {
     console.log("들어오니??");
-
     const { password, token } = req.body;
-
     if (!token) {
         return res.status(400).json({ message: '토큰이 제공되지 않았습니다.' });
     }
-
     console.log('Token:', token); 
-
     try {
-        const decoded = jwt.verify(token, 'your-secret-key');
+        const decoded = jwt.verify(token, 'your_jwt_secret');
         console.log(decoded,"들어오니???");
         
         const userId = decoded.userId;
         console.log(userId, "확인id");
-
         console.log('Executing query with user_id:', userId); // 쿼리 실행 전에 로그 추가
         const query = 'SELECT password FROM Users WHERE user_id = ?';
         const [rows] = await db.executeQuery(query, [userId]);
         console.log('Query result:', rows); // 쿼리 결과 확인
-
         // rows가 배열인지 확인
         if (Array.isArray(rows) && rows.length === 0) {
             return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' });
         }
-
         const hashedPassword = rows.password; // 해시된 비밀번호 가져오기 (단일 객체일 경우)
-
         // 입력된 비밀번호와 해시된 비밀번호 비교
         const isMatch = await bcrypt.compare(password, hashedPassword);
-
         if (isMatch) {
             return res.json({ isValid: true });
         } else {
@@ -153,8 +144,55 @@ router.post('/VerifyPassword', async (req, res) => {
 });
 
 
+router.delete('/Master/Delete/:userId', async (req, res) => {
+    const { userId } = req.params;
+    const member_jic = req.body.member_jic; // 클라이언트에서 전달된 member_jic
+    console.log(userId,"나오니? 번호");
+    console.log(member_jic,"나오니? 직책");
 
+    
 
+    // SQL 쿼리 초기화
+    let deleteUserSql, deleteGuardStoreSql, deleteStoresSql;
+
+    try {
+        if (member_jic === 'guard') {
+            // Guard 삭제 로직
+            deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';
+            deleteGuardStoreSql = 'DELETE FROM Guards_Stores WHERE guard_id = ?';
+
+            // 트랜잭션 시작
+            await db.beginTransaction();
+            await db.executeQuery(deleteUserSql, [userId]);
+            await db.executeQuery(deleteGuardStoreSql, [userId]);
+            await db.commit();
+
+            res.send({ message: 'Guard가 성공적으로 삭제되었습니다.' });
+        } else if (member_jic === 'admin') {
+            // Admin 삭제 로직
+            deleteStoresSql = 'DELETE FROM Stores WHERE user_id = ?';  // 외래 키 참조된 레코드 먼저 삭제
+            deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';    // 그 다음 Users에서 삭제
+
+            // Stores 테이블에서 해당 사용자 삭제
+            await db.executeQuery(deleteStoresSql, [userId]); 
+            console.log("Stores에서 삭제 완료");
+
+            // Users 테이블에서 해당 사용자 삭제
+            await db.executeQuery(deleteUserSql, [userId]); 
+            res.send({ message: 'Admin이 성공적으로 삭제되었습니다.' });
+        } else {
+            // 일반 사용자 삭제 로직
+            deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';
+            await db.executeQuery(deleteUserSql, [userId]);
+            res.send({ message: 'User가 성공적으로 삭제되었습니다.' });
+        }
+    } catch (error) {
+        // 오류 발생 시 롤백
+        await db.rollback();
+        console.error("삭제 중 오류 발생:", error);
+        res.status(500).send({ error: '사용자 삭제 실패' });
+    }
+});
 
 
 module.exports = router;
