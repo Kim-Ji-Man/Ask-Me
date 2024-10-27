@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'guard_signup.dart'; // 경비원 회원가입 페이지 추가
+import 'signup_step1.dart'; // 경비원 회원가입 페이지 추가
 
 class SignUp extends StatefulWidget {
   @override
@@ -45,10 +45,10 @@ class _SignUpState extends State<SignUp> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      // 경비원 버튼 클릭 시 guard_signup.dart로 이동
+                      // 경비원 버튼 클릭 시 signup_step1.dart로 이동
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => GuardSignUp()),
+                        MaterialPageRoute(builder: (context) => SignUpStep1(isGuard: true)),
                       );
                     },
                     child: Container(
@@ -66,7 +66,7 @@ class _SignUpState extends State<SignUp> {
                           ),
                         ],
                       ),
-                      child: Column(  // Row에서 Column으로 변경하여 아이콘을 텍스트 위에 배치
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
@@ -74,29 +74,33 @@ class _SignUpState extends State<SignUp> {
                             color: Colors.white,
                             size: 60, // 아이콘 크기 증가
                           ),
-                          SizedBox(height: 10), // 아이콘과 텍스트 사이의 간격
+                          SizedBox(height: 10),
                           Text(
                             '경비원',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 24, // 폰트 크기
+                              fontSize: 24,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  SizedBox(height: 20), // 버튼 사이의 간격
+                  SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      // 일반 사용자 버튼 클릭 시 이동할 페이지 설정
+                      // 일반 사용자 버튼 클릭 시 signup_step1.dart로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => SignUpStep1(isGuard: false)), // 일반 사용자
+                      );
                     },
                     child: Container(
                       padding: EdgeInsets.all(20),
-                      width: screenWidth * 0.7,  // 화면 너비의 70% 차지
-                      height: screenHeight * 0.3, // 화면 높이의 30% 차지
+                      width: screenWidth * 0.7,
+                      height: screenHeight * 0.3,
                       decoration: BoxDecoration(
-                        color: Color(0xFF0F148D), // 색상 변경
+                        color: Color(0xFF0F148D),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -106,20 +110,20 @@ class _SignUpState extends State<SignUp> {
                           ),
                         ],
                       ),
-                      child: Column(  // Row에서 Column으로 변경하여 아이콘을 텍스트 위에 배치
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
                             Icons.person,
                             color: Colors.white,
-                            size: 60, // 아이콘 크기 증가
+                            size: 60,
                           ),
-                          SizedBox(height: 10), // 아이콘과 텍스트 사이의 간격
+                          SizedBox(height: 10),
                           Text(
                             '일반 사용자',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 24, // 폰트 크기
+                              fontSize: 24,
                             ),
                           ),
                         ],
