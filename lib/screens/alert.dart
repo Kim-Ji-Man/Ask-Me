@@ -17,6 +17,7 @@ class Alert extends StatelessWidget {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
+        backgroundColor: Colors.white,
         elevation: 0, // 그림자 제거
       ),
       body: Padding(

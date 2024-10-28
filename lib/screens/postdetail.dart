@@ -31,6 +31,7 @@ class _PostDetailState extends State<PostDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new),
           onPressed: () => Navigator.pop(context),

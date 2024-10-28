@@ -38,6 +38,7 @@ class _CommunityPostState extends State<CommunityPost> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white,
         title: Text(
           '글쓰기',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

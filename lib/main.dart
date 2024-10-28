@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_askme/screens/homepage.dart';
 import 'package:flutter_askme/screens/initial.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Initial(),
+      home: Homepage(),
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
       ),
