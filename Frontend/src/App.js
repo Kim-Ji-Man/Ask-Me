@@ -20,6 +20,9 @@ import RegisterStore from './pages/RegisterStore';
 import MainMaster from './pages/MainMaster';
 import { jwtDecode } from 'jwt-decode';
 import MemberMaster from './pages/MemberMaster';
+import BoardMaster from './pages/BoardMaster';
+import DetailPage from './pages/DetaPage';
+import AlimMaster from './pages/AlimMaster';
 
 
 // Appdata context 생성
@@ -72,6 +75,12 @@ function App({ children }) {  // children을 props로 받기
           <Route path="/Alims" element={<Alim />} />
           <Route path="/Main" element={<Main />} />
           <Route path="/MainMaster" element={<MainMaster />} />
+          <Route path="/BoardMaster" element={<BoardMaster />} />
+          <Route path="/BoardMaster/Dete" element={<DetailPage />} />
+          <Route path="/AlimsMaster" element={<AlimMaster />} />
+
+
+
 
           {/* <Route path='/Map' element={<Map/>}/> */}
           <Route path='/RegisterUser' element={<RegisterUser />} />

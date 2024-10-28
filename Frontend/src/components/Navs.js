@@ -182,14 +182,26 @@ function Navs() {
            
             {isLoggedIn && memberGrade === 0 && ( // master 사용자만 표시
               <>
-                <Nav.Link onClick={() => navigateTo("/Error")} style={activeMenu === "/Error" ? activeStyle : defaultStyle}>
+                {/* <Nav.Link onClick={() => navigateTo("/Error")} style={activeMenu === "/Error" ? activeStyle : defaultStyle}>
                   이상내역
+                </Nav.Link> */}
+                <Nav.Link onClick={() => navigateTo("/BoardMaster")} style={activeMenu === "/BoardMaster" ? activeStyle : defaultStyle}>
+                  커뮤니티
                 </Nav.Link>
               </>
             )}
+                 {isLoggedIn && ( memberGrade === 0) && (
+                  
+                            <Nav.Link onClick={() => navigateTo("/AlimsMaster")} style={activeMenu === "/Alims" ? activeStyle : defaultStyle}>
+                              알림내역
+                            </Nav.Link>
+              
+                  )}
+                  {isLoggedIn && ( memberGrade === 1) && (
             <Nav.Link onClick={() => navigateTo("/Alims")} style={activeMenu === "/Alims" ? activeStyle : defaultStyle}>
               알림내역
             </Nav.Link>
+                )}
           </Nav>
           <Nav className="align-items-center">
             <div className="icon-links">

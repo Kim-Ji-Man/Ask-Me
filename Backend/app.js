@@ -17,6 +17,7 @@ const MemberRouter = require('./routes/MemberRouter') ;
 const AlimRouter = require('./routes/AlimRouter');
 const ErrormRouter = require('./routes/ErrorRouter') ;
 const authFindRoutes = require('./routes/authFindRoutes');
+const MapRouter = require('./routes/MapRouter')
 
 
 
@@ -66,6 +67,7 @@ app.use('/Member', MemberRouter);
 app.use('/Alim', AlimRouter);
 app.use('/Error', ErrormRouter);
 app.use('/find', authFindRoutes);
+app.use('/Map',MapRouter)
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정--- 
 

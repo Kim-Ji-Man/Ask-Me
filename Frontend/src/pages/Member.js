@@ -228,7 +228,7 @@ const Member = () => {
                     { accessor: 'member_jic', Header: '직책',
                       Cell: ({ row }) => (
                         <p>
-                          {row.values.member_jic === 'guard' ? '경비원' : '사용자'}
+                          {row.values.member_jic === 'admin' ? '관리자' : row.values.member_jic === 'guard' ? '경비원' : '사용자'}
                         </p>
                       ),
                     },
