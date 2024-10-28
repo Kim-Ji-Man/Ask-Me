@@ -9,6 +9,7 @@ import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 void main() async {
   await dotenv.load(fileName: "assets/.env");
   String key = dotenv.get("KAKAOMAP_KEY");
+  String BaseUrl = dotenv.get("BASE_URL");
   AuthRepository.initialize(appKey: '$key');
 
   runApp(const MyApp());
