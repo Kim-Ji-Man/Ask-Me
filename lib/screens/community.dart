@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'communitypost.dart';
 import 'postdetail.dart'; // PostDetail 페이지 import
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class Community extends StatefulWidget {
   const Community({super.key});
@@ -10,12 +13,66 @@ class Community extends StatefulWidget {
 }
 
 class _CommunityState extends State<Community> {
-  // 예시 데이터
-  final List<Post> posts = [
-    Post('처음 뵙겠습니다!', '안녕하세요. 오늘 처음 입사해서 느낀 점 간단히 남겨요~', '새내기', '8시간 전', 150, 4, 1, false),
-    Post('오늘 하루가 너무 안가네요', '월요일이라 그런지 하루가 너무 안 갑니다.', '퇴근하고싶다', '8시간 전', 72, 0, 4, false),
-    Post('3층에 잠수인 왔어요', '듣기로는 잠수인이라던데 참고하세요.', '직장인', '8시간 전', 89, 1, 2, false),
-  ];
+  List<Post> posts = [];
+  String BaseUrl = dotenv.get("BASE_URL");
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPosts(); // 앱 시작 시 게시글 가져오기
+  }
+
+  Future<void> fetchPosts() async {
+    final response = await http.get(Uri.parse('$BaseUrl/community/posts'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        posts = jsonData.map((post) {
+          return Post(
+            id: post['post_id'].toString(), // ID 추가
+            title: post['title'],
+            content: post['content'],
+            location: post['location'] ?? '', // location이 null일 경우 빈 문자열로 설정
+            time: formatDate(post['created_at']), // 날짜 형식 변환
+            views: post['views'] ?? 0, // 서버에서 조회수 초기값 설정
+            comments: post['comments'] ?? 0, // 서버에서 댓글 수 초기값 설정
+            likes: post['likes'] ?? 0, // 서버에서 좋아요 수 초기값 설정
+            isLiked: post['is_liked'] ?? false, // 서버에서 좋아요 상태 초기값 설정
+          );
+        }).toList();
+      });
+    } else {
+      throw Exception('Failed to load posts');
+    }
+  }
+
+  // 날짜 형식 변환 함수
+  String formatDate(String createdAt) {
+    final DateTime dateTime = DateTime.parse(createdAt);
+    return '${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
+  }
+
+  Future<void> createPost(Post post) async {
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/posts'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'user_id': 1, // 적절한 user_id로 수정
+        'title': post.title,
+        'content': post.content,
+        'image': null, // 이미지 처리가 필요한 경우 추가
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      fetchPosts(); // 새 게시글 추가 후 목록 갱신
+    } else {
+      throw Exception('Failed to create post');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +100,23 @@ class _CommunityState extends State<Community> {
                 itemCount: posts.length,
                 itemBuilder: (context, index) {
                   return GestureDetector(
-                    onTap: () {
-                      // 글 상세 페이지로 이동
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PostDetail(post: posts[index]),
-                        ),
-                      );
+                    onTap: () async {
+                      // 글 상세 페이지로 이동하기 전에 조회수를 증가시키는 API 호출
+                      final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}')); // id는 Post 클래스에 추가해야 함
+
+                      if (response.statusCode == 200) {
+                        // 조회 성공 후 상세 페이지로 이동
+                        final postDetail = Post.fromJson(json.decode(response.body)); // Post 클래스에 fromJson 메서드 추가 필요
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PostDetail(post: postDetail),
+                          ),
+                        );
+                      } else {
+                        // 오류 처리
+                        throw Exception('Failed to load post detail');
+                      }
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -192,6 +258,7 @@ class _CommunityState extends State<Community> {
 
 // 글 데이터 클래스
 class Post {
+  final String id; // ID 추가
   final String title;
   final String content;
   final String location;
@@ -202,14 +269,36 @@ class Post {
   bool isLiked;
 
   // 생성자에서 모든 필드를 받음
-  Post(
-      this.title,
-      this.content,
-      this.location,
-      this.time,
-      this.views,
-      this.comments,
-      this.likes,
-      this.isLiked,
-      );
+  Post({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.location,
+    required this.time,
+    required this.views,
+    required this.comments,
+    required this.likes,
+    required this.isLiked,
+  });
+
+  // JSON으로부터 Post 객체 생성
+  factory Post.fromJson(Map<String, dynamic> json) {
+    return Post(
+      id: json['post_id'].toString(), // ID 설정
+      title: json['title'],
+      content: json['content'],
+      location: json['location'] ?? '',
+      time: formatDate(json['created_at']),
+      views: json['views'] ?? 0,
+      comments: json['comments'] ?? 0,
+      likes: json['likes'] ?? 0,
+      isLiked: json['is_liked'] ?? false, // 좋아요 상태가 있을 경우
+    );
+  }
+
+  // 날짜 형식 변환 함수
+  static String formatDate(String createdAt) {
+    final DateTime dateTime = DateTime.parse(createdAt);
+    return '${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
+  }
 }
