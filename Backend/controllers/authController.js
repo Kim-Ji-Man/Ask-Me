@@ -55,6 +55,20 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
     return result.user_id;
 }
 
+
+// 카카오 사용자 등록 함수
+async function registerKakaoUser(kakaoId, mem_name, email, phoneNumber, role, gender, birth) {
+    console.log("Kakao register:", kakaoId, mem_name, email, phoneNumber, role, gender, birth);
+
+    const created_at = new Date();
+    const account_status = (role === 'guard') ? 'inactive' : 'active';
+
+    const query = `INSERT INTO Users (username, mem_name, email, phone_number, role, gender, created_at, account_status, birth, kakao_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const params = [kakaoId, mem_name, email, phoneNumber, role, gender, created_at, account_status, birth, kakaoId];
+
+    await db.executeQuery(query, params);
+}
+
 // JWT 토큰 생성
 function generateToken(payload) {
     return jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1h' }); // payload에 userId, storeId 포함
@@ -98,6 +112,33 @@ async function login(req, res) {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 }
+
+// 카카오 로그인 함수
+async function kakaoLogin(req, res) {
+    const { kakaoId, nickname, email } = req.body;
+
+    if (!kakaoId || !nickname || !email) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        const user = await db.executeQuery(`SELECT * FROM Users WHERE kakao_id = ?`, [kakaoId]);
+
+        let token;
+        if (user.length === 0) {
+            const newUserId = await registerKakaoUser(kakaoId, nickname, email, null, 'user', null, null);
+            token = generateToken({ userId: newUserId, role: 'user' });
+        } else {
+            token = generateToken({ userId: user[0].user_id, role: user[0].role });
+        }
+
+        res.status(200).json({ success: true, message: 'Kakao login successful', token });
+    } catch (err) {
+        console.error('Error during Kakao login:', err);
+        res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+    }
+}
+
 
 // 사용자 인증 함수
 async function authenticateUser(username, password) {
@@ -244,5 +285,7 @@ module.exports = {
     updateUser,
     deleteUser,
     getAllUsers,
-    getGuardsByStore 
+    getGuardsByStore,
+    kakaoLogin,
+    registerKakaoUser
 };
