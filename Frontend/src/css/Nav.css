@@ -92,7 +92,7 @@
     color: #007bff; 
 }
 
-.notification-icon {
+.alert-icon {
     position: relative;
 }
 
@@ -111,8 +111,7 @@
     font-size: 12px;
 }
 
-
-.notification-dropdown {
+.alert-dropdown {
     position: absolute;
     top: 40px; 
     right: 0;
@@ -126,8 +125,7 @@
     font-family: 'Noto Sans KR', sans-serif;
 }
 
-
-.notification-header {
+.alert-header {
     padding: 10px 15px; 
     background-color: #f8f9fa; 
     font-weight: bold; 
@@ -137,14 +135,13 @@
 }
 
 /* 알림 목록 */
-.notification-dropdown ul {
+.alert-dropdown ul {
     list-style: none; 
     padding: 0;
     margin: 0;
 }
 
-
-.notification-dropdown li {
+.alert-dropdown li {
     padding: 12px 15px; 
     border-bottom: 1px solid #eee; 
     transition: background-color 0.2s; 
@@ -155,8 +152,7 @@
     align-items: center;
 }
 
-
-.notification-dropdown li .message {
+.alert-dropdown li .message {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -167,23 +163,20 @@
     color: black;
 }
 
-
-.notification-dropdown li .timestamp {
+.alert-dropdown li .timestamp {
     font-size: 12px;
     color: gray;
     margin-left: 10px; 
     flex-shrink: 0; 
 }
 
-
-.notification-dropdown li:hover {
+.alert-dropdown li:hover {
     background-color: #f1f1f1;
 }
 
-.notification-dropdown li:last-child {
+.alert-dropdown li:last-child {
     border-bottom: none; 
 }
-
 
 @media (max-width: 992px) {
     .navbar-nav .nav-link::after {

@@ -26,6 +26,7 @@
     "react-scripts": "5.0.1",
     "rss-parser": "^3.13.0",
     "server": "file:",
+    "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "web-vitals": "^2.1.4",
