@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // 이미지 픽커 패키지 추가
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 class CommunityPost extends StatefulWidget {
@@ -11,7 +15,9 @@ class CommunityPost extends StatefulWidget {
 class _CommunityPostState extends State<CommunityPost> {
   File? _image; // 사용자가 선택한 이미지를 저장할 변수
   final ImagePicker _picker = ImagePicker(); // 이미지 픽커 인스턴스
-  List<XFile?> images = []; // 선택된 이미지들을 저장할 리스트
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  String BaseUrl = dotenv.get("BASE_URL");
 
 
   // 갤러리에서 이미지 가져오기
@@ -19,7 +25,7 @@ class _CommunityPostState extends State<CommunityPost> {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        images.add(pickedFile); // 선택한 이미지를 리스트에 추가
+        _image = File(pickedFile.path);
       });
     }
   }
@@ -29,14 +35,62 @@ class _CommunityPostState extends State<CommunityPost> {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        images.add(pickedFile); // 선택한 이미지를 리스트에 추가
+        _image = File(pickedFile.path); // 선택한 이미지를 리스트에 추가
       });
     }
   }
 
+  // JWT 토큰에서 user_id를 가져오는 함수
+  Future<String?> getUserIdFromToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return null;
+
+    final parts = token.split('.');
+    if (parts.length != 3) throw Exception('Invalid token');
+
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    return payload['userId'].toString();
+  }
+
+  // 게시글을 서버에 저장하는 함수
+  Future<void> createPost(String title, String content) async {
+    final userId = await getUserIdFromToken();
+    if (userId == null) {
+      // 사용자 ID를 가져오지 못하면 오류 처리
+      return;
+    }
+
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/posts'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token', // JWT 토큰을 헤더에 추가
+      },
+      body: json.encode({
+        'user_id': userId,
+        'title': title,
+        'content': content,
+        'image': _image != null ? base64Encode(_image!.readAsBytesSync()) : null, // 이미지 base64로 인코딩
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      Navigator.pop(context); // 성공 시 이전 화면으로 돌아가기
+    } else {
+      throw Exception('Failed to create post');
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Text(
@@ -53,7 +107,7 @@ class _CommunityPostState extends State<CommunityPost> {
         actions: [
           TextButton(
             onPressed: () {
-              // 글 작성 완료 로직
+              createPost(_titleController.text, _contentController.text);
             },
             child: Text(
               '완료',
@@ -70,15 +124,17 @@ class _CommunityPostState extends State<CommunityPost> {
         child: Column(
           children: [
             TextField(
+              controller: _titleController,
               decoration: InputDecoration(
                 hintText: '제목을 입력하세요',
-                border: InputBorder.none, // 밑줄 없애기
+                border: InputBorder.none,
               ),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               keyboardType: TextInputType.text, // 키보드가 자동으로 뜨게 함
             ),
             Expanded(
               child: TextField(
+                controller: _contentController,
                 decoration: InputDecoration(
                   hintText: '내용을 입력하세요',
                   border: InputBorder.none,
@@ -88,66 +144,25 @@ class _CommunityPostState extends State<CommunityPost> {
                 keyboardType: TextInputType.multiline,
               ),
             ),
-            Divider(), // 구분선 추가 (선택사항)
+            Divider(),
             SizedBox(height: 10),
-            // 선택된 이미지들이 표시되는 부분
-            if (images.isNotEmpty)
-              GridView.builder(
-                padding: EdgeInsets.all(0),
-                shrinkWrap: true,
-                itemCount: images.length, // 보여줄 item 개수
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, // 1 개의 행에 보여줄 사진 개수
-                  childAspectRatio: 1 / 1, // 사진의 가로 세로 비율
-                  mainAxisSpacing: 10, // 수평 Padding
-                  crossAxisSpacing: 10, // 수직 Padding
-                ),
-                itemBuilder: (BuildContext context, int index) {
-                  return Stack(
-                    alignment: Alignment.topRight,
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          image: DecorationImage(
-                            fit: BoxFit.cover,  // 사진을 크기를 상자 크기에 맞게 조절
-                            image: FileImage(File(images[index]!.path)), // images 리스트 변수 안에 있는 사진들을 순서대로 표시함
-                          ),
-                        ),
-                      ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        // 삭제 버튼
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: BoxConstraints(),
-                          icon: Icon(Icons.close, color: Colors.white, size: 15),
-                          onPressed: () {
-                            // 버튼을 누르면 해당 이미지가 삭제됨
-                            setState(() {
-                              images.removeAt(index); // 해당 인덱스의 이미지를 삭제
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
+            if (_image != null)
+              Image.file(
+                _image!,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
               ),
-            SizedBox(height: 10),
             Row(
               children: [
                 ElevatedButton.icon(
-                  onPressed: _pickImage, // 사진 버튼 누르면 갤러리로 이동
+                  onPressed: _pickImage,
                   icon: Icon(Icons.photo),
                   label: Text('갤러리'),
                 ),
                 SizedBox(width: 10),
                 ElevatedButton.icon(
-                  onPressed: _pickImageFromCamera, // 카메라 버튼 누르면 카메라로 이동
+                  onPressed: _pickImageFromCamera,
                   icon: Icon(Icons.camera),
                   label: Text('카메라'),
                 ),

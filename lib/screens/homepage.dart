@@ -3,13 +3,51 @@ import 'alert.dart';
 import 'community.dart';
 import 'location.dart';
 import 'mypage.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// JWT 토큰을 디코딩하는 함수
+Future<void> decodeAndPrintToken() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+
+  if (token == null) {
+    print("토큰이 저장되지 않았습니다.");
+    return;
+  }
+
+  // JWT는 점(.)으로 구분된 세 가지 부분으로 구성됩니다.
+  final parts = token.split('.');
+  if (parts.length != 3) {
+    print("유효하지 않은 토큰 형식입니다.");
+    return;
+  }
+
+  // payload 부분(두 번째)을 디코딩합니다.
+  final payload = json.decode(
+    utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+  );
+
+  print("JWT 페이로드 데이터: $payload");
+}
+
+
 
 class Homepage extends StatefulWidget {
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
+
+
 class _HomepageState extends State<Homepage> {
+  @override
+  void initState() {
+    super.initState();
+    decodeAndPrintToken(); // 토큰 디코딩 및 출력
+  }
+
+
   int _selectedIndex = 0; // 현재 선택된 페이지 인덱스
   bool isSecurity = true; // 경비원 여부 설정 (경비원이면 true, 일반 사용자면 false)
 

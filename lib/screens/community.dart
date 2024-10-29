@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'communitypost.dart';
-import 'postdetail.dart'; // PostDetail 페이지 import
+import 'postdetail.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Community extends StatefulWidget {
   const Community({super.key});
@@ -16,10 +19,17 @@ class _CommunityState extends State<Community> {
   List<Post> posts = [];
   String BaseUrl = dotenv.get("BASE_URL");
 
+
   @override
   void initState() {
     super.initState();
     fetchPosts(); // 앱 시작 시 게시글 가져오기
+  }
+
+  // 토큰을 가져오는 함수
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token'); // 저장된 토큰을 가져옴
   }
 
   Future<void> fetchPosts() async {
@@ -29,28 +39,12 @@ class _CommunityState extends State<Community> {
       final List<dynamic> jsonData = json.decode(response.body);
       setState(() {
         posts = jsonData.map((post) {
-          return Post(
-            id: post['post_id'].toString(), // ID 추가
-            title: post['title'],
-            content: post['content'],
-            location: post['location'] ?? '', // location이 null일 경우 빈 문자열로 설정
-            time: formatDate(post['created_at']), // 날짜 형식 변환
-            views: post['views'] ?? 0, // 서버에서 조회수 초기값 설정
-            comments: post['comments'] ?? 0, // 서버에서 댓글 수 초기값 설정
-            likes: post['likes'] ?? 0, // 서버에서 좋아요 수 초기값 설정
-            isLiked: post['is_liked'] ?? false, // 서버에서 좋아요 상태 초기값 설정
-          );
+          return Post.fromJson(post); // Post 클래스의 fromJson 메서드 사용
         }).toList();
       });
     } else {
       throw Exception('Failed to load posts');
     }
-  }
-
-  // 날짜 형식 변환 함수
-  String formatDate(String createdAt) {
-    final DateTime dateTime = DateTime.parse(createdAt);
-    return '${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
   }
 
   Future<void> createPost(Post post) async {
@@ -86,8 +80,8 @@ class _CommunityState extends State<Community> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
-        backgroundColor: Colors.white, // AppBar 배경색 설정
-        elevation: 0, // 그림자 제거
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -101,12 +95,10 @@ class _CommunityState extends State<Community> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () async {
-                      // 글 상세 페이지로 이동하기 전에 조회수를 증가시키는 API 호출
-                      final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}')); // id는 Post 클래스에 추가해야 함
+                      final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}'));
 
                       if (response.statusCode == 200) {
-                        // 조회 성공 후 상세 페이지로 이동
-                        final postDetail = Post.fromJson(json.decode(response.body)); // Post 클래스에 fromJson 메서드 추가 필요
+                        final postDetail = Post.fromJson(json.decode(response.body));
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -114,7 +106,6 @@ class _CommunityState extends State<Community> {
                           ),
                         );
                       } else {
-                        // 오류 처리
                         throw Exception('Failed to load post detail');
                       }
                     },
@@ -123,44 +114,33 @@ class _CommunityState extends State<Community> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 제목
                           Text(
                             posts[index].title,
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                           SizedBox(height: 4),
-                          // 내용
                           Text(
                             posts[index].content,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black87,
-                            ),
+                            style: TextStyle(fontSize: 14, color: Colors.black87),
                           ),
                           SizedBox(height: 8),
-                          // 작성자와 시간
                           Row(
                             children: [
                               Text(
                                 posts[index].location,
-                                style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
                               ),
                               SizedBox(width: 10),
                               Text(
                                 posts[index].time,
-                                style: TextStyle(
-                                    color: Colors.grey[600], fontSize: 12),
+                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
                               ),
                             ],
                           ),
                           SizedBox(height: 8),
-                          // 추천, 댓글, 조회수
                           Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              // 공감(하트) 버튼과 공감 수
                               Row(
                                 children: [
                                   IconButton(
@@ -180,51 +160,38 @@ class _CommunityState extends State<Community> {
                                       });
                                     },
                                   ),
-                                  SizedBox(width: 4), // 하트와 숫자 사이 간격
+                                  SizedBox(width: 4),
                                   Text(
                                     posts[index].likes.toString(),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
-                              SizedBox(width: 20), // 추천과 댓글 버튼 간격
-
-                              // 댓글 아이콘과 댓글 수
+                              SizedBox(width: 20),
                               Row(
                                 children: [
                                   Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey[600]),
-                                  SizedBox(width: 4), // 아이콘과 숫자 사이 간격
+                                  SizedBox(width: 4),
                                   Text(
                                     posts[index].comments.toString(),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
-                              SizedBox(width: 20), // 댓글과 조회수 버튼 간격
-
-                              // 조회수 아이콘과 조회수
+                              SizedBox(width: 20),
                               Row(
                                 children: [
                                   Icon(Icons.remove_red_eye_outlined, size: 14, color: Colors.grey[600]),
-                                  SizedBox(width: 4), // 아이콘과 숫자 사이 간격
+                                  SizedBox(width: 4),
                                   Text(
                                     posts[index].views.toString(),
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          Divider(), // 각 게시물 사이에 구분선
+                          Divider(),
                         ],
                       ),
                     ),
@@ -237,16 +204,12 @@ class _CommunityState extends State<Community> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 글쓰기 페이지로 이동
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CommunityPost()),
           );
         },
-        child: Icon(
-          Icons.edit,
-          size: 24,
-        ), // 글쓰기 아이콘
+        child: Icon(Icons.edit, size: 24),
         backgroundColor: Colors.blue[600],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50),
@@ -258,7 +221,7 @@ class _CommunityState extends State<Community> {
 
 // 글 데이터 클래스
 class Post {
-  final String id; // ID 추가
+  final String id;
   final String title;
   final String content;
   final String location;
@@ -268,7 +231,6 @@ class Post {
   int likes;
   bool isLiked;
 
-  // 생성자에서 모든 필드를 받음
   Post({
     required this.id,
     required this.title,
@@ -284,21 +246,21 @@ class Post {
   // JSON으로부터 Post 객체 생성
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
-      id: json['post_id'].toString(), // ID 설정
+      id: json['post_id'].toString(),
       title: json['title'],
       content: json['content'],
       location: json['location'] ?? '',
-      time: formatDate(json['created_at']),
+      time: Post.formatDate(json['created_at']),
       views: json['views'] ?? 0,
       comments: json['comments'] ?? 0,
       likes: json['likes'] ?? 0,
-      isLiked: json['is_liked'] ?? false, // 좋아요 상태가 있을 경우
+      isLiked: json['is_liked'] ?? false,
     );
   }
 
   // 날짜 형식 변환 함수
   static String formatDate(String createdAt) {
     final DateTime dateTime = DateTime.parse(createdAt);
-    return '${dateTime.year}-${dateTime.month}-${dateTime.day} ${dateTime.hour}:${dateTime.minute}';
+    return DateFormat('yyyy-MM-dd HH:mm').format(dateTime);
   }
 }

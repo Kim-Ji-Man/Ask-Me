@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class MyInfoPage extends StatelessWidget {
   final TextEditingController nicknameController = TextEditingController(text: '메롱');
@@ -10,6 +11,9 @@ class MyInfoPage extends StatelessWidget {
   String selectedYear = '1997';
   String selectedMonth = '01';
   String selectedDay = '15';
+
+  String BaseUrl = dotenv.get("BASE_URL");
+
 
   @override
   Widget build(BuildContext context) {

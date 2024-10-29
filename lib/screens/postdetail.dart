@@ -30,6 +30,7 @@ class _PostDetailState extends State<PostDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -60,101 +61,104 @@ class _PostDetailState extends State<PostDetail> {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("닉네임", style: TextStyle(fontWeight: FontWeight.bold)),
-                          Text(widget.post.time),
-                        ],
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20),
-                  Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 10),
-                  Text(widget.post.content),
-                  SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text('조회 ${widget.post.views}', style: TextStyle(color: Colors.grey)),
-                      SizedBox(width: 16),
-                      TextButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            isLiked = !isLiked;
-                            if (isLiked) {
-                              likeCount++;
-                            } else {
-                              likeCount--;
-                            }
-                          });
-                        },
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border, // 공감 여부에 따른 하트 아이콘
-                          color: isLiked ? Colors.red : Colors.grey, // 색상 변경
-                        ),
-                        label: Text('공감 $likeCount',
-                          style: TextStyle(color: Colors.grey),),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size(0, 0),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(),
-                  SizedBox(height: 10),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    reverse: true, // 댓글이 아래에서 위로 쌓이도록 설정
-                    itemCount: comments.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Text(
-                          comments[index].nickname,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                        title: Column(
+              child: Container(
+                color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(comments[index].content),
-                            SizedBox(height: 5),
-                            Text(
-                              comments[index].time,
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
+                            Text("닉네임", style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(widget.post.time),
                           ],
                         ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              // 댓글 수정 기능
-                            } else if (value == 'delete') {
-                              setState(() {
-                                comments.removeAt(index); // 댓글 삭제
-                              });
-                            }
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                    Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 10),
+                    Text(widget.post.content),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Text('조회 ${widget.post.views}', style: TextStyle(color: Colors.grey)),
+                        SizedBox(width: 16),
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              isLiked = !isLiked;
+                              if (isLiked) {
+                                likeCount++;
+                              } else {
+                                likeCount--;
+                              }
+                            });
                           },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(value: 'edit', child: Text('수정')),
-                            PopupMenuItem(value: 'delete', child: Text('삭제')),
-                          ],
+                          icon: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border, // 공감 여부에 따른 하트 아이콘
+                            color: isLiked ? Colors.red : Colors.grey, // 색상 변경
+                          ),
+                          label: Text('공감 $likeCount',
+                            style: TextStyle(color: Colors.grey),),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size(0, 0),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                         ),
-                      );
-                    },
-                  ),
-                ],
+                      ],
+                    ),
+                    Divider(),
+                    SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      reverse: true, // 댓글이 아래에서 위로 쌓이도록 설정
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          leading: Text(
+                            comments[index].nickname,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(comments[index].content),
+                              SizedBox(height: 5),
+                              Text(
+                                comments[index].time,
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                // 댓글 수정 기능
+                              } else if (value == 'delete') {
+                                setState(() {
+                                  comments.removeAt(index); // 댓글 삭제
+                                });
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(value: 'edit', child: Text('수정')),
+                              PopupMenuItem(value: 'delete', child: Text('삭제')),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

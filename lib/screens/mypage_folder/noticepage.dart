@@ -34,6 +34,7 @@ class _NoticePageState extends State<NoticePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new),
