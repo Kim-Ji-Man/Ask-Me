@@ -28,12 +28,71 @@ router.post("/comments", async (req, res) => {
 router.get("/posts/:postId/comments", async (req, res) => {
   const { postId } = req.params;
   try {
-    const comments = await db.executeQuery("SELECT * FROM Comments WHERE post_id = ?", [postId]);
+    const comments = await db.executeQuery(`
+        SELECT 
+    Comments.*, 
+    Users.username, 
+    COUNT(CommentReports.report_id) AS report_count, 
+    GROUP_CONCAT(DISTINCT ReportReasons.reason ORDER BY ReportReasons.reason ASC) AS reasons 
+FROM Comments 
+JOIN Users ON Comments.user_id = Users.user_id 
+LEFT JOIN CommentReports ON Comments.comment_id = CommentReports.comment_id 
+LEFT JOIN ReportReasons ON CommentReports.reason_id = ReportReasons.reason_id 
+WHERE Comments.post_id = ?
+GROUP BY Comments.comment_id, Users.username;
+      `,
+       [postId]);
     res.status(200).json(comments);
   } catch (err) {
     res.status(500).json({ error: "댓글 조회 실패", details: err });
   }
 });
+
+
+router.get("/posts/comments/all", async (req, res) => {
+  try {
+    const comments = await db.executeQuery(`
+SELECT 
+    Comments.*, 
+    Users.username, 
+    COUNT(CommentReports.report_id) AS report_count, 
+    GROUP_CONCAT(DISTINCT ReportReasons.reason ORDER BY ReportReasons.reason ASC) AS reasons,
+    (SELECT COUNT(*) FROM CommentReports WHERE CommentReports.comment_id = Comments.comment_id AND CommentReports.reason_id = 1) AS reason_1_count,
+    (SELECT COUNT(*) FROM CommentReports WHERE CommentReports.comment_id = Comments.comment_id AND CommentReports.reason_id = 2) AS reason_2_count,
+    (SELECT COUNT(*) FROM CommentReports WHERE CommentReports.comment_id = Comments.comment_id AND CommentReports.reason_id = 3) AS reason_3_count,
+    (SELECT COUNT(*) FROM CommentReports WHERE CommentReports.comment_id = Comments.comment_id AND CommentReports.reason_id = 4) AS reason_4_count,
+    (SELECT COUNT(*) FROM CommentReports WHERE CommentReports.comment_id = Comments.comment_id AND CommentReports.reason_id = 5) AS reason_5_count
+FROM Comments 
+JOIN Users ON Comments.user_id = Users.user_id 
+LEFT JOIN CommentReports ON Comments.comment_id = CommentReports.comment_id 
+LEFT JOIN ReportReasons ON CommentReports.reason_id = ReportReasons.reason_id 
+GROUP BY Comments.comment_id, Users.username;
+      `);
+    res.status(200).json(comments);
+  } catch (err) {
+    res.status(500).json({ error: "댓글 조회 실패", details: err });
+  }
+});
+
+
+router.delete('/comments/:commentId', async (req, res) => {
+  const { commentId } = req.params;
+  
+  const sql = 'DELETE FROM Comments WHERE comment_id = ?';
+  
+  try {
+    const results = await db.executeQuery(sql,[commentId]);
+    res.send(results);
+    console.log("댓글삭제 라우터");
+} catch (err) {
+    console.error('Error fetching notifications:', err);
+    return res.status(500).send('Error fetching notifications');
+}
+
+});
+
+
+
 
 module.exports = router;
 

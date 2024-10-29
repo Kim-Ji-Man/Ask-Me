@@ -3,40 +3,11 @@
     margin-bottom: 50px;
     bottom: 70px;
   }
-  .title_map {
-    /* font-size: 23px;
-    color: rgb(102, 102, 102);
-    font-weight: bold;
-    letter-spacing: -0.05em;
-    padding-bottom: 38px;
-    text-align: center; */
-    position: relative;
-    text-align: center;
-    font-size: 50px;
-    font-weight: bold;
-    color: #404040;
-    margin: 0;
-    bottom: 25px;
-  }
-  .title_hr {
-    margin: 70px 0 0 0;
-    width: 100%;
-    bottom: 80px;
-    /* left: 270px; */
-    background-color: #703015;
-    height: 4px;
-  }
-  .wrap_map {
-    margin-top: 3%;
-  }
-  .navbar-nav {
-    color: #666666;
-  }
-  
+
   .wrap {
     position: absolute;
     left: 0;
-    bottom: 40px;
+    bottom: 70px;
     width: 288px;
     height: 132px;
     margin-left: -144px;
@@ -57,7 +28,7 @@
     border-bottom: 2px solid #ccc;
     border-right: 1px solid #ccc;
     overflow: hidden;
-    background: #fff;
+    background: black;
   }
   .wrap .info:nth-child(1) {
     border: 0;
@@ -65,13 +36,13 @@
   }
   .info .title {
     padding: 5px 0 0 10px;
-    height: 30px;
-    background: #FFF9E2;
-    border-bottom: 1px solid #ddd;
+    height: 40px;
+    background: black;
+    border-bottom: 1px solid #f1c40f;
     font-size: 18px;
     font-weight: bold;
     text-align: center;
-    color: black;
+    color: white;
   }
   .info .close {
     position: absolute;
@@ -88,28 +59,30 @@
   .info .body {
     position: relative;
     overflow: hidden;
+    text-align: center;
   }
   .info .desc {
     position: relative;
-    margin: 13px 0 0 90px;
+    /* margin: 13px 0 0 90px; */
+    margin-top: 15px;
     height: 75px;
+    text-align: center;
   }
   .desc .ellipsis {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: center;
+    color: white;
+
+  }
+
+  .desc .phone{
+    text-align: center;
+    color: white;
+
   }
   
-  .info .img {
-    position: absolute;
-    top: 6px;
-    left: 5px;
-    width: 73px;
-    height: 71px;
-    border: 1px solid #ddd;
-    color: #888;
-    overflow: hidden;
-  }
   .info:after {
     content: "";
     position: absolute;
@@ -120,41 +93,17 @@
     height: 12px;
     background: url("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/vertex_white.png");
   }
-  .info .link {
-    display: inline-block;
-    position: relative;
-    border: none;
-    background:   #FFF9E2;
-    color: black;
-    font-size: 15px;
-    top: 10px;
-    left: 20px;
-    height: 30px;
-    width: 50px;
-    text-align: center;
-    padding-top: 8px;
-    padding-bottom: 1px;
-    text-decoration: none;
-    font-weight: bold;
+
+  .custom-button {
+    background-color: white; /* 기본 배경색은 흰색 */
+    color: black; /* 기본 텍스트 색상은 검정색 */
+    border: 1px solid #ccc; /* 기본 테두리 색상 */
   }
+
+
+
   
-  .info .link2 {
-    display: inline-block;
-    position: relative;
-    border: none;
-    background:   #FFF9E2;
-    color: black;
-    font-size: 15px;
-    top: 10px;
-    left: 50px;
-    height: 30px;
-    width: 50px;
-    text-align: center;
-    padding-top: 8px;
-    padding-bottom: 1px;
-    text-decoration: none;
-    font-weight: bold;
-  }
+
 
   
   

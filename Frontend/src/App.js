@@ -76,7 +76,7 @@ function App({ children }) {  // children을 props로 받기
           <Route path="/Main" element={<Main />} />
           <Route path="/MainMaster" element={<MainMaster />} />
           <Route path="/BoardMaster" element={<BoardMaster />} />
-          <Route path="/BoardMaster/Dete" element={<DetailPage />} />
+          <Route path="/community/posts/:post_id" element={<DetailPage />} />
           <Route path="/AlimsMaster" element={<AlimMaster />} />
 
 

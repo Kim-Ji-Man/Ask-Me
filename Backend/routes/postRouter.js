@@ -44,7 +44,27 @@ router.post("/posts", upload.single('image'), async (req, res) => {
 // 2. 게시글 조회 (모든 게시글 조회)
 router.get("/posts", async (req, res) => {
   try {
-    const posts = await db.executeQuery("SELECT * FROM Posts ORDER BY created_at DESC");
+    const posts = await db.executeQuery(`
+SELECT 
+    Posts.*, 
+    Users.username,
+    COUNT(DISTINCT Comments.comment_id) AS comment_count,
+    (SELECT COUNT(report_id) FROM Reports WHERE Reports.post_id = Posts.post_id) AS report_count,
+    GROUP_CONCAT(DISTINCT ReportReasons.reason ORDER BY ReportReasons.reason ASC) AS reasons,
+    (SELECT COUNT(*) FROM Reports WHERE Reports.post_id = Posts.post_id AND Reports.reason_id = 1) AS reason_1_count,
+    (SELECT COUNT(*) FROM Reports WHERE Reports.post_id = Posts.post_id AND Reports.reason_id = 2) AS reason_2_count,
+    (SELECT COUNT(*) FROM Reports WHERE Reports.post_id = Posts.post_id AND Reports.reason_id = 3) AS reason_3_count,
+    (SELECT COUNT(*) FROM Reports WHERE Reports.post_id = Posts.post_id AND Reports.reason_id = 4) AS reason_4_count,
+    (SELECT COUNT(*) FROM Reports WHERE Reports.post_id = Posts.post_id AND Reports.reason_id = 5) AS reason_5_count
+FROM Posts
+LEFT JOIN Comments ON Posts.post_id = Comments.post_id
+LEFT JOIN Reports ON Posts.post_id = Reports.post_id
+LEFT JOIN ReportReasons ON Reports.reason_id = ReportReasons.reason_id
+LEFT JOIN Users ON Posts.user_id = Users.user_id
+GROUP BY Posts.post_id, Users.username
+ORDER BY Posts.created_at DESC;
+    `);
+    
     res.status(200).json(posts);
   } catch (err) {
     res.status(500).json({ error: "게시글 조회 실패", details: err });
@@ -54,11 +74,29 @@ router.get("/posts", async (req, res) => {
 // 3. 게시글 상세 조회 (ID로 조회)
 router.get("/posts/:id", async (req, res) => {
   const { id } = req.params;
+  console.log(id,"들어오니?");
+  
   try {
     // 조회수 증가
     await db.executeQuery("UPDATE Posts SET views = views + 1 WHERE post_id = ?", [id]);
 
-    const post = await db.executeQuery("SELECT * FROM Posts WHERE post_id = ?", [id]);
+    const post = await db.executeQuery(`
+        SELECT 
+    Posts.*, 
+    Users.username,
+    COUNT(DISTINCT Comments.comment_id) AS comment_count,
+    COUNT(DISTINCT Reports.report_id) AS report_count,
+    GROUP_CONCAT(DISTINCT ReportReasons.reason ORDER BY ReportReasons.reason ASC) AS reasons
+FROM Posts
+LEFT JOIN Comments ON Posts.post_id = Comments.post_id
+LEFT JOIN Reports ON Posts.post_id = Reports.post_id
+LEFT JOIN ReportReasons ON Reports.reason_id = ReportReasons.reason_id
+LEFT JOIN Users ON Posts.user_id = Users.user_id
+WHERE Posts.post_id = ?
+GROUP BY Posts.post_id, Users.username
+ORDER BY Posts.created_at DESC;
+      `, 
+      [id]);
     if (post.length) {
       res.status(200).json(post[0]);
     } else {
@@ -89,10 +127,10 @@ router.put("/posts/:id", async (req, res) => {
 });
 
 // 5. 게시글 삭제
-router.delete("/posts/:id", async (req, res) => {
-  const { id } = req.params;
+router.delete("/posts/:postId", async (req, res) => {
+  const { postId } = req.params;
   try {
-    const result = await db.executeQuery("DELETE FROM Posts WHERE post_id = ?", [id]);
+    const result = await db.executeQuery("DELETE FROM Posts WHERE post_id = ?", [postId]);
     if (result.affectedRows) {
       res.status(200).json({ message: "게시글이 삭제되었습니다." });
     } else {
@@ -102,6 +140,7 @@ router.delete("/posts/:id", async (req, res) => {
     res.status(500).json({ error: "게시글 삭제 실패", details: err });
   }
 });
+
 
 /**
  * @swagger

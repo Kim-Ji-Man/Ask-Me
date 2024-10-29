@@ -26,37 +26,41 @@ const Map = () => {
         center: new kakao.maps.LatLng(35.14919975177639, 126.92453208436793),
         level: 3,
       };
-  
+
     const newMap = new kakao.maps.Map(mapContainer, mapOption);
     setMap(newMap);
-  
+
     axios
       .get("/Map")
       .then((res) => {
         setInfo(res.data);
         console.log("info 데이터 가져와짐", res.data);
-  
+
         // 경찰서와 병원 위치 데이터를 newPositions에 저장
         const newPositions = { police: [], hospital: [] };
-  
+
         res.data.forEach((item) => {
           const positionData = {
             title: item.name,
             address: item.address,
-           phone: `전화번호 : ${item.phone_number}`,
-            latlng: new kakao.maps.LatLng(parseFloat(item.latitude), parseFloat(item.longitude)),
-            pimg: item.type === "police" ? "img/pica.png" : "img/redmarker.jpg",
+            phone: `전화번호 : ${item.phone_number}`,
+            latlng: new kakao.maps.LatLng(
+              parseFloat(item.latitude),
+              parseFloat(item.longitude)
+            ),
+            // pimg: item.type === "police" ? "img/police.png" : "img/redmarker.jpg",
+            type: item.type,
           };
-  
+
           if (item.type === "police") {
             newPositions.police.push(positionData);
           } else if (item.type === "hospital") {
             newPositions.hospital.push(positionData);
           }
         });
-  
+
         setPositions(newPositions);
-  
+
         // 지도가 로드된 후 기본으로 경찰서와 병원 마커 표시
         if (newMap) {
           setRadioValue("1"); // 초기 로드 시 전체 마커를 표시하기 위해 radioValue 설정
@@ -71,7 +75,7 @@ const Map = () => {
 
   useEffect(() => {
     if (map && radioValue) {
-      clearMarkers();  // 기존 마커 지우기
+      clearMarkers(); // 기존 마커 지우기
       if (radioValue === "1") {
         displayMarkers("police");
         displayMarkers("hospital");
@@ -87,19 +91,26 @@ const Map = () => {
     let categoryMarkers = [];
     let categoryOverlays = [];
 
-    const policeImageSrc = "img/pica.png";
-    const hospitalImageSrc = "img/redmarker.jpg";
+    const policeImageSrc = "img/police.png";
+    const hospitalImageSrc = "img/hospital.png";
     const policeImageSize = new kakao.maps.Size(64, 69);
     const hospitalImageSize = new kakao.maps.Size(64, 69);
     const policeImageOption = { offset: new kakao.maps.Point(27, 69) };
     const hospitalImageOption = { offset: new kakao.maps.Point(27, 69) };
 
     positions[category].forEach((data) => {
-      const imageSrc = category === "police" ? policeImageSrc : hospitalImageSrc;
-      const imageSize = category === "police" ? policeImageSize : hospitalImageSize;
-      const imageOption = category === "police" ? policeImageOption : hospitalImageOption;
+      const imageSrc =
+        category === "police" ? policeImageSrc : hospitalImageSrc;
+      const imageSize =
+        category === "police" ? policeImageSize : hospitalImageSize;
+      const imageOption =
+        category === "police" ? policeImageOption : hospitalImageOption;
 
-      const markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption);
+      const markerImage = new kakao.maps.MarkerImage(
+        imageSrc,
+        imageSize,
+        imageOption
+      );
       const marker = new kakao.maps.Marker({
         map: map,
         position: data.latlng,
@@ -121,7 +132,6 @@ const Map = () => {
       position: marker.getPosition(),
     });
     console.log(data);
-    
 
     const Customcontent = document.createElement("div");
     Customcontent.className = "wrap";
@@ -147,15 +157,15 @@ const Map = () => {
     bodyContent.className = "body";
     info.appendChild(bodyContent);
 
-    const imgDiv = document.createElement("div");
-    imgDiv.className = "img";
-    bodyContent.appendChild(imgDiv);
+    // const imgDiv = document.createElement("div");
+    // imgDiv.className = "img";
+    // bodyContent.appendChild(imgDiv);
 
-    const imgContent = document.createElement("img");
-    imgContent.src = data.pimg;
-    imgContent.setAttribute("width", "73px");
-    imgContent.setAttribute("height", "100px");
-    imgDiv.appendChild(imgContent);
+    // const imgContent = document.createElement("img");
+    // imgContent.src = data.pimg;
+    // imgContent.setAttribute("width", "73px");
+    // imgContent.setAttribute("height", "100px");
+    // imgDiv.appendChild(imgContent);
 
     const descContent = document.createElement("div");
     descContent.className = "desc";
@@ -165,7 +175,7 @@ const Map = () => {
     addressContent.className = "ellipsis";
     addressContent.appendChild(document.createTextNode(data.address));
     descContent.appendChild(addressContent);
-    
+
     const phoneContent = document.createElement("div");
     phoneContent.className = "phone";
     phoneContent.appendChild(document.createTextNode(data.phone));
@@ -229,9 +239,9 @@ const Map = () => {
           center: locPosition,
           radius: 8,
           strokeWeight: 5,
-          strokeColor: '#FF0000',
+          strokeColor: "#FF0000",
           strokeOpacity: 0.8,
-          fillColor: '#FF0000',
+          fillColor: "#FF0000",
           fillOpacity: 0.3,
         });
 
@@ -242,9 +252,9 @@ const Map = () => {
           center: locPosition,
           radius: 300,
           strokeWeight: 2,
-          strokeColor: '#0000FF',
+          strokeColor: "#0000FF",
           strokeOpacity: 0.6,
-          fillColor: '#0000FF',
+          fillColor: "#0000FF",
           fillOpacity: 0.1,
         });
 
@@ -263,29 +273,51 @@ const Map = () => {
       <Container fluid>
         <Row>
           <Col>
-            <ButtonGroup>
-              {[{ name: "전체", value: "1" }, { name: "경찰서", value: "2" }, { name: "병원", value: "3" }]
-                .map((radio, idx) => (
-                  <ToggleButton
-                    key={idx}
-                    id={`radio-${idx}`}
-                    type="radio"
-                    variant={idx % 2 ? "outline-success" : "outline-danger"}
-                    name="radio"
-                    value={radio.value}
-                    checked={radioValue === radio.value}
-                    onChange={(e) => setRadioValue(e.currentTarget.value)}
-                  >
-                    {radio.name}
-                  </ToggleButton>
-                ))}
-            </ButtonGroup>
+          <ButtonGroup>
+  {[
+    { name: "전체", value: "1", color: "orange", textColor: "white" },
+    { name: "경찰서", value: "2", color: "black", textColor: "white" },
+    { name: "병원", value: "3", color: "blue", textColor: "white"},
+  ].map((radio, idx) => (
+    <ToggleButton
+      key={idx}
+      id={`radio-${idx}`}
+      type="radio"
+      className="custom-button"
+      name="radio"
+      value={radio.value}
+      checked={radioValue === radio.value}
+      onChange={(e) => setRadioValue(e.currentTarget.value)}
+      style={{
+        backgroundColor: radioValue === radio.value ? radio.color : "white",
+        color: radioValue === radio.value ? radio.textColor : "black",
+       fontWeight : radioValue === radio.value ? "bold" : radio.fontWeight,
+      }}
+    >
+      {radio.name}
+    </ToggleButton>
+  ))}
+</ButtonGroup>
           </Col>
         </Row>
         <Row className="mt-5">
           <Col className="mt-5">
             <div id="map" style={{ width: "100%", height: "640px" }}>
-              <Button variant="outline-primary" className="d-flex justify-content-end" onClick={displayCurrentLocation} style={{ position: "absolute", zIndex: "2", backgroundColor: "white", color: "black", border: "none", borderRadius: "50%", marginTop: "15px", marginLeft: "15px" }}>
+              <Button
+                variant="outline-primary"
+                className="d-flex justify-content-end"
+                onClick={displayCurrentLocation}
+                style={{
+                  position: "absolute",
+                  zIndex: "2",
+                  backgroundColor: "white",
+                  color: "black",
+                  border: "none",
+                  borderRadius: "50%",
+                  marginTop: "15px",
+                  marginLeft: "15px",
+                }}
+              >
                 <PiGpsFixLight />
               </Button>
             </div>
