@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,6 +16,7 @@ class Location extends StatefulWidget {
 
 class _LocationState extends State<Location> {
   late KakaoMapController mapController;
+  String BaseUrl = dotenv.get("BASE_URL");
   Set<Marker> markers = {};
   List<Circle> circles = [];
   List<CustomOverlay> customOverlays = [];
@@ -30,8 +34,15 @@ class _LocationState extends State<Location> {
     _determinePosition();
   }
 
+  Future<String> getBase64Image(String imagePath) async {
+    ByteData imageData = await rootBundle.load(imagePath);
+    Uint8List bytes = imageData.buffer.asUint8List();
+    String base64Image = base64Encode(bytes);
+    return 'data:image/png;base64,$base64Image';
+  }
+
   fetchData() async {
-    final response = await http.get(Uri.parse('http://192.168.70.166:5000/Map'));
+    final response = await http.get(Uri.parse('$BaseUrl/Map'));
     if (response.statusCode == 200) {
       setState(() {
         data = json.decode(response.body);
@@ -44,13 +55,19 @@ class _LocationState extends State<Location> {
     }
   }
 
-  void _addMarkers() {
+  void _addMarkers() async {
     for (var facility in data) {
       double latitude = double.tryParse(facility['latitude'].toString()) ?? 0.0;
       double longitude = double.tryParse(facility['longitude'].toString()) ?? 0.0;
 
       LatLng position = LatLng(latitude, longitude);
       String markerId = UniqueKey().toString();
+
+      // 이미지 경로에 따라 Base64 이미지 생성
+      String markerImage = facility['type'] == 'police'
+          ? await getBase64Image('images/police.png')
+          : await getBase64Image('images/hospital.png');
+
       markers.add(Marker(
         markerId: markerId,
         latLng: position,
@@ -58,13 +75,11 @@ class _LocationState extends State<Location> {
         height: 44,
         offsetX: 15,
         offsetY: 24,
-        markerImageSrc: facility['type'] == 'police'
-            ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png'
-            : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
+        markerImageSrc: markerImage,
       ));
 
       customOverlays.add(CustomOverlay(
-        customOverlayId: markerId, // 마커 ID와 오버레이 ID를 맞춤
+        customOverlayId: markerId,
         latLng: position,
         content: '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
             '  <p style="color: white; font-size: 16px; font-weight: bold; margin: 0; text-align: center;">${facility['name']}</p>'
@@ -135,17 +150,20 @@ class _LocationState extends State<Location> {
     });
   }
 
-  void _filterMarkers(String? type) {
+  void _filterMarkers(String? type) async {
     Set<Marker> filteredMarkers = {};
-    List<CustomOverlay> filteredOverlays = []; // 필터링된 오버레이를 저장하는 리스트
+    List<CustomOverlay> filteredOverlays = [];
 
-    if (type == null || type == 'all') {
-      for (var facility in data) {
+    for (var facility in data) {
+      if (type == null || type == 'all' || facility['type'] == type) {
         double latitude = double.tryParse(facility['latitude'].toString()) ?? 0.0;
         double longitude = double.tryParse(facility['longitude'].toString()) ?? 0.0;
 
         LatLng position = LatLng(latitude, longitude);
         String markerId = UniqueKey().toString();
+        String markerImage = await getBase64Image(
+            facility['type'] == 'police' ? 'images/police.png' : 'images/hospital.png');
+
         filteredMarkers.add(Marker(
           markerId: markerId,
           latLng: position,
@@ -153,13 +171,11 @@ class _LocationState extends State<Location> {
           height: 44,
           offsetX: 15,
           offsetY: 24,
-          markerImageSrc: facility['type'] == 'police'
-              ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png'
-              : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
+          markerImageSrc: markerImage,
         ));
 
         filteredOverlays.add(CustomOverlay(
-          customOverlayId: markerId, // 마커 ID와 오버레이 ID를 맞춤
+          customOverlayId: markerId,
           latLng: position,
           content: '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
               '  <p style="color: white; font-size: 16px; font-weight: bold; margin: 0; text-align: center;">${facility['name']}</p>'
@@ -172,47 +188,12 @@ class _LocationState extends State<Location> {
           zIndex: 5,
         ));
       }
-    } else {
-      for (var facility in data) {
-        if (facility['type'] == type) {
-          double latitude = double.tryParse(facility['latitude'].toString()) ?? 0.0;
-          double longitude = double.tryParse(facility['longitude'].toString()) ?? 0.0;
-
-          LatLng position = LatLng(latitude, longitude);
-          String markerId = UniqueKey().toString();
-          filteredMarkers.add(Marker(
-            markerId: markerId,
-            latLng: position,
-            width: 40,
-            height: 44,
-            offsetX: 15,
-            offsetY: 24,
-            markerImageSrc: type == 'police'
-                ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png'
-                : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_blue.png',
-          ));
-
-          filteredOverlays.add(CustomOverlay(
-            customOverlayId: markerId, // 마커 ID와 오버레이 ID를 맞춤
-            latLng: position,
-            content: '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
-                '  <p style="color: white; font-size: 16px; font-weight: bold; margin: 0; text-align: center;">${facility['name']}</p>'
-                '<p style="color: #f1c40f; margin: 5px 0; text-align: center; font-size: 14px;">${facility['type']}</p>'
-                ' <div style="border-top: 1px solid #f1c40f; margin-top: 5px;"></div>'
-                ' <p style="color: white; font-size: 12px; margin: 5px 0; text-align: center;">주소: ${facility['address']}</p>'
-                '<p style="color: white; font-size: 12px; margin: 5px 0; text-align: center;">전화번호 : ${facility['phone_number']}</p>'
-                '</div>',
-            yAnchor: 1.4,
-            zIndex: 5,
-          ));
-        }
-      }
     }
 
     setState(() {
       markers = filteredMarkers;
-      customOverlays = filteredOverlays; // 필터링된 오버레이로 업데이트
-      selectedOverlayId = ''; // 카테고리 변경 시 오버레이 초기화
+      customOverlays = filteredOverlays;
+      selectedOverlayId = '';
     });
   }
 

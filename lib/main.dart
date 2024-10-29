@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Homepage(),
+      home: Initial(),
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
       ),
