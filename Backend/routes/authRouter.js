@@ -161,11 +161,83 @@ router.post('/stores', async (req, res) => {
 
 /**
  * @swagger
+ * /auth/stores/{store_id}:
+ *   get:
+ *     summary: 매장 정보 조회
+ *     tags:
+ *       - Stores
+ *     description: 주어진 store_id를 기반으로 매장 정보를 조회합니다.
+ *     parameters:
+ *       - name: store_id
+ *         in: path
+ *         required: true
+ *         description: 조회할 매장의 ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 성공적으로 매장 정보를 반환합니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: 매장 ID
+ *                 name:
+ *                   type: string
+ *                   description: 매장 이름
+ *                 address:
+ *                   type: string
+ *                   description: 매장 주소
+ *                 phone_number:
+ *                   type: string
+ *                   description: 매장 전화번호
+ *                 business_number:
+ *                   type: string
+ *                   description: 사업자 번호
+ *                 latitude:
+ *                   type: number
+ *                   description: 위도
+ *                 longitude:
+ *                   type: number
+ *                   description: 경도
+ *       404:
+ *         description: 매장을 찾을 수 없습니다.
+ *       500:
+ *         description: 매장 정보를 가져오는 중 오류가 발생했습니다.
+ */
+
+// 매장 정보 조회 라우터 (유저 아이디 기준)
+router.get('/stores/:user_id', async (req, res) => {
+    const { user_id } = req.params; // 요청에서 매장 ID 추출
+
+    try {
+        // 매장 정보를 ID로 조회
+        const store = await storeController.getStoreById(user_id);
+
+        // 매장이 존재하지 않을 경우 404 응답
+        if (!store) {
+            return res.status(404).send('Store not found');
+        }
+
+        // 매장 정보를 성공적으로 찾은 경우 200 응답과 함께 매장 정보 반환
+        res.status(200).json(store);
+    } catch (err) {
+        // 오류가 발생한 경우 콘솔에 오류 로그 출력 및 500 응답
+        console.error('Error fetching store:', err);
+        res.status(500).send('Error retrieving store information');
+    }
+});
+
+
+/**
+ * @swagger
  * /auth/update:
  *   put:
- *     summary: Update user information
- *     tags:
- *       - Auth
+ *     summary: Update user and store information
+ *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -177,50 +249,66 @@ router.post('/stores', async (req, res) => {
  *             properties:
  *               email:
  *                 type: string
- *                 example: "john@example.com"
+ *                 description: The user's email address
  *               phone_number:
  *                 type: string
- *                 example: "123-456-7890" 
- *               gender:
- *                 type: string
- *                 example: "man"
- *               birth:
- *                 type: string
- *                 example: "991213"
+ *                 description: The user's phone number
  *               mem_name:
  *                 type: string
- *                 example: "John"
+ *                 description: The user's name
+ *               store:
+ *                 type: object
+ *                 properties:
+ *                   address:
+ *                     type: string
+ *                     description: Store's address
+ *                   business_number:
+ *                     type: string
+ *                     description: Store's business registration number
+ *             required:
+ *               - phone_number
+ *               - mem_name
+ *               - address
+ *               - business_number
  *     responses:
  *       200:
- *         description: User information updated successfully
+ *         description: User and store information updated successfully
  *       400:
- *         description: Invalid input or missing required fields
+ *         description: Required fields are missing
  *       500:
- *         description: Error updating user information
+ *         description: Error updating user or store information
  */
 
-// 사용자 정보 업데이트
-router.put('/update', authController.authenticateToken, async (req, res) => {
-    const { email, phone_number, gender, birth, mem_name } = req.body;
 
-    if (!phone_number || !gender || !birth || !mem_name) {
-        return res.status(400).send('Phone number, gender, birth, and mem_name are required');
+
+// 사용자 및 매장 정보 업데이트 (마이페이지)
+router.put('/update', authController.authenticateToken, async (req, res) => {
+    const { email, phone_number, mem_name, store } = req.body;
+    const { address, business_number } = store || {}; // store 정보가 없는 경우를 대비
+
+    // 필수 필드 체크
+    if (!phone_number || !mem_name || !address || !business_number) {
+        return res.status(400).send('Phone number, mem_name, address, and business_number are required');
     }
 
     try {
-        await authController.updateUser(req.user.userId, { 
+        // 사용자 및 매장 정보 업데이트
+        await authController.updateUserAndStore(req.user.userId, { 
             email, 
             phone_number, 
-            gender, 
-            birth,
-            mem_name
+            mem_name 
+        }, { 
+            address, 
+            business_number 
         });
-        res.status(200).send('User information updated successfully');
+
+        res.status(200).send('User and store information updated successfully');
     } catch (err) {
-        console.error('Error updating user information:', err);
-        res.status(500).send('Error updating user information');
+        console.error('Error updating user or store information:', err);
+        res.status(500).send('Error updating user or store information');
     }
 });
+
 
 /**
  * @swagger

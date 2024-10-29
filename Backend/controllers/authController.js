@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db');
+const pool = require('../config/dbConfig');
 
 async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null) {
     console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth);
@@ -103,6 +104,8 @@ async function login(req, res) {
         
         res.status(200).json({ 
             success: true, 
+            userId: user.user_id,
+            username: user.username,
             message: 'Login successful', 
             token 
         });
@@ -174,24 +177,75 @@ async function authenticateUser(username, password) {
     return user;
 }
 
-// 사용자 정보 업데이트
-async function updateUser(userId, updateData) {
-    const query = `UPDATE Users SET email = ?, phone_number = ?, gender = ?, birth = ?, mem_name = ? WHERE user_id = ?`;
-    const params = [
-        updateData.email,
-        updateData.phone_number,
-        updateData.gender,
-        updateData.birth,
-        updateData.mem_name, 
-        userId
-    ];
+const updateUser = async (userId, userData) => {
+    const { email, phone_number, mem_name } = userData;
+    
+    const query = `
+        UPDATE Users
+        SET email = ?, phone_number = ?, mem_name = ?
+        WHERE user_id = ?
+    `;
+    const values = [email, phone_number, mem_name, userId];
 
-    const result = await db.executeQuery(query, params);
+    return new Promise((resolve, reject) => {
+        db.executeQuery(query, values, (error, results) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(results);
+        });
+    });
+};
 
-    if (result.affectedRows === 0) {
-        throw new Error('Invalid user ID or update data');
+const updateStore = async (userId, storeData) => {
+    const { address, business_number } = storeData;
+    
+    const query = `
+        UPDATE Stores
+        SET address = ?, business_number = ?
+        WHERE user_id = ?
+    `;
+    const values = [address, business_number, userId];
+
+    return new Promise((resolve, reject) => {
+        db.executeQuery(query, values, (error, results) => {
+            if (error) {
+                return reject(error);
+            }
+            resolve(results);
+        });
+    });
+};
+
+
+const updateUserAndStore = async (userId, userData, storeData) => {
+    const connection = await pool.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+
+        // 사용자 정보 업데이트
+        await connection.execute(
+            `UPDATE Users SET email = ?, phone_number = ?, mem_name = ? WHERE user_id = ?`,
+            [userData.email, userData.phone_number, userData.mem_name, userId]
+        );
+
+        // 매장 정보 업데이트
+        await connection.execute(
+            `UPDATE Stores SET address = ?, business_number = ? WHERE user_id = ?`,
+            [storeData.address, storeData.business_number, userId]
+        );
+
+        await connection.commit();
+        return "User and Store updated successfully";
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
     }
-}
+};
+
 
 // 매장에 소속된 모든 경비원 조회
 async function getGuardsByStore(storeId) {
@@ -283,6 +337,8 @@ module.exports = {
     authorizeGuard,
     authorizeUser,
     updateUser,
+    updateStore,
+    updateUserAndStore,
     deleteUser,
     getAllUsers,
     getGuardsByStore,

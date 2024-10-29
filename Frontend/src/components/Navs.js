@@ -113,6 +113,8 @@ function Navs() {
   // 로그아웃 함수
   const logout = () => {
     localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('username');
     setIsLoggedIn(false);
     localStorage.removeItem("activeMenu");
     window.location.href = "/";

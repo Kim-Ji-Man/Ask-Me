@@ -64,10 +64,12 @@ router.post('/password', async (req, res) => {
 router.post('/change-password', async (req, res) => {
     const { username, current_password, new_password, confirm_new_password } = req.body;
 
+    // 모든 필드가 입력되었는지 확인
     if (!username || !current_password || !new_password || !confirm_new_password) {
         return res.status(400).json({ message: '모든 필드를 입력해주세요.' });
     }
 
+    // 새 비밀번호와 확인 비밀번호 일치 여부 확인
     if (new_password !== confirm_new_password) {
         return res.status(400).json({ message: '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.' });
     }
@@ -79,7 +81,7 @@ router.post('/change-password', async (req, res) => {
         if (results.length > 0) {
             const user = results[0];
 
-            // 현재 비밀번호가 맞는지 확인
+            // 현재 비밀번호 확인
             const isMatch = await bcrypt.compare(current_password, user.password);
             if (!isMatch) {
                 return res.status(401).json({ message: '현재 비밀번호가 올바르지 않습니다.' });
@@ -92,14 +94,16 @@ router.post('/change-password', async (req, res) => {
             const updateQuery = 'UPDATE Users SET password = ? WHERE username = ?';
             await db.executeQuery(updateQuery, [hashedNewPassword, username]);
 
-            return res.status(200).json({ message: '비밀번호가 성공적으로 변경되었습니다.' });
+            return res.status(200).json({success: true, message: '비밀번호가 성공적으로 변경되었습니다.' });
         } else {
             return res.status(404).json({ message: '일치하는 사용자를 찾을 수 없습니다.' });
         }
     } catch (err) {
+        console.error('데이터베이스 오류:', err); // 서버 콘솔에 에러 로그 추가
         return res.status(500).json({ message: '데이터베이스 오류' });
     }
 });
+
 
 /**
  * @swagger

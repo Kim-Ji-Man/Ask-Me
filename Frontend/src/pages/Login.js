@@ -43,6 +43,8 @@ const Login = () => {
 
       if (res.data.success) {
         // 로그인 성공 시 localStorage에 토큰 저장
+        localStorage.setItem('userId', res.data.userId); 
+        localStorage.setItem('username', res.data.username); 
         localStorage.setItem('jwtToken', res.data.token);
 
         Swal.fire({
