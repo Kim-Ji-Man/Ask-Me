@@ -15,7 +15,8 @@ const MyPage = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState(localStorage.getItem('username') || ''); // 로컬 스토리지에서 사용자명 가져오기
+  const [username] = useState(localStorage.getItem('username') || ''); // 로컬 스토리지에서 사용자명 가져오기
+  const [initialUserInfo, setInitialUserInfo] = useState({}); // 초기 값을 저장
 
   useEffect(() => {
     fetchUserInfo();
@@ -32,21 +33,23 @@ const MyPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-
+  
       const storeResponse = await axios.get(`http://localhost:5000/auth/stores/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
 
-      setUserInfo({
+      const fetchedUserInfo = {
         name: response.data.mem_name,
         phone: response.data.phone_number,
         email: response.data.email,
         businessNumber: storeResponse.data.business_number || '',
         address: storeResponse.data.address || ''
-      });
+      };
   
+      setUserInfo(fetchedUserInfo);
+      setInitialUserInfo(fetchedUserInfo); // 초기값을 여기에서 설정
     } catch (error) {
       console.error('사용자 정보를 가져오는 중 오류 발생:', error);
       Swal.fire({
@@ -58,11 +61,19 @@ const MyPage = () => {
     } finally {
       setLoading(false);
     }
+  };  
+
+  // 취소, 초기값
+  const handleCancel = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setUserInfo(initialUserInfo); // 초기값으로 되돌림
   };
+
 
   // 사용자 정보 저장 함수
   const handleSave = async () => {
-    const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('jwtToken');
 
     try {
@@ -222,8 +233,8 @@ const MyPage = () => {
         )}
         
         <div className="button-row">
-          <button className="cancel-button">취소</button>
-          <button className="save-button" onClick={handleSave}>저장</button>
+          <button className="cancel-button" onClick={handleCancel}>초기화</button>
+          <button className="save-button" onClick={handleSave}>수정</button>
         </div>
       </div>
 
@@ -267,12 +278,19 @@ const MyPage = () => {
             />
           </div>
           <div className="button-row">
-            <button className="cancel-button">취소</button>
-            <button className="save-button" type="submit">저장</button>
+            <button 
+              type="button"
+              className="cancel-button"
+              onClick={handleCancel}
+            >
+              초기화
+            </button>
+            <button className="save-button" type="submit">수정</button>
           </div>
         </form>
       </div>
-    </div>
+      </div>
+
   );
 };
 
