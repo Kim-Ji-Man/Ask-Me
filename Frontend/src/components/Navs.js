@@ -22,17 +22,23 @@ function Navs() {
   const [alerts, setAlerts] = useState([]);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [memberGrade, setMemberGrade] = useState(2); // 기본값을 user로 설정
-  const [hasNewAlert, setHasNewAlert] = useState(false);
+  const [hasNewAlert, setHasNewAlert] = useState(() => {
+    // 초기값을 로컬 스토리지에서 불러옴
+    return localStorage.getItem('hasNewAlert') === 'true';
+}); 
+const [alertCount, setAlertCount] = useState(0); // 기존 알림 개수
 
   const alertRef = useRef(null);
 
-  // 경고 토글 함수
-  const toggleAlert = () => {
-    setIsAlertOpen(!isAlertOpen);
-    if (hasNewAlert) {
-      setHasNewAlert(false); // 알림창 열리면 새로운 알림 표시 제거
-    }
-  };
+// 경고 토글 함수
+const toggleAlert = () => {
+  setIsAlertOpen(!isAlertOpen);
+  if (hasNewAlert) {
+    setHasNewAlert(false); // 알림창 열리면 새로운 알림 표시 제거
+    localStorage.setItem('hasNewAlert', 'false'); // 로컬 스토리지 업데이트
+  }
+};
+  
 
   // 클릭 외부 감지
   useEffect(() => {
@@ -58,27 +64,64 @@ function Navs() {
     },
     [navigate]
   );
- // 백엔드에서 알림 데이터 가져오기
   useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const response = await axios.get("/Alim/alertlist");
-        if (response.data.length > alerts.length) {
-          setHasNewAlert(true); // 새로운 데이터가 추가된 경우
-        }
-        setAlerts(response.data); // 데이터를 배열로 설정
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
-      }
+    let ws;
+
+    const connectWebSocket = () => {
+        ws = new WebSocket('ws://localhost:5000');
+
+        ws.onopen = () => {
+            console.log("WebSocket 연결 성공");
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'notification') {
+                console.log("새로운 알림:", data.message);
+                fetchAlerts(true); // 새로운 데이터가 있을 때만 fetchAlerts 호출
+            }
+        };
+
+        ws.onclose = () => {
+            console.log("WebSocket 연결 종료, 5초 후 재연결 시도");
+            setTimeout(connectWebSocket, 5000); // 5초 후 재연결 시도
+        };
     };
 
-    fetchAlerts();
-    // const intervalId = setInterval(fetchAlerts, 1000); // 매 분마다 데이터 갱신
+    connectWebSocket();
 
-    // return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 제거
-  }, []);
+    return () => {
+        if (ws) ws.close(); // 컴포넌트 언마운트 시 WebSocket 연결 해제
+    };
+}, []);
 
+// 경로 변경 시마다 fetchAlerts 호출
+useEffect(() => {
+    fetchAlerts(); // 알림 데이터를 항상 최신 상태로 유지
+}, [location.pathname]); // 경로 변경 시마다 실행
+
+const fetchAlerts = async (isNewNotification = false) => {
+  try {
+      const response = await axios.get('/Alim/alertlist');
+      
+      // 새로운 알림 개수 확인을 통해 `hasNewAlert` 업데이트
+      if (isNewNotification && response.data.length > alertCount) { 
+          setHasNewAlert(true);
+          localStorage.setItem('hasNewAlert', 'true');
+          setAlertCount(response.data.length);
+          console.log(response.data.length,"네비1");
+          
+      }
+
+      setAlerts(response.data); // 항상 최신 알림 리스트로 설정
+      setAlertCount(response.data.length); // 알림 개수 업데이트
+      console.log(response.data.length,"네비2");
+
+
+  } catch (error) {
+      console.error('Error fetching alerts:', error);
+  }
+};
   // 시간 계산 함수
   const timeSince = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -275,14 +318,12 @@ function Navs() {
                 />
               )}
 
-              <div className="alert-icon" onClick={toggleAlert} ref={alertRef}>
-                <FaBell
-                  size={24}
-                  style={{ color: hasNewAlert ? "red" : "lightgrey" }}
-                />
+<div className="alert-icon" onClick={toggleAlert} ref={alertRef}>
+                <FaBell size={24} style={{ color: hasNewAlert ? 'red' : 'lightgrey' }} />
                 {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
                   // <span className="badge">{alerts.length}</span>
                   <span className="badge"></span>
+
                 )}
 
                 {isAlertOpen && (
@@ -291,20 +332,15 @@ function Navs() {
                       <strong>경고</strong>
                     </div>
                     <ul>
-                      {alerts.slice(0, 5).map((alert) => (
-                        <li
-                          key={`${alert.alert_id}-${alert.device_name}`}
-                          className={alert.level}
-                        >
-                          {renderIcon(alert.level)}
-                          <span className="message">{`${alert.device_name}에서 ${alert.message}`}</span>
-                          <br />
-                          <small className="timestamp">
-                            {timeSince(alert.detection_time)}
-                          </small>
-                        </li>
-                      ))}
-                    </ul>
+  {alerts.slice(0, 5).map((alert) => (
+    <li key={`${alert.alert_id}-${alert.device_name}`} className={alert.level}>
+      {renderIcon(alert.level)}
+      <span className="message">{`${alert.device_name}에서 ${alert.message}`}</span>
+      <br />
+      <small className="timestamp">{timeSince(alert.detection_time)}</small>
+    </li>
+  ))}
+</ul>
                   </div>
                 )}
               </div>
