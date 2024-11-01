@@ -1,3 +1,4 @@
+
 require('dotenv').config();
 
 const express = require('express');
@@ -24,12 +25,16 @@ const commentRouter = require('./routes/commentRouter');
 const likeRouter = require('./routes/likeRouter');
 const reportRouter = require('./routes/reportRouter');
 const mypageRouter = require('./routes/mypageRouter');
-const { createWebSocketServer } = require('./ALimsocket');
+const { createWebSocketServer, sendNotification, broadcastAlert } = require('./websockets'); 
+const bodyParser = require('body-parser');
+
 
 // Express 앱 초기화
 const app = express();
 const server = http.createServer(app);
 createWebSocketServer(server);
+
+
 
 // Swagger 설정
 const swaggerOption = {
@@ -82,6 +87,7 @@ app.use('/community', commentRouter);
 app.use('/community', likeRouter);
 app.use('/community', reportRouter);
 app.use('/mypage', mypageRouter);
+app.use(bodyParser.json());
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정
 
@@ -101,6 +107,31 @@ app.post('/upload_image', (req, res) => {
   });
 });
 
+// 일반 알림 API 엔드포인트
+app.post('/notify', (req, res) => {
+    const { message } = req.body;
+  
+    if (message) {
+      console.log(`일반 알림 전송: ${message}`);
+      sendNotification(message); // 일반 알림 전송
+    }
+  
+    res.status(200).send('Notification sent');
+  });
+  
+  // 흉기 감지 알림 API 엔드포인트
+  app.post('/alert', (req, res) => {
+    const { detected } = req.body;
+  
+    if (detected) {
+      console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
+      broadcastAlert('Weapon detected!'); // 흉기 감지 알림 전송
+    }
+  
+    res.status(200).send('Alert received');
+  });
+  
+
 // 기본 라우트
 app.get('/', (req, res) => {
     res.send('Welcome to the API!');
@@ -114,3 +145,4 @@ server.listen(PORT, () => {
 });
 
 module.exports = app;
+
