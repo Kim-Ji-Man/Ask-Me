@@ -3,15 +3,63 @@ import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/mypage_folder/mycommentpage.dart';
 import 'package:flutter_askme/screens/mypage_folder/mypostpage.dart';
 import 'package:flutter_askme/screens/mypage_folder/noticepage.dart';
+import 'package:flutter_askme/screens/mypage_folder/notificationsettings.dart';
 import 'package:flutter_askme/screens/mypage_folder/usersupport.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'mypage_folder/myinfopage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_askme/screens/login.dart';
+
 
 class Mypage extends StatefulWidget {
   @override
   _MypageState createState() => _MypageState();
+}
+
+
+class LogoutService {
+  final String baseUrl = dotenv.get("BASE_URL");
+
+  Future<void> logoutUser(BuildContext context) async {
+    // 토큰을 가져와 헤더에 추가
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token == null) {
+      // 토큰이 없으면 로그인 페이지로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Login()),
+      );
+      return;
+    }
+
+    // 로그아웃 요청
+    final response = await http.post(
+      Uri.parse('$baseUrl/auth/logout'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // 로그아웃 성공 시 토큰 삭제
+      await prefs.remove('token');
+
+      // 로그인 페이지로 이동
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Login()),
+      );
+    } else {
+      // 로그아웃 실패 시 에러 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
+      );
+    }
+  }
 }
 
 class _MypageState extends State<Mypage> {
@@ -140,7 +188,7 @@ class _MypageState extends State<Mypage> {
         children: [
           _buildOptionItem(Icons.campaign, '공지사항', context, NoticePage()),
           _buildOptionItem(Icons.person, '내 정보', context, MyInfoPage()),
-          _buildOptionItem(Icons.notifications, '알림설정', context, null),
+          _buildOptionItem(Icons.notifications, '알림설정', context, NotificationSettings()),
         ],
       ),
     );
@@ -192,7 +240,7 @@ class _MypageState extends State<Mypage> {
           currentUserNickname: nick,
           allComments: [],
         )),
-        _buildListTile('고객 지원', Icons.headset_mic, context, Usersupport()),
+        _buildListTile('고객 지원', Icons.headset_mic, context, UserSupport()),
       ],
     );
   }
