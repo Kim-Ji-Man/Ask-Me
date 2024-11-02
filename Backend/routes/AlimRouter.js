@@ -32,7 +32,7 @@ setInterval(async () => {
 
     try {
         const results = await db.executeQuery(sql);
-        console.log("감지중");
+        console.log("매장관리자 알림 감지중");
         
         // 새로운 알림이 있는지 확인 (마지막으로 처리한 noti_id와 비교)
         if (results.length > 0 && results[0].noti_id !== lastNotiId) {
@@ -44,7 +44,7 @@ setInterval(async () => {
     } catch (err) {
         console.error('Error fetching notifications:', err);
     }
-}, 5000); // 5초마다 확인
+}, 60000); // 5초마다 확인
 
 // 모든 알림 가져오기
 router.get('/', async (req, res) => {
@@ -108,15 +108,6 @@ router.get('/alertlist', async (req, res) => {
 
     try {
         const results = await db.executeQuery(sql);
-
-        // 새로운 알림이 있는지 확인 (마지막으로 처리한 noti_id와 비교)
-        if (results.length > 0 && results[0].noti_id !== lastNotiId) {
-            lastNotiId = results[0].noti_id; // 마지막으로 처리한 noti_id 업데이트
-            sendNotification("새로운 알림이 도착했습니다!"); // 새로운 데이터가 있을 때만 WebSocket으로 알림 전송
-            console.log("새로운 알림이 감지되었습니다.");
-            console.log(lastNotiId, "마지막알림아이디");
-        }
-
         res.send(results); // 클라이언트에 최신 5개의 알림 데이터를 반환
     } catch (err) {
         console.error('Error fetching notifications:', err);

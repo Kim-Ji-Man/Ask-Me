@@ -1,29 +1,43 @@
 const WebSocket = require('ws');
+const jwt = require('jsonwebtoken'); // JWT 토큰 사용을 가정
+const db = require('./models/db');
+
 
 let clients = [];
 
-// WebSocket 서버 생성 함수
 function createWebSocketServer(server) {
     const wss = new WebSocket.Server({ server });
 
-    // 클라이언트 연결 시 처리
-    wss.on('connection', (ws) => {
-        clients.push(ws);
-        console.log('새로운 클라이언트가 연결되었습니다.');
+    wss.on('connection', (ws, req) => {
+        // URL에서 쿼리 파라미터로 전달된 JWT 토큰 추출
+        const params = new URLSearchParams(req.url.split('?')[1]);
+        const token = params.get('token');
 
-        // 클라이언트 연결 해제 시 처리
+        if (token) {
+            try {
+                // JWT 토큰 검증
+                const decodedToken = jwt.verify(token, 'your_jwt_secret'); // 'process.env.JWT_SECRET'는 실제 비밀키로 변경
+                const userRole = decodedToken.role; // 역할 정보 추출
+                console.log(userRole);
+                console.log(decodedToken);
+                
+                // 클라이언트와 역할 저장
+                clients.push({ ws, role: userRole });
+                console.log(`새로운 클라이언트가 연결되었습니다. 역할: ${userRole}`);
+            } catch (err) {
+                console.error('유효하지 않은 토큰:', err);
+                ws.close(); // 유효하지 않은 토큰이면 연결 종료
+            }
+        } else {
+            console.error('토큰이 제공되지 않았습니다.');
+            ws.close(); // 토큰이 없으면 연결 종료
+        }
+
         ws.on('close', () => {
-            clients = clients.filter(client => client !== ws);
+            clients = clients.filter(client => client.ws !== ws);
             console.log('클라이언트 연결이 해제되었습니다.');
         });
 
-        // 클라이언트 메시지 수신 처리 (필요에 따라 추가 가능)
-        ws.on('message', (message) => {
-            console.log(`클라이언트로부터 메시지 수신: ${message}`);
-            // 여기서 수신된 메시지에 대한 추가 로직을 구현할 수 있습니다.
-        });
-
-        // 오류 발생 시 처리
         ws.on('error', (error) => {
             console.error('WebSocket 오류 발생:', error);
         });
@@ -32,12 +46,31 @@ function createWebSocketServer(server) {
     console.log('WebSocket 서버가 시작되었습니다.');
 }
 
-// 알림 전송 함수
-function sendNotification(message) {
+// 알림 전송 함수 (admin 역할에게만 전송)
+async function sendNotification(message) {
     console.log(`알림 전송: ${message}`);
+
+    // 데이터베이스에서 admin인 사용자 조회
+    const admins = await db.executeQuery("SELECT * FROM Users WHERE role = 'admin'");
+
     clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'notification', message }));
+        if (client.role === 'admin' && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({ type: 'notification', message }));
+        }
+    });
+}
+
+
+// 회원가입 알림 전송 함수 (master 역할에게만 전송)
+async function sendMember(message) {
+    console.log(`회원 알림 전송: ${message}`);
+
+    // 데이터베이스에서 master인 사용자 조회
+    const masters = await db.executeQuery("SELECT * FROM Users WHERE role = 'master'");
+
+    clients.forEach((client) => {
+        if (client.role === 'master' && client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({ type: 'register', message }));
         }
     });
 }
@@ -52,4 +85,4 @@ function broadcastAlert(message) {
     });
 }
 
-module.exports = { createWebSocketServer, sendNotification, broadcastAlert };
+module.exports = { createWebSocketServer, sendNotification, broadcastAlert,sendMember };

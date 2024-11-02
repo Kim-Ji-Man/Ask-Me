@@ -3,9 +3,41 @@ const router = express.Router();
 const bcrypt = require('bcrypt'); // bcrypt 라이브러리
 const db = require('../models/db');
 const jwt = require('jsonwebtoken');
+// const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+
+
+// // 마지막으로 처리한 user_id를 저장할 변수
+// let lastUserId = null;
+
+// // 5초마다 새로운 사용자 확인
+// setInterval(async () => {
+//     const sql = `
+//     SELECT 
+//         user_id, mem_name,role, created_at 
+//     FROM 
+//         Users 
+//     ORDER BY 
+//         user_id DESC 
+//     LIMIT 1;
+//     `;
+
+//     try {
+//         const results = await db.executeQuery(sql);
+//         console.log("시스템관리자 알림 감지중");
+        
+//         // 새로운 사용자가 있는지 확인 (마지막으로 처리한 user_id와 비교)
+//         if (results.length > 0 && results[0].user_id !== lastUserId) {
+//             lastUserId = results[0].user_id; // 마지막으로 처리한 user_id 업데이트
+//             sendMember(`${results[0].mem_name}님이 회원가입하였습니다!`); // WebSocket 또는 다른 방법으로 알림 전송
+//             console.log("새로운 사용자가 감지되었습니다:", results[0].mem_name);
+//         }
+//     } catch (err) {
+//         console.error('Error fetching new users:', err);
+//     }
+// }, 5000); // 5초마다 확인
 
 router.get('/', async (req, res) => {
-    const sql = 'SELECT * FROM Users';
+    const sql = 'SELECT * FROM Users ORDER BY created_at DESC';
     try {
         const results = await db.executeQuery(sql);
         res.send(results);
