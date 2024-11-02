@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { sendNotification } = require('../ALimsocket'); // WebSocket 알림 전송 함수 임포트
+const { sendNotification } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
 
 let lastNotiId = null; // 마지막으로 처리한 noti_id를 저장
 
