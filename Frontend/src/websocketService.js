@@ -1,4 +1,3 @@
-// websocketService.js
 class WebSocketService {
   constructor() {
     this.socket = null;
@@ -11,7 +10,8 @@ class WebSocketService {
       return;
     }
 
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    // 이미 연결된 WebSocket이 있으면 새로운 연결을 하지 않음
+    if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
       console.log("이미 연결된 WebSocket이 있습니다.");
       return;
     }
@@ -22,8 +22,8 @@ class WebSocketService {
       console.log("WebSocket 연결 성공");
     };
 
-    this.socket.onerror = (error) => {
-      console.error("WebSocket 오류:", error);
+    this.socket.onerror = (event) => {
+      console.error("WebSocket 오류:", event.message || event);
     };
 
     this.socket.onmessage = (event) => {
@@ -34,9 +34,18 @@ class WebSocketService {
       this.listeners.forEach((listener) => listener(data));
     };
 
+    let reconnectAttempts = 0;
+    const maxReconnectDelay = 16000; // 최대 지연 시간
+    
     this.socket.onclose = () => {
-      console.log("WebSocket 연결 종료, 5초 후 재연결 시도");
-      setTimeout(() => this.connect(token), 5000); // 재연결 시도
+      console.log("WebSocket 연결 종료, 재연결 시도 중...");
+      
+      let reconnectDelay = Math.min(1000 * Math.pow(2, reconnectAttempts), maxReconnectDelay); // 지수 백오프 계산
+      
+      setTimeout(() => {
+        reconnectAttempts++;
+        this.connect(token);
+      }, reconnectDelay);
     };
   }
 
@@ -51,8 +60,9 @@ class WebSocketService {
   }
 
   close() {
-    if (this.socket) {
+    if (this.socket && this.socket.readyState !== WebSocket.CLOSED) {
       this.socket.close();
+      console.log("WebSocket 연결 종료");
     }
   }
 }
