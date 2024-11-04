@@ -79,8 +79,8 @@ async function sendMember(message) {
 function broadcastAlert(message) {
     console.log(`흉기 감지 알림 전송: ${message}`);
     clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ type: 'alert', message }));
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(JSON.stringify({ type: 'alert', message }));
         }
     });
 }

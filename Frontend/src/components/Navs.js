@@ -11,6 +11,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import "../css/Nav.css";
 import axios from "../axios";
+import Swal from "sweetalert2"; 
 
 function Navs() {
   const navigate = useNavigate();
@@ -81,16 +82,90 @@ const toggleAlert = () => {
             console.log("WebSocket 연결 성공");
         };
 
+        ws.onerror = (error) => {
+            console.error("WebSocket 오류:", error);
+        };
+
         ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'notification') {
-                console.log("새로운 알림:", data.message);
-                fetchAlerts(true); // 새로운 데이터가 있을 때만 fetchAlerts 호출
-            }
-            if (data.type === 'register') {
-                console.log("새로운 회원가입 알림:", data.message);
-                fetchAlerts(true);
-                setHasNewAlert(true); // 새로운 알림이 있음을 표시
+            console.log("메시지 수신:", event.data); // 수신한 원본 데이터 로그 추가
+            try {
+                const data = JSON.parse(event.data); // 서버로부터 받은 메시지를 JSON 형태로 파싱
+                console.log("수신한 데이터:", data); // 수신한 데이터를 로그로 출력
+
+                if (data.type === 'notification') {
+                  console.log("새로운 알림:", data.message);
+                  fetchAlerts(true); // 새로운 데이터가 있을 때만 fetchAlerts 호출
+              }
+              if (data.type === 'register') {
+                  console.log("새로운 회원가입 알림:", data.message);
+                  fetchAlerts(true);
+                  setHasNewAlert(true); // 새로운 알림이 있음을 표시
+              }
+
+                // 흉기 감지 알림 처리
+                if (data.type === 'alert') {
+                    console.log("흉기 감지 알림:", data.message);
+                    Swal.fire({
+                        title: '흉기거수자 확인!!',
+                        text: '알림이 갔습니다.',
+                        imageUrl: 'img/hyo1.PNG',
+                        imageWidth: 400,
+                        imageHeight: 200,
+                        imageAlt: 'Custom image',
+                        confirmButtonText: '트래킹모드',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        allowEnterKey: false
+                    }).then(result => {
+                        if (result.isConfirmed) {
+                            Swal.bindClickHandler();
+                            Swal.fire({
+                                width: '70%',
+                                title: '<strong>트래킹모드</strong>',
+                                html:
+                                    '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
+                                    ' <div className="tr-container">' +
+                                    `<img src="http://localhost:8000/video_feed" alt="Video Stream" style="width: 80%; height: auto;"/>` +
+                                    '</div>',
+                                focusConfirm: true,
+                                confirmButtonText: '확인',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                allowEnterKey: false
+                            }).then(result => {
+                                Swal.bindClickHandler();
+                                Swal.fire({
+                                    title: '이미지 or 영상을 저장하시겠습니까?',
+                                    imageUrl: 'img/hyo1.PNG',
+                                    imageWidth: 400,
+                                    imageHeight: 200,
+                                    imageAlt: 'Custom image',
+                                    showCancelButton: true,
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: '확인',
+                                    cancelButtonText: '취소',
+                                    allowOutsideClick: false,
+                                    allowEscapeKey: false,
+                                    allowEnterKey: false
+                                }).then(result => {
+                                    if (result.isConfirmed) {
+                                        Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
+                                    } else {
+                                        Swal.fire('종료합니다', '화끈하시네요~!', 'success');
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("메시지 처리 중 오류 발생:", error);
+                Swal.fire({
+                    title: '연결 오류',
+                    text: 'WebSocket 연결에 문제가 발생했습니다. 다시 시도해 주세요.',
+                    icon: 'error',
+                    confirmButtonText: '확인'
+                });
             }
         };
 
@@ -105,7 +180,8 @@ const toggleAlert = () => {
     return () => {
         if (ws) ws.close(); // 컴포넌트 언마운트 시 WebSocket 연결 해제
     };
-}, []);
+}, [])
+
 
 // 경로 변경 시마다 fetchAlerts 호출
 useEffect(() => {
