@@ -49,82 +49,102 @@ const CCTV = () => {
     setAdminComment(e.target.value);
   };
 
-  useEffect(() => {
-    const socket = new WebSocket("ws://localhost:5000");
-    
-    socket.onopen = () => {
-      console.log("WebSocket connected");
-    };
+//   useEffect(() => {
+
+//     let ws;
+
+//     const connectWebSocket = () => {
+//         const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
+//         if (!token) {
+//             console.error("JWT 토큰이 없습니다.");
+//             return; // 토큰이 없으면 WebSocket 연결을 시도하지 않음
+//         }
+
+//         ws = new WebSocket(`ws://localhost:5000?token=${token}`); // 쿼리 파라미터로 토큰 전달
+
+//         ws.onopen = () => {
+//           console.log("WebSocket connected");
+//         };
+
+//         ws.onmessage = (event) => {
+//           const data = JSON.parse(event.data);
+//           console.log("Message from server:", data.message);
+//           if (data.type === 'alert') {
+
+//           // 실시간 탐지 알림 표시
+//           Swal.bindClickHandler();
+//           Swal.fire({
+//             title: '흉기거수자 확인!!',
+//             text: '알림이 갔습니다.',
+//             imageUrl: 'img/hyo1.PNG',
+//             imageWidth: 400,
+//             imageHeight: 200,
+//             imageAlt: 'Custom image',
+//             confirmButtonText: '트래킹모드',
+//             allowOutsideClick: false,
+//             allowEscapeKey: false,
+//             allowEnterKey: false
+//           }).then(result => {
+//             if (result.isConfirmed) {
+//               Swal.bindClickHandler();
+//               Swal.fire({
+//                 width: '70%',
+//                 title: '<strong>트래킹모드</strong>',
+//                 html:
+//                   '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
+//                   ' <div className="tr-container">' +
+//                   `<img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>` +
+//                   '</div>',
+//                 focusConfirm: true,
+//                 confirmButtonText: '확인',
+//                 allowOutsideClick: false,
+//                 allowEscapeKey: false,
+//                 allowEnterKey: false
+//               }).then(result => {
+//                 Swal.bindClickHandler();
+//                 Swal.fire({
+//                   title: '이미지 or 영상을 저장하시겠습니까?',
+//                   imageUrl: 'img/hyo1.PNG',
+//                   imageWidth: 400,
+//                   imageHeight: 200,
+//                   imageAlt: 'Custom image',
+//                   showCancelButton: true,
+//                   cancelButtonColor: '#d33',
+//                   confirmButtonText: '확인',
+//                   cancelButtonText: '취소',
+//                   allowOutsideClick: false,
+//                   allowEscapeKey: false,
+//                   allowEnterKey: false
+//                 }).then(result => {
+//                   if (result.isConfirmed) {
+//                     Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
+//                   } else {
+//                     Swal.fire('종료합니다', '화끈하시네요~!', 'success');
+//                   }
+//                 });
+//               });
+//             }
+//           });
+//         };
+//       };
+
+//         ws.onclose = () => {
+//             console.log("WebSocket 연결 종료, 5초 후 재연결 시도");
+//             setTimeout(connectWebSocket, 5000); // 5초 후 재연결 시도
+//         };
+//     };
+
+//     connectWebSocket();
+
+//     return () => {
+//         if (ws) ws.close(); // 컴포넌트 언마운트 시 WebSocket 연결 해제
+//     };
+
+// }, []);
+
+
+
   
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("Message from server:", data.message);
-      
-      // 실시간 탐지 알림 표시
-      Swal.bindClickHandler();
-      Swal.fire({
-        title: '흉기거수자 확인!!',
-        text: '알림이 갔습니다.',
-        imageUrl: 'img/hyo1.PNG',
-        imageWidth: 400,
-        imageHeight: 200,
-        imageAlt: 'Custom image',
-        confirmButtonText: '트래킹모드',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        allowEnterKey: false
-      }).then(result => {
-        if (result.isConfirmed) {
-          Swal.bindClickHandler();
-          Swal.fire({
-            width: '70%',
-            title: '<strong>트래킹모드</strong>',
-            html:
-              '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
-              ' <div className="tr-container">' +
-              `<img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>` +
-              '</div>',
-            focusConfirm: true,
-            confirmButtonText: '확인',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            allowEnterKey: false
-          }).then(result => {
-            Swal.bindClickHandler();
-            Swal.fire({
-              title: '이미지 or 영상을 저장하시겠습니까?',
-              imageUrl: 'img/hyo1.PNG',
-              imageWidth: 400,
-              imageHeight: 200,
-              imageAlt: 'Custom image',
-              showCancelButton: true,
-              cancelButtonColor: '#d33',
-              confirmButtonText: '확인',
-              cancelButtonText: '취소',
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-              allowEnterKey: false
-            }).then(result => {
-              if (result.isConfirmed) {
-                Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
-              } else {
-                Swal.fire('종료합니다', '화끈하시네요~!', 'success');
-              }
-            });
-          });
-        }
-      });
-    };
-  
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-  
-    // 컴포넌트 언마운트 시 WebSocket 연결 종료
-    return () => {
-      socket.close();
-    };
-  }, []);
   
 
   return (

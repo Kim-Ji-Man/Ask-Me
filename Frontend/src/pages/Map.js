@@ -8,15 +8,14 @@ import { PiGpsFixLight } from "react-icons/pi";
 import axios from "../axios";
 
 const Map = () => {
-  const [radioValue, setRadioValue] = useState("2");
-  const [markers, setMarkers] = useState([]);
-  const [overlays, setOverlays] = useState([]);
-  const [circle, setCircle] = useState(null);
-  const [largecircles, setLargeCircle] = useState(null);
-  const [info, setInfo] = useState([]);
-  const [positions, setPositions] = useState({ police: [], hospital: [] });
+  const [radioValue, setRadioValue] = useState("1"); // 1: 전체, 2: 경찰서, 3: 병원, 4: 흉기 알림
+  const [policeMarkers, setPoliceMarkers] = useState([]);
+  const [hospitalMarkers, setHospitalMarkers] = useState([]);
+  const [alimMarkers, setAlimMarkers] = useState([]);
   const { kakao } = window;
   const [map, setMap] = useState(null);
+  const [locationMarker, setLocationMarker] = useState(null);
+  const [locationCircle, setLocationCircle] = useState(null);
   let ClickOverlay = null;
 
   useEffect(() => {
@@ -30,238 +29,160 @@ const Map = () => {
     const newMap = new kakao.maps.Map(mapContainer, mapOption);
     setMap(newMap);
 
+    // 경찰서와 병원 데이터 가져오기
     axios
       .get("/Map")
       .then((res) => {
-        setInfo(res.data);
-        console.log("info 데이터 가져와짐", res.data);
-
-        // 경찰서와 병원 위치 데이터를 newPositions에 저장
-        const newPositions = { police: [], hospital: [] };
-
-        res.data.forEach((item) => {
-          const positionData = {
-            title: item.name,
-            address: item.address,
-            phone: `전화번호 : ${item.phone_number}`,
-            latlng: new kakao.maps.LatLng(
-              parseFloat(item.latitude),
-              parseFloat(item.longitude)
-            ),
-            // pimg: item.type === "police" ? "img/police.png" : "img/redmarker.jpg",
-            type: item.type,
-          };
-
-          if (item.type === "police") {
-            newPositions.police.push(positionData);
-          } else if (item.type === "hospital") {
-            newPositions.hospital.push(positionData);
-          }
-        });
-
-        setPositions(newPositions);
-
-        // 지도가 로드된 후 기본으로 경찰서와 병원 마커 표시
-        if (newMap) {
-          setRadioValue("1"); // 초기 로드 시 전체 마커를 표시하기 위해 radioValue 설정
-          displayMarkers("police");
-          displayMarkers("hospital");
-        }
+        const policeData = res.data.filter(item => item.type === "police");
+        const hospitalData = res.data.filter(item => item.type === "hospital");
+        
+        setPoliceMarkers(createMarkers(policeData, "police", newMap));
+        setHospitalMarkers(createMarkers(hospitalData, "hospital", newMap));
       })
       .catch(() => {
-        console.log("데이터 가져오기 실패");
+        console.log("경찰서 및 병원 데이터 가져오기 실패");
+      });
+
+    // 흉기 알림 데이터 가져오기
+    axios
+      .get("/Map/Alim")
+      .then((res) => {
+        setAlimMarkers(createMarkers(res.data, "alim", newMap));
+        console.log(res.data,"흉기");
+        
+      })
+      .catch(() => {
+        console.log("흉기 알림 데이터 가져오기 실패");
       });
   }, []);
 
   useEffect(() => {
-    if (map && radioValue) {
-      clearMarkers(); // 기존 마커 지우기
+    if (map) {
+      clearMarkers();
       if (radioValue === "1") {
-        displayMarkers("police");
-        displayMarkers("hospital");
+        policeMarkers.forEach(marker => marker.setMap(map));
+        hospitalMarkers.forEach(marker => marker.setMap(map));
+        alimMarkers.forEach(marker => marker.setMap(map));
       } else if (radioValue === "2") {
-        displayMarkers("police");
+        policeMarkers.forEach(marker => marker.setMap(map));
       } else if (radioValue === "3") {
-        displayMarkers("hospital");
+        hospitalMarkers.forEach(marker => marker.setMap(map));
+      } else if (radioValue === "4") {
+        alimMarkers.forEach(marker => marker.setMap(map));
       }
     }
-  }, [radioValue, map]);
+  }, [radioValue, map, policeMarkers, hospitalMarkers, alimMarkers]);
 
-  const displayMarkers = (category) => {
-    let categoryMarkers = [];
-    let categoryOverlays = [];
+  const createMarkers = (data, category, map) => {
+    const imageSrc = {
+      police: "img/police.png",
+      hospital: "img/hospital.png",
+      alim: "img/hyoiconmarker.png"
+    }[category];
 
-    const policeImageSrc = "img/police.png";
-    const hospitalImageSrc = "img/hospital.png";
-    const policeImageSize = new kakao.maps.Size(64, 69);
-    const hospitalImageSize = new kakao.maps.Size(64, 69);
-    const policeImageOption = { offset: new kakao.maps.Point(27, 69) };
-    const hospitalImageOption = { offset: new kakao.maps.Point(27, 69) };
-
-    positions[category].forEach((data) => {
-      const imageSrc =
-        category === "police" ? policeImageSrc : hospitalImageSrc;
-      const imageSize =
-        category === "police" ? policeImageSize : hospitalImageSize;
-      const imageOption =
-        category === "police" ? policeImageOption : hospitalImageOption;
-
-      const markerImage = new kakao.maps.MarkerImage(
-        imageSrc,
-        imageSize,
-        imageOption
-      );
+    const markers = data.map(item => {
       const marker = new kakao.maps.Marker({
-        map: map,
-        position: data.latlng,
-        image: markerImage,
+        position: new kakao.maps.LatLng(item.latitude, item.longitude),
+        image: new kakao.maps.MarkerImage(imageSrc, new kakao.maps.Size(64, 69), {
+          offset: new kakao.maps.Point(27, 69)
+        })
       });
-
-      const overlay = createCustomOverlay(marker, data);
-      categoryMarkers.push(marker);
-      categoryOverlays.push(overlay);
+      const overlay = createCustomOverlay(marker, item, category);
+      kakao.maps.event.addListener(marker, "click", () => {
+        if (ClickOverlay) ClickOverlay.setMap(null);
+        overlay.setMap(map);
+        ClickOverlay = overlay;
+      });
+      return marker;
     });
-
-    setMarkers((prevMarkers) => [...prevMarkers, ...categoryMarkers]);
-    setOverlays((prevOverlays) => [...prevOverlays, ...categoryOverlays]);
+    return markers;
   };
 
-  const createCustomOverlay = (marker, data) => {
-    const CustomOverlays = new kakao.maps.CustomOverlay({
+  const createCustomOverlay = (marker, data, category) => {
+    const overlay = new kakao.maps.CustomOverlay({
       yAnchor: 1.45,
-      position: marker.getPosition(),
-    });
-    console.log(data);
-
-    const Customcontent = document.createElement("div");
-    Customcontent.className = "wrap";
-
-    const info = document.createElement("div");
-    info.className = "info";
-    Customcontent.appendChild(info);
-
-    const contentTitle = document.createElement("div");
-    contentTitle.className = "title";
-    contentTitle.appendChild(document.createTextNode(data.title));
-    info.appendChild(contentTitle);
-
-    const closeBtn = document.createElement("div");
-    closeBtn.className = "close";
-    closeBtn.setAttribute("title", "닫기");
-    closeBtn.onclick = function () {
-      CustomOverlays.setMap(null);
-    };
-    contentTitle.appendChild(closeBtn);
-
-    const bodyContent = document.createElement("div");
-    bodyContent.className = "body";
-    info.appendChild(bodyContent);
-
-    // const imgDiv = document.createElement("div");
-    // imgDiv.className = "img";
-    // bodyContent.appendChild(imgDiv);
-
-    // const imgContent = document.createElement("img");
-    // imgContent.src = data.pimg;
-    // imgContent.setAttribute("width", "73px");
-    // imgContent.setAttribute("height", "100px");
-    // imgDiv.appendChild(imgContent);
-
-    const descContent = document.createElement("div");
-    descContent.className = "desc";
-    bodyContent.appendChild(descContent);
-
-    const addressContent = document.createElement("div");
-    addressContent.className = "ellipsis";
-    addressContent.appendChild(document.createTextNode(data.address));
-    descContent.appendChild(addressContent);
-
-    const phoneContent = document.createElement("div");
-    phoneContent.className = "phone";
-    phoneContent.appendChild(document.createTextNode(data.phone));
-    descContent.appendChild(phoneContent);
-
-    // const LinkDiv = document.createElement("div");
-    // descContent.appendChild(LinkDiv);
-
-    // const LinkContent = document.createElement("a");
-    // LinkContent.className = "link";
-    // LinkContent.appendChild(document.createTextNode("길찾기"));
-    // LinkContent.addEventListener("click", function () {
-    //   LinkContent.setAttribute("href", data.Link);
-    // });
-    // LinkDiv.appendChild(LinkContent);
-
-    // const LinkContent2 = document.createElement("a");
-    // LinkContent2.className = "link2";
-    // LinkContent2.appendChild(document.createTextNode("예약"));
-    // LinkContent2.addEventListener("click", function () {
-    //   LinkContent2.setAttribute("href", data.Link2);
-    // });
-    // LinkDiv.appendChild(LinkContent2);
-
-    CustomOverlays.setContent(Customcontent);
-
-    kakao.maps.event.addListener(marker, "click", function () {
-      if (ClickOverlay) {
-        ClickOverlay.setMap(null);
-      }
-
-      CustomOverlays.setMap(map);
-      ClickOverlay = CustomOverlays;
+      position: marker.getPosition()
     });
 
-    return CustomOverlays;
+    const detectionTime = data.detection_time 
+    ? new Date(data.detection_time).toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }) 
+    : "정보 없음";
+
+    const content = document.createElement("div");
+    content.className = "wrap";
+    content.innerHTML = `
+      <div class="info">
+        <div class="title">${data.name || data.store_name} 
+          <div class="close" title="닫기" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()"></div>
+        </div>
+        <div class="body">
+          <div class="desc">
+            <div class="ellipsis">${data.address || detectionTime}</div>
+            <div class="phone">${data.phone_number || data.detected_weapon || "정보 없음"}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    overlay.setContent(content);
+    return overlay;
   };
 
   const clearMarkers = () => {
-    markers.forEach((marker) => marker.setMap(null));
-    overlays.forEach((overlay) => overlay.setMap(null));
-    setMarkers([]);
-    setOverlays([]);
+    policeMarkers.forEach(marker => marker.setMap(null));
+    hospitalMarkers.forEach(marker => marker.setMap(null));
+    alimMarkers.forEach(marker => marker.setMap(null));
+    if (locationMarker) locationMarker.setMap(null);
+    if (locationCircle) locationCircle.setMap(null);
     ClickOverlay = null;
   };
 
   const displayCurrentLocation = () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function (position) {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        const locPosition = new kakao.maps.LatLng(lat, lng);
-
-        if (circle || largecircles) {
-          circle.setMap(null);
-          largecircles.setMap(null);
+      navigator.geolocation.getCurrentPosition((position) => {
+        const locPosition = new kakao.maps.LatLng(position.coords.latitude, position.coords.longitude);
+  
+        // 기존 위치 마커와 원을 제거
+        if (locationMarker) {
+          locationMarker.setMap(null);
         }
-
-        const smallCircle = new kakao.maps.Circle({
+        if (locationCircle) {
+          locationCircle.setMap(null);
+        }
+  
+        // 현재 위치에 빨간색 원 마커 표시
+        const marker = new kakao.maps.Circle({
           center: locPosition,
-          radius: 8,
-          strokeWeight: 5,
-          strokeColor: "#FF0000",
-          strokeOpacity: 0.8,
+          radius: 10, // 작은 원의 반지름
+          strokeWeight: 0,
           fillColor: "#FF0000",
-          fillOpacity: 0.3,
+          fillOpacity: 0.8,
         });
-
-        smallCircle.setMap(map);
-        setCircle(smallCircle);
-
-        const largeCircle = new kakao.maps.Circle({
+        marker.setMap(map);
+        setLocationMarker(marker);
+  
+        // 현재 위치에서 반경 2km의 초록색 원 표시
+        const circle = new kakao.maps.Circle({
           center: locPosition,
-          radius: 300,
-          strokeWeight: 2,
-          strokeColor: "#0000FF",
-          strokeOpacity: 0.6,
-          fillColor: "#0000FF",
-          fillOpacity: 0.1,
+          radius: 2000, // 반경 2km
+          strokeWeight: 1,
+          strokeColor: "#008000",
+          strokeOpacity: 0.8,
+          fillColor: "#00FF00",
+          fillOpacity: 0.2,
         });
-
-        largeCircle.setMap(map);
-        setLargeCircle(largeCircle);
-
+        circle.setMap(map);
+        setLocationCircle(circle);
+  
+        // 지도의 중심을 현재 위치로 이동하고, 레벨을 3으로 설정
         map.setCenter(locPosition);
+        map.setLevel(3);
       });
     } else {
       alert("현재 위치를 찾을 수 없습니다.");
@@ -274,24 +195,27 @@ const Map = () => {
         <Row>
           <Col>
           <ButtonGroup>
-  {[
-    { name: "전체", value: "1", color: "orange", textColor: "white" },
-    { name: "경찰서", value: "2", color: "black", textColor: "white" },
-    { name: "병원", value: "3", color: "blue", textColor: "white"},
-  ].map((radio, idx) => (
+  {[{ name: "전체", value: "1" }, { name: "경찰서", value: "2" }, { name: "병원", value: "3" }, { name: "흉기 알림", value: "4" }].map((radio, idx) => (
     <ToggleButton
       key={idx}
       id={`radio-${idx}`}
       type="radio"
-      className="custom-button"
       name="radio"
       value={radio.value}
       checked={radioValue === radio.value}
       onChange={(e) => setRadioValue(e.currentTarget.value)}
       style={{
-        backgroundColor: radioValue === radio.value ? radio.color : "white",
-        color: radioValue === radio.value ? radio.textColor : "black",
-       fontWeight : radioValue === radio.value ? "bold" : radio.fontWeight,
+        backgroundColor: 
+          radioValue === radio.value
+            ? radio.value === "2"
+              ? "black"
+              : radio.value === "3"
+              ? "blue"
+              : radio.value === "4"
+              ? "red"
+              : "orange"
+            : "white",
+        color: radioValue === radio.value ? "white" : "black"
       }}
     >
       {radio.name}
@@ -327,4 +251,5 @@ const Map = () => {
     </div>
   );
 };
+
 export default Map;

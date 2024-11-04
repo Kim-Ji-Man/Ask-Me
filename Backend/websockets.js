@@ -51,7 +51,7 @@ async function sendNotification(message) {
     console.log(`알림 전송: ${message}`);
 
     // 데이터베이스에서 admin인 사용자 조회
-    const admins = await db.executeQuery("SELECT * FROM Users WHERE role = 'admin'");
+    // const admins = await db.executeQuery("SELECT * FROM users WHERE role = 'admin'");
 
     clients.forEach((client) => {
         if (client.role === 'admin' && client.ws.readyState === WebSocket.OPEN) {
@@ -64,9 +64,6 @@ async function sendNotification(message) {
 // 회원가입 알림 전송 함수 (master 역할에게만 전송)
 async function sendMember(message) {
     console.log(`회원 알림 전송: ${message}`);
-
-    // 데이터베이스에서 master인 사용자 조회
-    const masters = await db.executeQuery("SELECT * FROM Users WHERE role = 'master'");
 
     clients.forEach((client) => {
         if (client.role === 'master' && client.ws.readyState === WebSocket.OPEN) {
