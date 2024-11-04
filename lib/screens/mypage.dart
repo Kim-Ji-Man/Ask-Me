@@ -19,46 +19,16 @@ class Mypage extends StatefulWidget {
 
 
 class LogoutService {
-  final String baseUrl = dotenv.get("BASE_URL");
-
   Future<void> logoutUser(BuildContext context) async {
-    // 토큰을 가져와 헤더에 추가
+    // SharedPreferences에서 토큰 삭제
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
+    await prefs.remove('token');
 
-    if (token == null) {
-      // 토큰이 없으면 로그인 페이지로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Login()),
-      );
-      return;
-    }
-
-    // 로그아웃 요청
-    final response = await http.post(
-      Uri.parse('$baseUrl/auth/logout'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
+    // 로그인 페이지로 이동
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
     );
-
-    if (response.statusCode == 200) {
-      // 로그아웃 성공 시 토큰 삭제
-      await prefs.remove('token');
-
-      // 로그인 페이지로 이동
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => Login()),
-      );
-    } else {
-      // 로그아웃 실패 시 에러 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그아웃에 실패했습니다. 다시 시도해주세요.')),
-      );
-    }
   }
 }
 
@@ -162,7 +132,8 @@ class _MypageState extends State<Mypage> {
             width: 80,
             child: ElevatedButton(
               onPressed: () {
-                // 로그아웃 버튼 클릭 시 처리할 내용
+                final logoutService = LogoutService();
+                logoutService.logoutUser(context);
               },
               child: Text('로그아웃'),
               style: ElevatedButton.styleFrom(
