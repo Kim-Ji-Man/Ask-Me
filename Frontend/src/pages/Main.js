@@ -10,9 +10,13 @@ import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // 아이콘 추�
 import News from "../components/News";
 import CombinedChart from "../components/CombinedChart";
 import Chart1 from "../components/Chart1";
+import CctvWebSocket from"../components/CctvWebSocket"
+
 
 const Main = () => {
   const navigate = useNavigate();
+  CctvWebSocket();
+  
   const navigateTo = useCallback(
     (path) => {
       navigate(path);

@@ -11,6 +11,8 @@ import {
 import { jwtDecode } from "jwt-decode";
 import "../css/Nav.css";
 import axios from "../axios";
+import Swal from "sweetalert2"; 
+import webSocketService from '../websocketService'; 
 
 function Navs() {
   const navigate = useNavigate();
@@ -64,54 +66,7 @@ const toggleAlert = () => {
     },
     [navigate]
   );
-
-  useEffect(() => {
-    let ws;
-
-    const connectWebSocket = () => {
-        const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
-        if (!token) {
-            console.error("JWT 토큰이 없습니다.");
-            return; // 토큰이 없으면 WebSocket 연결을 시도하지 않음
-        }
-
-        ws = new WebSocket(`ws://localhost:5000?token=${token}`); // 쿼리 파라미터로 토큰 전달
-
-        ws.onopen = () => {
-            console.log("WebSocket 연결 성공");
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'notification') {
-                console.log("새로운 알림:", data.message);
-                fetchAlerts(true); // 새로운 데이터가 있을 때만 fetchAlerts 호출
-            }
-            if (data.type === 'register') {
-                console.log("새로운 회원가입 알림:", data.message);
-                fetchAlerts(true);
-                setHasNewAlert(true); // 새로운 알림이 있음을 표시
-            }
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket 연결 종료, 5초 후 재연결 시도");
-            setTimeout(connectWebSocket, 5000); // 5초 후 재연결 시도
-        };
-    };
-
-    connectWebSocket();
-
-    return () => {
-        if (ws) ws.close(); // 컴포넌트 언마운트 시 WebSocket 연결 해제
-    };
-}, []);
-
-// 경로 변경 시마다 fetchAlerts 호출
-useEffect(() => {
-    fetchAlerts(); // 알림 데이터를 항상 최신 상태로 유지
-}, [location.pathname,memberGrade]); // 경로 변경 시마다 실행
-
+  
 const fetchAlerts = async (isNewNotification = false) => {
   try {
           // role에 따라 다른 API 엔드포인트 또는 쿼리 파라미터 설정
@@ -143,6 +98,46 @@ const fetchAlerts = async (isNewNotification = false) => {
       console.error('Error fetching alerts:', error);
   }
 };
+
+  useEffect(() => {
+    const token = localStorage.getItem('jwtToken');
+    
+    // 웹소켓 연결
+    webSocketService.connect(token);
+
+    // 메시지 수신 시 처리할 로직
+    const handleMessage = (data) => {
+      if (data.type === 'notification') {
+        console.log("새로운 알림:", data.message);
+        fetchAlerts(true);
+        setHasNewAlert(true); // 새로운 알림이 있음을 표시
+      }
+
+      if (data.type === 'register') {
+        console.log("새로운 회원가입 알림:", data.message);
+        fetchAlerts(true);
+        setHasNewAlert(true); // 새로운 알림이 있음을 표시
+      }
+      
+      // 다른 알림 처리도 여기에 추가 가능
+    };
+
+    // 메시지 리스너 추가
+    webSocketService.addListener(handleMessage);
+
+    return () => {
+      // 컴포넌트 언마운트 시 리스너 제거 및 웹소켓 닫기
+      webSocketService.removeListener(handleMessage);
+      webSocketService.close();
+    };
+  }, [fetchAlerts]);
+
+
+// 경로 변경 시마다 fetchAlerts 호출
+useEffect(() => {
+    fetchAlerts(); // 알림 데이터를 항상 최신 상태로 유지
+}, [location.pathname,memberGrade]); // 경로 변경 시마다 실행
+
   // 시간 계산 함수
   const timeSince = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
