@@ -49,6 +49,9 @@ const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함�
  *                 mem_name:
  *                   type: string
  *                   example: "John"
+ *                 nick:
+ *                   type: string
+ *                   example: "J"
  *       responses:
  *         201:
  *           description: User registered successfully
@@ -58,7 +61,7 @@ const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함�
  *           description: Error registering user
  */
 router.post('/register', async (req, res) => {
-    const { username, mem_name, password, email, phone_number, role, gender, birth, storeId } = req.body;
+    const { username, mem_name, password, email, phone_number, role, gender, birth, nick, storeId } = req.body;
 
     // 필수 값 검증
     if (!username || !mem_name || !password || !phone_number || !role || !gender || !birth ) {
@@ -69,6 +72,11 @@ router.post('/register', async (req, res) => {
     const allowedRoles = ['user', 'admin', 'master', 'guard'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).send('Invalid role');
+    }
+
+    // 역할에 따라 nick 필수 여부 결정
+    if ((role === 'user' || role === 'guard') && !nick) {
+        return res.status(400).send('Nick is required for user and guard roles');
     }
 
     // 경비원일 경우 storeId 필수
@@ -313,6 +321,71 @@ router.put('/update', authController.authenticateToken, async (req, res) => {
     }
 });
 
+
+/**
+ * @swagger
+ * /auth/update_app:
+ *   put:
+ *     summary: 사용자 정보 업데이트
+ *     description: 사용자의 전화번호, 닉네임, 이메일, 생년월일을 업데이트합니다.
+ *     tags: [Mypage]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *               phone_number:
+ *                 type: string
+ *                 example: '010-1234-5678'
+ *               nick:
+ *                 type: string
+ *                 example: 'nickname'
+ *               birth:
+ *                 type: string
+ *                 format: date
+ *                 example: '900101'
+ *     responses:
+ *       200:
+ *         description: 사용자 정보가 성공적으로 업데이트되었습니다.
+ *       400:
+ *         description: 필수 필드가 누락되었습니다.
+ *       500:
+ *         description: 사용자 정보 업데이트 중 오류가 발생했습니다.
+ */
+
+// 사용자 정보 업데이트 (마이페이지)
+router.put('/update_app', authController.authenticateToken, async (req, res) => {
+    const { email, phone_number, nick, birth } = req.body;
+
+    // 필수 필드 체크
+    if (!phone_number || !nick || !email || !birth) {
+        return res.status(400).send('Phone number, nick, email, and birth are required');
+    }
+
+    const userId = req.user.userId; // 사용자 ID 가져오기
+
+    try {
+        // 사용자 정보 업데이트
+        await authController.updateUserInfo(userId, { 
+            email, 
+            phone_number, 
+            nick, 
+            birth 
+        });
+
+        res.status(200).send('User information updated successfully');
+    } catch (err) {
+        console.error('Error updating user information:', err);
+        res.status(500).send('Error updating user information');
+    }
+});
 
 /**
  * @swagger

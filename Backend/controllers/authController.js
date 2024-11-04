@@ -3,8 +3,8 @@ const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 const pool = require('../config/dbConfig');
 
-async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null) {
-    console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth);
+async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, nick=null, storeId = null) {
+    console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth, nick);
 
     const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 포함
     if (!allowedRoles.includes(role)) {
@@ -21,7 +21,7 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
     const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active
 
     // SQL 쿼리 작성
-    const query = `INSERT INTO Users (username, mem_name, password, email, phone_number, role, gender, created_at, account_status, birth) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO Users (username, mem_name, password, email, phone_number, role, gender, created_at, account_status, birth, nick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
     
     const params = [
         username,
@@ -33,7 +33,8 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
         gender,
         created_at,
         account_status,
-        birth
+        birth,
+        nick
     ];
 
     // 쿼리 실행
@@ -217,6 +218,22 @@ const updateStore = async (userId, storeData) => {
     });
 };
 
+// 사용자 정보 업데이트 함수
+const updateUserInfo = async (userId, { email, phone_number, nick, birth }) => {
+    const query = `
+        UPDATE Users 
+        SET email = ?, phone_number = ?, nick = ?, birth = ? 
+        WHERE user_id = ?`;
+
+    const values = [email, phone_number, nick, birth, userId];
+    
+    try {
+        await db.executeQuery(query, values);
+    } catch (err) {
+        console.error('Error updating user information in database:', err);
+        throw err; // 에러를 호출자에게 전달
+    }
+};
 
 const updateUserAndStore = async (userId, userData, storeData) => {
     const connection = await pool.getConnection();
@@ -343,5 +360,6 @@ module.exports = {
     getAllUsers,
     getGuardsByStore,
     kakaoLogin,
-    registerKakaoUser
+    registerKakaoUser,
+    updateUserInfo
 };

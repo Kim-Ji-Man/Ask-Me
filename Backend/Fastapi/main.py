@@ -111,7 +111,7 @@ def generate_frames(camera_id, model_name="yolo11n.pt"):
             break
         
         # YOLO 모델을 사용하여 프레임 추적
-        results = model.track(frame, classes=[0, 43], persist=True, max_age=30, iou_threshold=0.3, reid_threshold=0.7)
+        results = model.track(frame, classes=[0, 43], persist=True)
 
         # YOLO 기본 스타일로 시각화
         annotated_frame = results[0].plot()
