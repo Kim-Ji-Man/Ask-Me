@@ -11,8 +11,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import "../css/Nav.css";
 import axios from "../axios";
-import Swal from "sweetalert2"; 
-import webSocketService from '../websocketService'; 
+import useWebSocket from "../Hooks/useWebSocket";
 
 function Navs() {
   const navigate = useNavigate();
@@ -99,38 +98,28 @@ const fetchAlerts = async (isNewNotification = false) => {
   }
 };
 
-  useEffect(() => {
-    const token = localStorage.getItem('jwtToken');
+  // 웹소켓 메시지 처리 함수
+  const handleMessage = (data) => {
+    if (data.type === 'notification') {
+      console.log("새로운 알림:", data.message);
+      fetchAlerts(true);
+      setHasNewAlert(true); // 새로운 알림이 있음을 표시
+    }
+
+    if (data.type === 'register') {
+      console.log("새로운 회원가입 알림:", data.message);
+      fetchAlerts(true);
+      setHasNewAlert(true); // 새로운 알림이 있음을 표시
+    }
     
-    // 웹소켓 연결
-    webSocketService.connect(token);
+    // 다른 알림 처리도 여기에 추가 가능
+  };
 
-    // 메시지 수신 시 처리할 로직
-    const handleMessage = (data) => {
-      if (data.type === 'notification') {
-        console.log("새로운 알림:", data.message);
-        fetchAlerts(true);
-        setHasNewAlert(true); // 새로운 알림이 있음을 표시
-      }
+  // JWT 토큰 가져오기
+  const token = localStorage.getItem('jwtToken');
 
-      if (data.type === 'register') {
-        console.log("새로운 회원가입 알림:", data.message);
-        fetchAlerts(true);
-        setHasNewAlert(true); // 새로운 알림이 있음을 표시
-      }
-      
-      // 다른 알림 처리도 여기에 추가 가능
-    };
-
-    // 메시지 리스너 추가
-    webSocketService.addListener(handleMessage);
-
-    return () => {
-      // 컴포넌트 언마운트 시 리스너 제거 및 웹소켓 닫기
-      webSocketService.removeListener(handleMessage);
-      webSocketService.close();
-    };
-  }, [fetchAlerts]);
+  // WebSocket 커스텀 훅 사용
+  useWebSocket(token, handleMessage);
 
 
 // 경로 변경 시마다 fetchAlerts 호출
