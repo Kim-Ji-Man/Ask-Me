@@ -217,6 +217,22 @@ const updateStore = async (userId, storeData) => {
     });
 };
 
+// 사용자 정보 업데이트 함수
+const updateUserInfo = async (userId, { email, phone_number, nick, birth }) => {
+    const query = `
+        UPDATE Users 
+        SET email = ?, phone_number = ?, nick = ?, birth = ? 
+        WHERE user_id = ?`;
+
+    const values = [email, phone_number, nick, birth, userId];
+    
+    try {
+        await db.executeQuery(query, values);
+    } catch (err) {
+        console.error('Error updating user information in database:', err);
+        throw err; // 에러를 호출자에게 전달
+    }
+};
 
 const updateUserAndStore = async (userId, userData, storeData) => {
     const connection = await pool.getConnection();
@@ -343,5 +359,6 @@ module.exports = {
     getAllUsers,
     getGuardsByStore,
     kakaoLogin,
-    registerKakaoUser
+    registerKakaoUser,
+    updateUserInfo
 };
