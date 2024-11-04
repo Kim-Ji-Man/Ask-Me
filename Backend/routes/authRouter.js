@@ -49,6 +49,9 @@ const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함�
  *                 mem_name:
  *                   type: string
  *                   example: "John"
+ *                 nick:
+ *                   type: string
+ *                   example: "J"
  *       responses:
  *         201:
  *           description: User registered successfully
@@ -58,7 +61,7 @@ const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함�
  *           description: Error registering user
  */
 router.post('/register', async (req, res) => {
-    const { username, mem_name, password, email, phone_number, role, gender, birth, storeId } = req.body;
+    const { username, mem_name, password, email, phone_number, role, gender, birth, nick, storeId } = req.body;
 
     // 필수 값 검증
     if (!username || !mem_name || !password || !phone_number || !role || !gender || !birth ) {
@@ -69,6 +72,11 @@ router.post('/register', async (req, res) => {
     const allowedRoles = ['user', 'admin', 'master', 'guard'];
     if (!allowedRoles.includes(role)) {
         return res.status(400).send('Invalid role');
+    }
+
+    // 역할에 따라 nick 필수 여부 결정
+    if ((role === 'user' || role === 'guard') && !nick) {
+        return res.status(400).send('Nick is required for user and guard roles');
     }
 
     // 경비원일 경우 storeId 필수
