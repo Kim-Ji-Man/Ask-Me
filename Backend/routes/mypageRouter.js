@@ -2,11 +2,13 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
+const authController = require('../controllers/authController');
+const storeController = require('../controllers/storeController');
 
 // 내 정보 조회
 router.get('/info/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const query = 'SELECT username, mem_name, email, phone_number, gender, birth FROM Users WHERE user_id = ?';
+    const query = 'SELECT username, mem_name, email, phone_number, gender, birth, nick FROM Users WHERE user_id = ?';
 
     try {
         const results = await db.executeQuery(query, [userId]);
@@ -135,6 +137,8 @@ router.get('/comments/:userId', async (req, res) => {
  *                 gender:
  *                   type: string
  *                 birth:
+ *                   type: string
+ *                 nick:
  *                   type: string
  *       404:
  *         description: User not found
