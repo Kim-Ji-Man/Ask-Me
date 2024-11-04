@@ -11,6 +11,7 @@ import {
 import { jwtDecode } from "jwt-decode";
 import "../css/Nav.css";
 import axios from "../axios";
+import useWebSocket from "../Hooks/useWebSocket";
 
 function Navs() {
   const navigate = useNavigate();
@@ -22,17 +23,23 @@ function Navs() {
   const [alerts, setAlerts] = useState([]);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [memberGrade, setMemberGrade] = useState(2); // 기본값을 user로 설정
-  const [hasNewAlert, setHasNewAlert] = useState(false);
+  const [hasNewAlert, setHasNewAlert] = useState(() => {
+    // 초기값을 로컬 스토리지에서 불러옴
+    return localStorage.getItem('hasNewAlert') === 'true';
+}); 
+const [alertCount, setAlertCount] = useState(0); // 기존 알림 개수
 
   const alertRef = useRef(null);
 
-  // 경고 토글 함수
-  const toggleAlert = () => {
-    setIsAlertOpen(!isAlertOpen);
-    if (hasNewAlert) {
-      setHasNewAlert(false); // 알림창 열리면 새로운 알림 표시 제거
-    }
-  };
+// 경고 토글 함수
+const toggleAlert = () => {
+  setIsAlertOpen(!isAlertOpen);
+  if (hasNewAlert) {
+    setHasNewAlert(false); // 알림창 열리면 새로운 알림 표시 제거
+    localStorage.setItem('hasNewAlert', 'false'); // 로컬 스토리지 업데이트
+  }
+};
+  
 
   // 클릭 외부 감지
   useEffect(() => {
@@ -58,26 +65,67 @@ function Navs() {
     },
     [navigate]
   );
- // 백엔드에서 알림 데이터 가져오기
-  useEffect(() => {
-    const fetchAlerts = async () => {
-      try {
-        const response = await axios.get("/Alim/alertlist");
-        if (response.data.length > alerts.length) {
-          setHasNewAlert(true); // 새로운 데이터가 추가된 경우
-        }
-        setAlerts(response.data); // 데이터를 배열로 설정
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching alerts:", error);
+  
+const fetchAlerts = async (isNewNotification = false) => {
+  try {
+          // role에 따라 다른 API 엔드포인트 또는 쿼리 파라미터 설정
+          let apiUrl = '/Alim/alertlist';
+      
+          if (memberGrade === 0) { // master
+              apiUrl = '/Member';
+          } else if (memberGrade === 1) { // admin
+              apiUrl = '/Alim/alertlist';
+          }
+          const response = await axios.get(apiUrl);
+      
+      // 새로운 알림 개수 확인을 통해 `hasNewAlert` 업데이트
+      if (isNewNotification && response.data.length > alertCount) { 
+          setHasNewAlert(true);
+          localStorage.setItem('hasNewAlert', 'true');
+          setAlertCount(response.data.length);
+          console.log(response.data.length,"네비1");
+          
       }
-    };
+      console.log(response.data,"어떻게 나오니??");
+      
+      setAlerts(response.data); // 항상 최신 알림 리스트로 설정
+      setAlertCount(response.data.length); // 알림 개수 업데이트
+      console.log(response.data.length,"네비2");
 
-    fetchAlerts();
-    // const intervalId = setInterval(fetchAlerts, 1000); // 매 분마다 데이터 갱신
 
-    // return () => clearInterval(intervalId); // 컴포넌트 언마운트 시 인터벌 제거
-  }, []);
+  } catch (error) {
+      console.error('Error fetching alerts:', error);
+  }
+};
+
+  // 웹소켓 메시지 처리 함수
+  const handleMessage = (data) => {
+    if (data.type === 'notification') {
+      console.log("새로운 알림:", data.message);
+      fetchAlerts(true);
+      setHasNewAlert(true); // 새로운 알림이 있음을 표시
+    }
+
+    if (data.type === 'register') {
+      console.log("새로운 회원가입 알림:", data.message);
+      fetchAlerts(true);
+      setHasNewAlert(true); // 새로운 알림이 있음을 표시
+    }
+    
+    // 다른 알림 처리도 여기에 추가 가능
+  };
+
+  // JWT 토큰 가져오기
+  const token = localStorage.getItem('jwtToken');
+
+  // WebSocket 커스텀 훅 사용
+  useWebSocket(token, handleMessage);
+
+
+// 경로 변경 시마다 fetchAlerts 호출
+useEffect(() => {
+    fetchAlerts(); // 알림 데이터를 항상 최신 상태로 유지
+}, [location.pathname,memberGrade]); // 경로 변경 시마다 실행
 
   // 시간 계산 함수
   const timeSince = (date) => {
@@ -101,7 +149,7 @@ function Navs() {
   };
 
   useEffect(() => {
-    const jwtToken = localStorage.getItem("jwtToken");
+const jwtToken = localStorage.getItem("jwtToken");
 
     if (jwtToken) {
       const decodedToken = jwtDecode(jwtToken);
@@ -165,6 +213,21 @@ function Navs() {
         return <FaBell style={{ color: "yellow", marginRight: 5 }} />;
       default:
         return null;
+    }
+  };
+  
+  const getRoleInKorean = (role) => {
+    switch (role) {
+      case 'master':
+        return '마스터';
+      case 'admin':
+        return '관리자';
+      case 'guard':
+        return '경비원';
+      case 'user':
+        return '일반사용자';
+      default:
+        return '알 수 없는 역할';
     }
   };
 
@@ -275,40 +338,62 @@ function Navs() {
                 />
               )}
 
-              <div className="alert-icon" onClick={toggleAlert} ref={alertRef}>
-                <FaBell
-                  size={24}
-                  style={{ color: hasNewAlert ? "red" : "lightgrey" }}
-                />
-                {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
-                  // <span className="badge">{alerts.length}</span>
-                  <span className="badge"></span>
-                )}
+<div className="alert-icon" onClick={toggleAlert} ref={alertRef}>
+  {/* memberGrade가 1일 경우 (관리자) */}
+  {memberGrade === 1 && (
+    <>
+      <FaBell size={24} style={{ color: hasNewAlert ? 'red' : 'lightgrey' }} />
+      {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
+        <span className="badge"></span>
+      )}
 
-                {isAlertOpen && (
-                  <div className="alert-dropdown">
-                    <div className="alert-header">
-                      <strong>경고</strong>
-                    </div>
-                    <ul>
-                      {alerts.slice(0, 5).map((alert) => (
-                        <li
-                          key={`${alert.alert_id}-${alert.device_name}`}
-                          className={alert.level}
-                        >
-                          {renderIcon(alert.level)}
-                          <span className="message">{`${alert.device_name}에서 ${alert.message}`}</span>
-                          <br />
-                          <small className="timestamp">
-                            {timeSince(alert.detection_time)}
-                          </small>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+      {isAlertOpen && (
+        <div className="alert-dropdown">
+          <div className="alert-header">
+            <strong>알림</strong>
+          </div>
+          <ul>
+            {alerts.slice(0, 5).map((alert) => (
+              <li key={`${alert.alert_id}-${alert.device_name}`} className={alert.level}>
+                {renderIcon(alert.level)}
+                <span className="message">{`${alert.device_name}에서 ${alert.message}`}</span>
+                <br />
+                <small className="timestamp">{timeSince(alert.detection_time)}</small>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  )}
 
+  {/* memberGrade가 0일 경우 (마스터) */}
+  {memberGrade === 0 && (
+    <>
+      <FaBell size={24} style={{ color: hasNewAlert ? 'red' : 'lightgrey' }} />
+      {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
+        <span className="badge"></span>
+      )}
+      
+      {isAlertOpen && (
+        <div className="alert-dropdown">
+          <div className="alert-header">
+            <strong>알림</strong>
+          </div>
+          <ul>
+            {alerts.slice(0, 5).map((alert) => (
+              <li key={`${alert.alert_id}-${alert.username}`}>
+                  <span className="message"> {`${alert.mem_name}님이 ${getRoleInKorean(alert.role)}로 회원가입하였습니다.`}</span>
+                <br />
+                <small className="timestamp">{timeSince(alert.created_at)}</small>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  )}
+</div>
               <FaCog
                 size={24}
                 onClick={() => navigateTo("/Settings")}

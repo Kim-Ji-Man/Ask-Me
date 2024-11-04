@@ -1,54 +1,148 @@
-const app = require('./app');
-const WebSocket = require('ws');
+
+require('dotenv').config();
+
+const express = require('express');
+const session = require('express-session');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const exampleRoutes = require('./routes/example'); 
+const authRouter = require('./routes/authRouter'); 
+const sessionConfig = require('./config/sessionConfig');
+const cors = require('cors');
+const http = require('http'); 
+const fs = require('fs');
+const path = require('path');
+const cameraRouter = require('./routes/camera'); // 카메라 라우터 추가
+const newsRoutes = require('./routes/newsRoutes'); // 뉴스 라우터
+const MemberRouter = require('./routes/MemberRouter');
+const AlimRouter = require('./routes/AlimRouter'); // 알림 라우터 추가
+const ErrormRouter = require('./routes/ErrorRouter');
+const authFindRoutes = require('./routes/authFindRoutes');
+const MapRouter = require('./routes/MapRouter');
+const kakaoLoginRouter = require('./routes/kakaoLogin');
+const postRouter = require('./routes/postRouter');
+const commentRouter = require('./routes/commentRouter');
+const likeRouter = require('./routes/likeRouter');
+const reportRouter = require('./routes/reportRouter');
+const mypageRouter = require('./routes/mypageRouter');
+const { createWebSocketServer, sendNotification, broadcastAlert } = require('./websockets'); 
 const bodyParser = require('body-parser');
+
+
+// Express 앱 초기화
+const app = express();
+const server = http.createServer(app);
+createWebSocketServer(server);
+
+
+
+// Swagger 설정
+const swaggerOption = {
+    swaggerDefinition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'API Documentation',
+            version: '1.0.0',
+            description: 'API Documentation for the application'
+        },
+        servers: [
+            {
+                url: 'http://localhost:5000',
+                description: 'Development server'
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT'
+                }
+            }
+        }
+    },
+    apis: ['./routes/*.js']
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOption);
+
+// 미들웨어 설정
+app.use(cors());
+app.use(session(sessionConfig));
+app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs)); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/', exampleRoutes);
+app.use('/auth', authRouter); 
+app.use('/api', cameraRouter);
+app.use('/api', newsRoutes);
+app.use('/Member', MemberRouter);
+app.use('/Alim', AlimRouter); // 알림 라우터 사용
+app.use('/Error', ErrormRouter);
+app.use('/find', authFindRoutes);
+app.use('/Map', MapRouter);
+app.use('/auth/kakao', kakaoLoginRouter);
+app.use('/community', postRouter);
+app.use('/community', commentRouter);
+app.use('/community', likeRouter);
+app.use('/community', reportRouter);
+app.use('/mypage', mypageRouter);
 app.use(bodyParser.json());
 
+app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정
+
+// 이미지 업로드 엔드포인트
+app.post('/upload_image', (req, res) => {
+  const imgData = req.body.image;
+  const base64Data = imgData.replace(/^data:image\/png;base64,/, "");
+
+  const imgPath = path.join(__dirname, 'public/img/captured_image.png');
+
+  fs.writeFile(imgPath, base64Data, 'base64', (err) => {
+    if (err) {
+      console.error('이미지 저장 실패:', err);
+      return res.status(500).send({ success: false, message: '이미지 저장 실패' });
+    }
+    res.send({ success: true, message: '이미지 저장 성공', path: imgPath });
+  });
+});
+
+// 일반 알림 API 엔드포인트
+app.post('/notify', (req, res) => {
+    const { message } = req.body;
+  
+    if (message) {
+      console.log(`일반 알림 전송: ${message}`);
+      sendNotification(message); // 일반 알림 전송
+    }
+  
+    res.status(200).send('Notification sent');
+  });
+  
+  // 흉기 감지 알림 API 엔드포인트
+  app.post('/alert', (req, res) => {
+    const { detected } = req.body;
+  
+    if (detected) {
+      console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
+      broadcastAlert('Weapon detected!'); // 흉기 감지 알림 전송
+    }
+  
+    res.status(200).send('Alert received');
+  });
+  
+
+// 기본 라우트
+app.get('/', (req, res) => {
+    res.send('Welcome to the API!');
+});
+
+// 서버 실행 코드
 const PORT = 5000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server and websocket is running on port ${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
 });
 
-const wss = new WebSocket.Server({ server }); // 기존의 HTTP 서버를 WebSocket 서버로 사용
+module.exports = app;
 
-// 흉기 감지 알림을 클라이언트에게 전송하는 함수
-function broadcastAlert(message) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ message }));
-    }
-  });
-}
-
-// FastAPI에서 흉기 감지 알림을 수신하는 라우트
-app.post('/alert', (req, res) => {
-  const { detected } = req.body;
-
-  if (detected) {
-    console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
-    broadcastAlert('Weapon detected!');
-  }
-
-  res.status(200).send('Alert received');
-});
-
-// 클라이언트가 WebSocket에 연결되었을 때 처리
-wss.on('connection', (ws) => {
-  console.log('클라이언트가 연결되었습니다.');
-
-  // 클라이언트로부터 메시지를 수신했을 때 처리
-  ws.on('message', (message) => {
-    console.log(`클라이언트로부터 메시지 수신: ${message}`);
-    // 여기서 수신된 메시지에 대한 추가 로직을 구현할 수 있습니다.
-  });
-
-  // 클라이언트가 연결을 종료했을 때 처리
-  ws.on('close', () => {
-    console.log('클라이언트가 연결을 종료했습니다.');
-  });
-
-  // 오류가 발생했을 때 처리
-  ws.on('error', (error) => {
-    console.error('WebSocket 오류 발생:', error);
-  });
-});

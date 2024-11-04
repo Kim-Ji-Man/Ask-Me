@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const storeController = require('../controllers/storeController');
+const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+
 
 /**
  * @swagger
@@ -55,7 +57,6 @@ const storeController = require('../controllers/storeController');
  *         500:
  *           description: Error registering user
  */
-
 router.post('/register', async (req, res) => {
     const { username, mem_name, password, email, phone_number, role, gender, birth, storeId } = req.body;
 
@@ -81,6 +82,9 @@ router.post('/register', async (req, res) => {
 
         // 성공 시 user_id와 함께 응답
         res.status(201).send({ message: 'User registered successfully', user_id: userId });
+
+        // WebSocket으로 회원가입 알림 전송
+        sendMember(`회원 ${mem_name}님이 성공적으로 가입되었습니다.`);
     } catch (err) {
         console.error('Error during registration:', err);
         res.status(500).send('Error registering user');

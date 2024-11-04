@@ -3,6 +3,8 @@ import { Button, Col, Container, Row, Modal, Form } from 'react-bootstrap';
 import axios from '../axios';
 import "../css/Alim.css";
 import { BsDownload, BsThreeDots } from 'react-icons/bs';
+import CctvWebSocket from"../components/CctvWebSocket"
+
 
 const Alim = () => {
   const [show, setShow] = useState(false);
@@ -11,6 +13,7 @@ const Alim = () => {
   const [filteredAlims, setFilteredAlims] = useState([]);
   const [expandedDevice, setExpandedDevice] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  CctvWebSocket();
 
   useEffect(() => {
     axios

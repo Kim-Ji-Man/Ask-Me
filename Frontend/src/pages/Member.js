@@ -9,6 +9,8 @@ import "../css/Member.css";
 import UserModal from '../components/UserModal';
 import axios from "../axios";
 import { jwtDecode } from 'jwt-decode';
+import CctvWebSocket from"../components/CctvWebSocket"
+
 
 const Member = () => {
   const [isMobile, setIsMobile] = useState(false);
@@ -18,6 +20,7 @@ const Member = () => {
   const [userRole, setUserRole] = useState(null);
   const [storeId, setStoreId] = useState(null); // 매장 ID 상태 추가
   const token = localStorage.getItem('jwtToken');
+  CctvWebSocket();
   
 
   useEffect(() => {

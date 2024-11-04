@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Col, Container,Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import "../css/Main.css";
 import Barchart from "../components/Barch";
 import LineChart from "../components/LineChart";
@@ -10,9 +10,12 @@ import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // 아이콘 추�
 import News from "../components/News";
 import CombinedChart from "../components/CombinedChart";
 import Chart1 from "../components/Chart1";
+import CctvWebSocket from "../components/CctvWebSocket";
 
 const Main = () => {
   const navigate = useNavigate();
+  CctvWebSocket();
+
   const navigateTo = useCallback(
     (path) => {
       navigate(path);
@@ -54,17 +57,24 @@ const Main = () => {
     <div className="main-content mt-5">
       <Container fluid>
         <Row className="mt-3 mb-3">
-          <Col md={6} lg={6} xs={6} className="d-flex justify-content-left titles">
+          <Col
+            md={6}
+            lg={6}
+            xs={6}
+            className="d-flex justify-content-left titles"
+          >
             <div className="dashboard-title d-flex align-items-center">
               <h2 className="mb-0 me-2 titles">대시보드</h2>
             </div>
           </Col>
           <Col md={6} lg={6} xs={6}>
-          <div className="status-card">
-          {isError ? (
+            <div className="status-card">
+              {isError ? (
                 <>
-                  
-                  <FaTimesCircle className="status-icon" style={{ color: "red" }} />
+                  <FaTimesCircle
+                    className="status-icon"
+                    style={{ color: "red" }}
+                  />
                   <div className="status-message">상태 : {status}</div>
                   <div className="tooltip-text">
                     오류 발생! 서버 연결이 실패했습니다. <br />
@@ -93,27 +103,25 @@ const Main = () => {
       <Container fluid>
         <Row className="g-4 mb-5">
           <Col md={12} lg={12}>
-            <div
-              className="card p-4"
-            >
+            <div className="card p-4">
               {/* 차트 컴포넌트 삽입 */}
               <div className="mt-4">
-                  <CombinedChart/>
+                <CombinedChart />
               </div>
             </div>
           </Col>
         </Row>
         <Row className="g-4">
           <Col md={6} lg={6}>
-            <div className="card p-3" style={{ height: '500px'}}>
-              <h6 style={{fontSize:'24px'}}>cctv 통계</h6>
+            <div className="card p-3" style={{ height: "500px" }}>
+              <h6 style={{ fontSize: "24px" }}>cctv 통계</h6>
               {/* <Barchart /> */}
-              <Chart1/>
+              <Chart1 />
             </div>
           </Col>
           <Col md={6} lg={6}>
-            <div className="card p-3" style={{ height: '500px'}}>
-              <h6 style={{fontSize:'24px'}}>알림결과 및 조치</h6>
+            <div className="card p-3" style={{ height: "500px" }}>
+              <h6 style={{ fontSize: "24px" }}>알림결과 및 조치</h6>
               <PieChart />
             </div>
           </Col>
