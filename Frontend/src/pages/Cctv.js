@@ -11,10 +11,10 @@ const CCTV = () => {
   const [adminComment, setAdminComment] = useState(""); // 관리자 소견 상태
 
   const cctvAddresses = [
-    "http://localhost:8000/video_feed",
-    "http://localhost:8000/video_feed",
-    "http://localhost:8000/video_feed",
-    "http://localhost:8000/video_feed",
+    "http://localhost:8000/video_feed1",
+    "http://localhost:8000/video_feed2",
+    "http://localhost:8000/video_feed1",
+    "http://localhost:8000/video_feed2",
   ];
 
   const alertData = [
