@@ -77,7 +77,7 @@ const Map = () => {
     const imageSrc = {
       police: "img/police.png",
       hospital: "img/hospital.png",
-      alim: "img/hyoiconmarker.png"
+      alim: "img/knigeicon2.png"
     }[category];
 
     const markers = data.map(item => {
