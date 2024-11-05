@@ -12,34 +12,35 @@ router.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위�
 // 게시글 관련 API
 // 1. 게시글 생성
 router.post("/posts", upload.single('image'), async (req, res) => {
-    const { user_id, title, content } = req.body;
-    const image = req.file; // multer가 업로드된 파일을 req.file에 저장합니다.
-    
-    console.log("Request Body:", req.body);
-    
-    let imagePath = null;
-    if (image) {
-        // 이미지 경로 설정: 상대 경로로 설정
-        imagePath = path.join('uploads/community', image.filename); // 예: 'uploads/33726f2919090317f537da42b4490e2a'
-    }
+  const { user_id, nick, title, content } = req.body; 
+  const image = req.file; // multer가 업로드된 파일을 req.file에 저장합니다.
+  
+  console.log("Request Body:", req.body);
+  
+  let imagePath = null;
+  if (image) {
+      // 이미지 경로 설정: 상대 경로로 설정
+      imagePath = path.join('uploads/community', image.filename); // 예: 'uploads/33726f2919090317f537da42b4490e2a'
+  }
 
-    // 현재 시간 설정 (UTC 기준)
-    const created_at = new Date(); // 현재 시간
+  // 현재 시간 설정 (UTC 기준)
+  const created_at = new Date(); // 현재 시간
 
-    // DB 쿼리 실행
-    try {
-        const params = [user_id, title, content, imagePath, created_at]; 
-        console.log("DB Params:", params);
-        
-        const result = await db.executeQuery(
-            "INSERT INTO Posts (user_id, title, content, image, created_at) VALUES (?, ?, ?, ?, ?)",
-            params 
-        );
-        res.status(201).json({ post_id: result.insertId });
-    } catch (err) {
-        res.status(500).json({ error: "게시글 생성 실패", details: err.message });
-    }
+  // DB 쿼리 실행
+  try {
+      const params = [user_id, nick, title, content, imagePath, created_at]; // nick을 params에 추가합니다.
+      console.log("DB Params:", params);
+      
+      const result = await db.executeQuery(
+          "INSERT INTO Posts (user_id, nick, title, content, image, created_at) VALUES (?, ?, ?, ?, ?, ?)", // SQL 쿼리 수정
+          params 
+      );
+      res.status(201).json({ post_id: result.insertId });
+  } catch (err) {
+      res.status(500).json({ error: "게시글 생성 실패", details: err.message });
+  }
 });
+
 
 // 2. 게시글 조회 (모든 게시글 조회)
 router.get("/posts", async (req, res) => {
@@ -165,6 +166,9 @@ router.delete("/posts/:postId", async (req, res) => {
  *               user_id:
  *                 type: integer
  *                 example: 4
+ *               nick:
+ *                 type: string
+ *                 example: "닉네임"
  *               title:
  *                 type: string
  *                 example: "게시글 제목"
