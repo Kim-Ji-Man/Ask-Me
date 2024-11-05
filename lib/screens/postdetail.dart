@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/community.dart';
-import 'package:intl/intl.dart'; // 시간을 포맷팅하기 위한 패키지
+import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
-// 클래스 외부에 Comment 클래스를 선언
 class Comment {
   String content;
   String time;
@@ -21,11 +24,99 @@ class PostDetail extends StatefulWidget {
 }
 
 class _PostDetailState extends State<PostDetail> {
-  final List<Comment> comments = []; // 댓글 목록을 List<Comment>로 변경
-  final TextEditingController commentController = TextEditingController(); // 댓글 입력 컨트롤러
+  String BaseUrl = dotenv.get("BASE_URL");
 
+  @override
+  void initState() {
+    super.initState();
+    fetchComments();
+  }
+
+  final List<Comment> comments = [];
+  final TextEditingController commentController = TextEditingController();
   bool isLiked = false;
   int likeCount = 0;
+
+  // 서버에서 댓글 목록 가져오기 (user_id를 통해 서버에서 nick을 처리)
+  Future<void> fetchComments() async {
+    final response = await http.get(
+      Uri.parse('$BaseUrl/community/posts/${widget.post.id}/comments'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonData = json.decode(response.body);
+      setState(() {
+        comments.clear();
+        comments.addAll(jsonData.map((comment) {
+          // created_at 필드가 있는 경우, 포맷된 시간으로 변환
+          String formattedTime;
+          if (comment['created_at'] != null) {
+            DateTime parsedTime = DateTime.parse(comment['created_at']);
+            formattedTime = DateFormat('yy.MM.dd HH:mm').format(parsedTime);
+          } else {
+            formattedTime = "시간 없음"; // created_at이 null일 경우 기본값 설정
+          }
+
+          return Comment(
+              comment['content'] ?? "내용 없음",  // 기본값 설정
+              formattedTime,                    // 포맷된 시간 사용
+              comment['nick'] ?? "알 수 없는 사용자"  // 닉네임 기본값 설정
+          );
+        }).toList());
+      });
+    } else {
+      print("Failed to load comments. Status code: ${response.statusCode}");
+    }
+  }
+
+
+  // 댓글 추가 메서드 (nick 없이 저장)
+  Future<void> addComment(String content) async {
+    final userId = await getUserIdFromToken();
+    if (userId == null) {
+      print("User ID is null. Cannot add comment.");
+      return;
+    }
+
+    final commentData = {
+      "post_id": widget.post.id,
+      "user_id": userId,
+      "content": content,
+    };
+
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/comments'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode(commentData),
+    );
+
+    if (response.statusCode == 201) {
+      await fetchComments(); // 댓글을 다시 불러옵니다.
+      commentController.clear();
+    } else {
+      print("Failed to add comment. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<String?> getUserIdFromToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return null;
+
+    final parts = token.split('.');
+    if (parts.length != 3) throw Exception('Invalid token');
+
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    return payload['userId'].toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,124 +152,61 @@ class _PostDetailState extends State<PostDetail> {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(16.0),
-              child: Container(
-                color: Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Column(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(widget.post.nick, style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(widget.post.time),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 20),
+                  Text(widget.post.content),
+                  SizedBox(height: 30),
+                  Divider(
+                    thickness: 3.0,
+                    color: Colors.grey[300],
+                  ),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    reverse: true,
+                    itemCount: comments.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        leading: Text(
+                          comments[index].nickname,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
+                        title: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("닉네임", style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text(widget.post.time),
+                            Text(comments[index].content),
+                            Text(
+                              comments[index].time,
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                    Text(widget.post.title, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 10),
-                    Text(widget.post.content),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text('조회 ${widget.post.views}', style: TextStyle(color: Colors.grey)),
-                        SizedBox(width: 16),
-                        TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              isLiked = !isLiked;
-                              if (isLiked) {
-                                likeCount++;
-                              } else {
-                                likeCount--;
-                              }
-                            });
-                          },
-                          icon: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border, // 공감 여부에 따른 하트 아이콘
-                            color: isLiked ? Colors.red : Colors.grey, // 색상 변경
-                          ),
-                          label: Text('공감 $likeCount',
-                            style: TextStyle(color: Colors.grey),),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size(0, 0),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    SizedBox(height: 10),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      reverse: true, // 댓글이 아래에서 위로 쌓이도록 설정
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          leading: Text(
-                            comments[index].nickname,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(comments[index].content),
-                              SizedBox(height: 5),
-                              Text(
-                                comments[index].time,
-                                style: TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                          trailing: PopupMenuButton<String>(
-                            onSelected: (value) {
-                              if (value == 'edit') {
-                                // 댓글 수정 기능
-                              } else if (value == 'delete') {
-                                setState(() {
-                                  comments.removeAt(index); // 댓글 삭제
-                                });
-                              }
-                            },
-                            itemBuilder: (context) => [
-                              PopupMenuItem(value: 'edit', child: Text('수정')),
-                              PopupMenuItem(value: 'delete', child: Text('삭제')),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
-          // 댓글 입력창 및 사진/위치 버튼
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                IconButton(
-                  icon: Icon(Icons.photo),
-                  onPressed: () {
-                    // 사진 추가 기능
-                  },
-                ),
-                IconButton(
-                  icon: Icon(Icons.location_on),
-                  onPressed: () {
-                    // 위치 추가 기능
-                  },
-                ),
                 Expanded(
                   child: TextField(
                     controller: commentController,
@@ -191,19 +219,17 @@ class _PostDetailState extends State<PostDetail> {
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
                       ),
-                      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // 패딩 조정
+                      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                     ),
-                    onSubmitted: (value) {
-                      setState(() {
-                        // 닉네임 설정 (여기서는 고정된 "사용자"로 설정)
-                        String nickname = "사용자";
-                        // 현재 시간을 포맷하여 저장
-                        String formattedTime = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-                        comments.add(Comment(value, formattedTime, nickname));
-                        commentController.clear();
-                      });
-                    },
                   ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.send, color: Colors.blue),
+                  onPressed: () {
+                    if (commentController.text.isNotEmpty) {
+                      addComment(commentController.text);
+                    }
+                  },
                 ),
               ],
             ),
