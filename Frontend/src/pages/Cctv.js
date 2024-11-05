@@ -14,6 +14,7 @@ const CCTV = () => {
   const [adminComment, setAdminComment] = useState(""); // 관리자 소견 상태
   const [anomalyType, setAnomalyType] = useState(""); 
   const [alertData, setAlertData] = useState([]); // 백엔드에서 가져온 이상 감지 
+  const [filterType, setFilterType] = useState("today"); // New state for filtering
   
 CctvWebSocket();
 
@@ -70,6 +71,19 @@ CctvWebSocket();
       } catch (error) {
         console.error('Error fetching alert data:', error);
       }
+    };
+
+    const getFilteredAlerts = () => {
+      if (filterType === "today") {
+        const todayDate = new Date().toISOString().slice(0, 10);
+        return alertData.filter(alert => new Date(alert.detection_time).toISOString().slice(0, 10) === todayDate);
+      }
+      return alertData;
+    };
+  
+    // Handle button click to change filter
+    const handleFilterChange = (type) => {
+      setFilterType(type);
     };
 
 
@@ -153,11 +167,32 @@ CctvWebSocket();
         {showAlert && (
           <div className={`alert-section ${splitView ? "half-width" : ""}`}>
             <h5 className="error_title">이상 감지 현황</h5>
-            <div className={`alert-items ${sortedAlertData.length >= 3 ? "scrollable" : ""}`}>
-              {sortedAlertData.length === 0 ? (
+            {/* Filter buttons */}
+            <div className="filter-buttons">
+            <Button
+  style={{
+    backgroundColor: filterType === "today" ? "#4681f4" : "transparent", // Blue when clicked, Red when not
+    color: "black",
+  }}
+  onClick={() => handleFilterChange("today")}
+>
+  당일 보기
+</Button>
+<Button
+  style={{
+    backgroundColor: filterType === "all" ? "#4681f4" : "transparent", // Blue when clicked, Red when not
+    color: "black",
+  }}
+  onClick={() => handleFilterChange("all")}
+>
+  전체 보기
+</Button>
+            </div>
+            <div className={`alert-items ${getFilteredAlerts().length >= 3 ? "scrollable" : ""}`}>
+              {getFilteredAlerts().length === 0 ? (
                 <div className="no-alert">오늘 이상 감지가 없습니다</div>
               ) : (
-                sortedAlertData.map((alert, index) => (
+                getFilteredAlerts().map((alert, index) => (
                   <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
                     <img src={`http://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
                     <div className="alert-details">

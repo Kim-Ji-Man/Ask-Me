@@ -201,6 +201,17 @@ textarea:focus {
     border-radius: 45px;
 }
 
+.filter-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px; 
+  margin-bottom: 20px; 
+}
+
+.filter-buttons .btn {
+  flex: 0 0 auto; /* Ensure buttons do not grow or shrink */
+}
+
 
 
 @media screen and (max-width: 768px) {
