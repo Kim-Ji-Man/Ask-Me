@@ -98,7 +98,16 @@ CctvWebSocket();
   useEffect(() => {
     fetchAlertData();
   }, []);
-
+  
+  const sortedAlertData = alertData.sort((a, b) => {
+    if (a.anomaly_type === "흉기의심" && b.anomaly_type !== "흉기의심") {
+      return -1;
+    }
+    if (a.anomaly_type !== "흉기의심" && b.anomaly_type === "흉기의심") {
+      return 1;
+    }
+    return 0;
+  });
   
   
 
@@ -135,45 +144,43 @@ CctvWebSocket();
   
         {/* 이상 감지 현황 */}
         {showAlert && (
-  <div className={`alert-section ${splitView ? "half-width" : ""}`}>
-    <h5 className="error_title">이상 감지 현황</h5>
-    <div className={`alert-items ${alertData.length >= 3 ? "scrollable" : ""}`}>
-      {alertData.length === 0 ? (
-        <div className="no-alert">오늘 이상 감지가 없습니다</div>
-      ) : (
-        alertData.map((alert, index) => (
-          <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
-            <img src={`http://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
-            <div className="alert-details">
-              <div className="alert-info">
-                <span className="cctv-name">{alert.device_name}</span>
-                {/* 이상 행동에 따라 버튼 배경색을 동적으로 변경 */}
-                <Button
-                  className="alert-btn"
-                  style={{
-                    backgroundColor:
-                      alert.anomaly_type === "흉기"
-                        ? "red"
-                        : alert.anomaly_type === "오류"
-                        ? "orange"
-                        : alert.anomaly_type === "기타"
-                        ? "black"
-                        : "gray", // 기본 색상 (선택 사항)
-                        color: "white", // 그 외에는 흰색 글자
-                  }}
-                >
-                  {alert.anomaly_type}
-                </Button>
-              </div>
+          <div className={`alert-section ${splitView ? "half-width" : ""}`}>
+            <h5 className="error_title">이상 감지 현황</h5>
+            <div className={`alert-items ${sortedAlertData.length >= 3 ? "scrollable" : ""}`}>
+              {sortedAlertData.length === 0 ? (
+                <div className="no-alert">오늘 이상 감지가 없습니다</div>
+              ) : (
+                sortedAlertData.map((alert, index) => (
+                  <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
+                    <img src={`http://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
+                    <div className="alert-details">
+                      <div className="alert-info">
+                        <span className="cctv-name">{alert.device_name}</span>
+                        <Button
+                          className="alert-btn"
+                          style={{
+                            backgroundColor:
+                              alert.anomaly_type === "흉기"
+                                ? "red"
+                                : alert.anomaly_type === "오류"
+                                ? "orange"
+                                : alert.anomaly_type === "기타"
+                                ? "black"
+                                : "gray",
+                            color: "white",
+                          }}
+                        >
+                          {alert.anomaly_type}
+                        </Button>
+                      </div>
+                    </div>
+                    <span className="alert-timestamp">{new Date(alert.detection_time).toLocaleString()}</span>
+                  </div>
+                ))
+              )}
             </div>
-            <span className="alert-timestamp">{new Date(alert.detection_time).toLocaleString()}</span>
           </div>
-        ))
-      )}
-    </div>
-  </div>
-)}
-
+        )}
         {/* 선택된 이미지 모달 */}
         <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
           <Modal.Header closeButton>
