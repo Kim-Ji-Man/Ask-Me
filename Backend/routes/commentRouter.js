@@ -91,11 +91,6 @@ router.delete('/comments/:commentId', async (req, res) => {
 
 });
 
-
-
-
-module.exports = router;
-
 /**
  * @swagger
  * tags:
@@ -150,5 +145,35 @@ module.exports = router;
  *       500:
  *         description: 댓글 조회 실패
  */
+
+/**
+ * @swagger
+ * /community/comments/{commentId}:
+ *   delete:
+ *     summary: Delete a comment
+ *     description: Delete a comment by its unique comment ID.
+ *     tags: [Community]
+ *     parameters:
+ *       - in: path
+ *         name: commentId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID of the comment to delete
+ *     responses:
+ *       200:
+ *         description: Comment deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 affectedRows:
+ *                   type: integer
+ *                   description: Number of rows affected
+ *       500:
+ *         description: Server error
+ */
+
 
 module.exports = router;
