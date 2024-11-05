@@ -8,20 +8,57 @@ const db = require('../models/db');
 const created_at = new Date(); // 현재 시간
 
 // 댓글 관련 API
-// 1. 댓글 생성
 router.post("/comments", async (req, res) => {
   const { post_id, user_id, content } = req.body;
 
   try {
+    // 포스트 ID가 존재하는지 확인
+    const [post] = await db.executeQuery(
+      "SELECT post_id FROM Posts WHERE post_id = ?",
+      [post_id]
+    );
+
+    if (!post) {
+      return res.status(404).json({ error: "해당 포스트를 찾을 수 없습니다." });
+    }
+
+    // 댓글을 데이터베이스에 추가
     const result = await db.executeQuery(
       "INSERT INTO Comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, ?)",
-      [post_id, user_id, content, created_at] 
+      [post_id, user_id, content, new Date()] // created_at을 현재 시간으로 설정
     );
-    res.status(201).json({ comment_id: result.insertId });
+
+    // 추가한 댓글의 ID를 사용하여 닉네임을 가져옴 
+    const [user] = await db.executeQuery(
+      "SELECT nick FROM Users WHERE user_id = ?", 
+      [user_id]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+    }
+
+    // 응답에 댓글 ID와 닉네임 포함
+    res.status(201).json({ 
+      comment_id: result.insertId,
+      nick: user.nick
+    });
   } catch (err) {
-    res.status(500).json({ error: "댓글 생성 실패", details: err });
+    res.status(500).json({ 
+      error: "댓글 생성 실패", 
+      details: {
+        message: err.message,
+        code: err.code,
+        errno: err.errno,
+        sql: err.sql,
+        sqlState: err.sqlState,
+        sqlMessage: err.sqlMessage,
+      }
+    });
   }
 });
+
+
 
 
 // 2. 특정 게시글의 모든 댓글 조회
@@ -31,7 +68,8 @@ router.get("/posts/:postId/comments", async (req, res) => {
     const comments = await db.executeQuery(`
         SELECT 
     Comments.*, 
-    Users.username, 
+    Users.username,
+    Users.nick, 
     COUNT(CommentReports.report_id) AS report_count, 
     GROUP_CONCAT(DISTINCT ReportReasons.reason ORDER BY ReportReasons.reason ASC) AS reasons 
 FROM Comments 
@@ -39,7 +77,7 @@ JOIN Users ON Comments.user_id = Users.user_id
 LEFT JOIN CommentReports ON Comments.comment_id = CommentReports.comment_id 
 LEFT JOIN ReportReasons ON CommentReports.reason_id = ReportReasons.reason_id 
 WHERE Comments.post_id = ?
-GROUP BY Comments.comment_id, Users.username;
+GROUP BY Comments.comment_id, Users.username, Users.nick;
       `,
        [postId]);
     res.status(200).json(comments);
@@ -103,8 +141,8 @@ router.delete('/comments/:commentId', async (req, res) => {
  * /community/comments:
  *   post:
  *     summary: 댓글 생성
+ *     description: 주어진 포스트에 댓글을 생성합니다.
  *     tags: [Community]
- *     description: 특정 게시글에 댓글을 추가합니다.
  *     requestBody:
  *       required: true
  *       content:
@@ -114,16 +152,57 @@ router.delete('/comments/:commentId', async (req, res) => {
  *             properties:
  *               post_id:
  *                 type: integer
+ *                 description: 댓글이 달릴 포스트의 ID입니다.
+ *                 example: 1
  *               user_id:
  *                 type: integer
+ *                 description: 댓글 작성자의 사용자 ID입니다.
+ *                 example: 2
  *               content:
  *                 type: string
+ *                 description: 댓글 내용입니다.
+ *                 example: "이 포스트 정말 유익하네요!"
  *     responses:
  *       201:
- *         description: 댓글이 성공적으로 추가되었습니다.
+ *         description: 댓글이 성공적으로 생성되었습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 comment_id:
+ *                   type: integer
+ *                   description: 생성된 댓글의 ID입니다.
+ *                   example: 10
+ *                 nick:
+ *                   type: string
+ *                   description: 댓글 작성자의 닉네임입니다.
+ *                   example: "user123"
+ *       404:
+ *         description: 사용자를 찾을 수 없습니다.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "사용자를 찾을 수 없습니다."
  *       500:
- *         description: 댓글 생성 실패
+ *         description: 댓글 생성 실패.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "댓글 생성 실패"
+ *                 details:
+ *                   type: string
+ *                   example: "데이터베이스 오류"
  */
+
 
 /**
  * @swagger
