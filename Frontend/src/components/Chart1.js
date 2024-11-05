@@ -23,9 +23,9 @@ const options = {
   },
   scales: {
     x: {
-      stacked: false, // 스택형 해제
+      stacked: false,
       ticks: {
-        align: 'center', // x축 레이블 가운데 정렬
+        align: 'center',
       },
     },
     y: {
@@ -40,13 +40,17 @@ const generateRandomData = () => {
 };
 
 const Chart1 = () => {
-  const [selectedDay, setSelectedDay] = useState(1); // 선택된 날짜
+  // Get current day (1-31)
+  const currentDay = new Date().getDate();
+
+  // Initialize selectedDay with the current day
+  const [selectedDay, setSelectedDay] = useState(currentDay); 
   const [data, setData] = useState({
     labels: ['CCTV1', 'CCTV2', 'CCTV3', 'CCTV4'],
     datasets: [
       {
         label: '들어온 사람',
-        data: generateRandomData(), // 랜덤 데이터 생성
+        data: generateRandomData(),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
@@ -55,7 +59,7 @@ const Chart1 = () => {
       },
       {
         label: '나간 사람',
-        data: generateRandomData(), // 랜덤 데이터 생성
+        data: generateRandomData(),
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
         borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1,
@@ -74,7 +78,7 @@ const Chart1 = () => {
       datasets: [
         {
           label: '들어온 사람',
-          data: generateRandomData(), // 새로운 랜덤 데이터 생성
+          data: generateRandomData(),
           backgroundColor: 'rgba(75, 192, 192, 0.6)',
           borderColor: 'rgba(75, 192, 192, 1)',
           borderWidth: 1,
@@ -83,7 +87,7 @@ const Chart1 = () => {
         },
         {
           label: '나간 사람',
-          data: generateRandomData(), // 새로운 랜덤 데이터 생성
+          data: generateRandomData(),
           backgroundColor: 'rgba(255, 99, 132, 0.6)',
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1,
@@ -95,13 +99,14 @@ const Chart1 = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '420px', padding: '20px', boxSizing: 'border-box' }}>
-      <div style={{ display: 'flex', alignItems: 'center',justifyContent: 'right' }}>
-        <label htmlFor="day-select" style={{ marginRight: '10px' }}>날짜 선택:</label>
+    <div style={{ width:'100%', height:'420px', padding:'20px', boxSizing:'border-box' }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'right' }}>
+        <label htmlFor="day-select" style={{ marginRight:'10px' }}>날짜 선택:</label>
         <Form.Select
           aria-label="Select day"
-          onChange={handleDayChange} // 핸들러 연결
-          style={{ width: "150px", margin: "0" }}
+          onChange={handleDayChange}
+          value={selectedDay} // Set selected value to state
+          style={{ width:"150px", margin:"0" }}
         >
           <option value="">일 선택</option>
           {[...Array(31).keys()].map((i) => (

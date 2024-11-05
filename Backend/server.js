@@ -27,6 +27,7 @@ const reportRouter = require('./routes/reportRouter');
 const mypageRouter = require('./routes/mypageRouter');
 const { createWebSocketServer, sendNotification, broadcastAlert } = require('./websockets'); 
 const bodyParser = require('body-parser');
+const MasterMainDashboard = require('./routes/MainDashboardRouter')
 
 
 // Express 앱 초기화
@@ -87,6 +88,7 @@ app.use('/community', commentRouter);
 app.use('/community', likeRouter);
 app.use('/community', reportRouter);
 app.use('/mypage', mypageRouter);
+app.use('/Masterdashboard',MasterMainDashboard)
 app.use(bodyParser.json());
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정

@@ -49,33 +49,35 @@ const options = {
   },
   scales: {
     x: {
-      stacked: true, // x축 스택형 설정
+      stacked: true,
     },
     y: {
-      stacked: true, // y축 스택형 설정
-    //   min: 0, // y축 최소값
-    //   max: 100, // y축 최대값
+      stacked: true,
     },
   },
 };
 
 const CombinedChart = () => {
-  const [selectedMonth, setSelectedMonth] = useState(""); // 선택한 월
-  const [showMorning, setShowMorning] = useState(true); // 오전/오후 선택
-  const [selectedButton, setSelectedButton] = useState("morning"); // 선택된 버튼 상태
-  
+  // Get current month (1-12)
+  const currentMonth = new Date().getMonth() + 1;
+
+  // Initialize selectedMonth with the current month
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth); 
+  const [showMorning, setShowMorning] = useState(true); 
+  const [selectedButton, setSelectedButton] = useState("morning");
+
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
   };
 
   const handleMorningClick = () => {
-    setShowMorning(true); // 오전 데이터 표시
-    setSelectedButton("morning"); // 오전 버튼 선택
+    setShowMorning(true);
+    setSelectedButton("morning");
   };
 
   const handleAfternoonClick = () => {
-    setShowMorning(false); // 오후 데이터 표시
-    setSelectedButton("afternoon"); // 오후 버튼 선택
+    setShowMorning(false);
+    setSelectedButton("afternoon");
   };
 
   const currentLabels = showMorning ? morningLabels : afternoonLabels;
@@ -90,17 +92,17 @@ const CombinedChart = () => {
     datasets: [
       {
         label: '흉기',
-        data: currentData.weapons, // 오전/오후에 따라 데이터 설정
+        data: currentData.weapons,
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
       },
       {
         label: '들어온 사람',
-        data: currentData.arrivals, // 오전/오후에 따라 데이터 설정
+        data: currentData.arrivals,
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
       },
       {
         label: '나간 사람',
-        data: currentData.dropouts, // 오전/오후에 따라 데이터 설정
+        data: currentData.dropouts,
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],
@@ -113,7 +115,8 @@ const CombinedChart = () => {
         <Form.Select
           aria-label="Select month"
           onChange={handleMonthChange}
-          style={{ width: "150px", margin: "0", display: "block" }}
+          value={selectedMonth} // Set selected value to state
+          style={{ width: "150px", margin:"0", display:"block" }}
         >
           <option value="">월 선택</option>
           {[...Array(12).keys()].map((i) => (
@@ -136,7 +139,7 @@ const CombinedChart = () => {
         </button>
       </div>
 
-      <div style={{ width: '100%', height: '420px', padding: '20px', boxSizing: 'border-box' }}>
+      <div style={{ width:'100%', height:'420px', padding:'20px', boxSizing:'border-box' }}>
         <Bar data={data} options={options} />
       </div>
     </div>

@@ -24,35 +24,47 @@ const MainMaster = () => {
   // 상태 변수를 추가합니다.
   const [status, setStatus] = useState("정상"); // 기본 상태는 '정상'으로 설정
   const [isError, setIsError] = useState(false); // 오류 상태 변수
+  const [data, setData] = useState({
+    totalUsers: 0,
+    dailyUsers: 0,
+    totalNotifications: 0,
+    dailyNotifications: 0,
+  });
 
   // 상태 업데이트 함수
   useEffect(() => {
-    axios
-      .get("/") // 데이터 요청
-      .then((res) => {
-        // 요청 성공 시 정상으로 설정
-        setStatus("정상");
+    const fetchData = async () => {
+      try {
+        const usersResponse = await axios.get('/Masterdashboard/users');
+        const notificationsResponse = await axios.get('/Masterdashboard/notifications');
+        
+        // 응답 데이터 구조 확인
+        console.log('Users Response:', usersResponse);
+        console.log('Notifications Response:', notificationsResponse);
+        
+        setData({
+          totalUsers: usersResponse.data.totalUsers,
+          dailyUsers: usersResponse.data.dailyUsers,
+          totalNotifications: notificationsResponse.data.totalNotifications,
+          dailyNotifications: notificationsResponse.data.dailyNotifications,
+        });
+  
+        setStatus('정상');
         setIsError(false);
-      })
-      .catch(() => {
-        // 요청 실패 시 오류로 설정
-        setStatus("오류");
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setStatus('오류');
         setIsError(true);
-        console.log("서버 연결 실패");
-      });
+      }
+    };
+  
+    fetchData();
   }, []);
-
   function selectMonth(value) {
     setMonth(value);
   }
   console.log(num, "됭");
 
-  const data = [
-    { label: "전체 가입자수", value: 1200 },
-    { label: "당일 가입자수", value: 250 },
-    { label: "전체 알림수", value: 512 },
-    { label: "당일 알림수", value: 0 },
-];
 
   return (
     <div className="main-content mt-5">
@@ -95,21 +107,24 @@ const MainMaster = () => {
         </Row>
       </Container>
       <Container fluid className="dashboard">
-            <Row className="justify-content-center">
-                {data.map((item, index) => (
-                    <Col xs={12} sm={6} md={3} key={index} className="mb-4">
-                        <Card className="text-center shadow-sm">
-                            <Card.Body>
-                                <Card.Title>{item.label}</Card.Title>
-                                <Card.Text className="value">
-                                    {item.value}
-                                </Card.Text>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                ))}
-            </Row>
-        </Container>
+        <Row className="justify-content-center">
+          {[
+            { label: '전체 가입자수', value: data.totalUsers },
+            { label: '당일 가입자수', value: data.dailyUsers },
+            { label: '전체 알림수', value: data.totalNotifications },
+            { label: '당일 알림수', value: data.dailyNotifications },
+          ].map((item, index) => (
+            <Col xs={12} sm={6} md={3} key={index} className="mb-4">
+              <Card className="text-center shadow-sm">
+                <Card.Body>
+                  <Card.Title>{item.label}</Card.Title>
+                  <Card.Text className="value">{item.value}</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Container>
       <Container fluid>
         <Row className="g-4 mb-5">
           <Col md={12} lg={12}>

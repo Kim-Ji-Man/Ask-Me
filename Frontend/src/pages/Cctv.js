@@ -4,6 +4,7 @@ import "../css/Cctv.css";
 import Swal from "sweetalert2"; 
 import webSocketService from '../websocketService';
 import CctvWebSocket from"../components/CctvWebSocket"
+import axios from "../axios";
 
 const CCTV = () => {
   const [showAlert, setShowAlert] = useState(false);
@@ -11,6 +12,8 @@ const CCTV = () => {
   const [modalShow, setModalShow] = useState(false);
   const [selectedAlert, setSelectedAlert] = useState(null); // 선택된 감지 항목 상태
   const [adminComment, setAdminComment] = useState(""); // 관리자 소견 상태
+  const [anomalyType, setAnomalyType] = useState(""); 
+  const [alertData, setAlertData] = useState([]); // 백엔드에서 가져온 이상 감지 
   
 CctvWebSocket();
 
@@ -23,13 +26,13 @@ CctvWebSocket();
 
   const videoUrl = cctvAddresses[0];
 
-  const alertData = [
-    { seq: 0, name: "CCTV1", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:00:50" },
-    { seq: 1, name: "CCTV2", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:05:00" },
-    { seq: 2, name: "CCTV3", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:10:00" },
-    { seq: 3, name: "CCTV4", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:15:00" },
-    { seq: 4, name: "CCTV5", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:20:00" },
-  ];
+  // const alertData = [
+  //   { seq: 0, name: "CCTV1", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:00:50" },
+  //   { seq: 1, name: "CCTV2", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:05:00" },
+  //   { seq: 2, name: "CCTV3", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:10:00" },
+  //   { seq: 3, name: "CCTV4", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:15:00" },
+  //   { seq: 4, name: "CCTV5", image: "img/hyo1.PNG", timestamp: "2024-10-16 18:20:00" },
+  // ];
 
   const handleShowAlert = () => {
     setShowAlert(!showAlert);
@@ -46,6 +49,8 @@ CctvWebSocket();
 
   const handleAlertClick = (alert) => {
     setSelectedAlert(alert); // 선택된 항목 저장
+    setAnomalyType(alert.anomaly_type); // 기존 이상 행동 설정
+    setAdminComment(alert.comment || ""); // 기존 관리자 소견 설정 (없으면 빈 값)
     setModalShow(true); // 모달 표시
   };
 
@@ -53,131 +58,48 @@ CctvWebSocket();
     setAdminComment(e.target.value);
   };
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem('jwtToken');
-    
-  //   // 웹소켓 연결
-  //   webSocketService.connect(token);
+  const handleAnomalyTypeChange = (e) => {
+    setAnomalyType(e.target.value); // 이상 행동 선택 상태 업데이트
+  };
 
-  //   // 메시지 수신 시 처리할 로직
-  //   const handleMessage = (data) => {
-  //     if (data.type === 'alert') { 
-  //       Swal.fire({
-  //         title: '흉기거수자 확인!!',
-  //         text: '알림이 갔습니다.',
-  //         imageUrl: 'img/hyo1.PNG',
-  //         imageWidth: 400,
-  //         imageHeight: 200,
-  //         imageAlt: 'Custom image',
-  //         confirmButtonText: '트래킹모드',
-  //         allowOutsideClick: false,
-  //         allowEscapeKey: false,
-  //         allowEnterKey: false
-  //       }).then(result => {
-  //         if (result.isConfirmed) {
-  //           Swal.fire({
-  //             width: '70%',
-  //             title: '<strong>트래킹모드</strong>',
-  //             html:
-  //               '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
-  //               `<img src="http://localhost:8000/video_feed" alt="Video Stream" style="width: 80%; height: auto;"/>`,
-  //             confirmButtonText: '확인',
-  //             allowOutsideClick: false,
-  //             allowEscapeKey: false,
-  //             allowEnterKey: false
-  //           });
-  //         }
-  //       });
-  //     }
-  //   };
-
-  //   // 메시지 리스너 추가
-  //   webSocketService.addListener(handleMessage);
-
-  //   return () => {
-  //     // 컴포넌트 언마운트 시 리스너 제거 및 웹소켓 닫기
-  //     webSocketService.removeListener(handleMessage);
-  //     webSocketService.close();
-  //   };
-  // }, []);
+    // API 호출하여 이상 감지 데이터를 가져오는 함수
+    const fetchAlertData = async () => {
+      try {
+        const response = await axios.get('/Alim/cctvalims'); // 백엔드 API 호출
+        setAlertData(response.data); // 응답 데이터를 alertData에 저장
+      } catch (error) {
+        console.error('Error fetching alert data:', error);
+      }
+    };
 
 
-  // useEffect(() => {
-  //   const socket = new WebSocket("ws://localhost:5000");
-    
-  //   socket.onopen = () => {
-  //     console.log("WebSocket connected");
-  //   };
+    const handleSaveChanges = async () => {
+      if (!selectedAlert) return;
   
-  //   socket.onmessage = (event) => {
-  //     const data = JSON.parse(event.data);
-  //     console.log("Message from server:", data.message);
-      
-  //     // 실시간 탐지 알림 표시
-  //     Swal.bindClickHandler();
-  //     Swal.fire({
-  //       title: '흉기거수자 확인!!',
-  //       text: '알림이 갔습니다.',
-  //       imageUrl: 'img/hyo1.PNG',
-  //       imageWidth: 400,
-  //       imageHeight: 200,
-  //       imageAlt: 'Custom image',
-  //       confirmButtonText: '트래킹모드',
-  //       allowOutsideClick: false,
-  //       allowEscapeKey: false,
-  //       allowEnterKey: false
-  //     }).then(result => {
-  //       if (result.isConfirmed) {
-  //         Swal.bindClickHandler();
-  //         Swal.fire({
-  //           width: '70%',
-  //           title: '<strong>트래킹모드</strong>',
-  //           html:
-  //             '<h6>버튼을 클릭하면 꺼집니다.</h6>' +
-  //             ' <div className="tr-container">' +
-  //             `<img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>` +
-  //             '</div>',
-  //           focusConfirm: true,
-  //           confirmButtonText: '확인',
-  //           allowOutsideClick: false,
-  //           allowEscapeKey: false,
-  //           allowEnterKey: false
-  //         }).then(result => {
-  //           Swal.bindClickHandler();
-  //           Swal.fire({
-  //             title: '이미지 or 영상을 저장하시겠습니까?',
-  //             imageUrl: 'img/hyo1.PNG',
-  //             imageWidth: 400,
-  //             imageHeight: 200,
-  //             imageAlt: 'Custom image',
-  //             showCancelButton: true,
-  //             cancelButtonColor: '#d33',
-  //             confirmButtonText: '확인',
-  //             cancelButtonText: '취소',
-  //             allowOutsideClick: false,
-  //             allowEscapeKey: false,
-  //             allowEnterKey: false
-  //           }).then(result => {
-  //             if (result.isConfirmed) {
-  //               Swal.fire('저장이 완료되었습니다.', '화끈하시네요~!', 'success');
-  //             } else {
-  //               Swal.fire('종료합니다', '화끈하시네요~!', 'success');
-  //             }
-  //           });
-  //         });
-  //       }
-  //     });
-  //   };
+      try {
+        await axios.put(`/Alim/update-anomaly/${selectedAlert.id}`, {
+          anomaly_type: anomalyType,
+          admin_comment: adminComment,
+        });
   
-  //   socket.onclose = () => {
-  //     console.log("WebSocket disconnected");
-  //   };
+        Swal.fire("저장 완료", "이상 행동과 관리자 소견이 성공적으로 저장되었습니다.", "success");
   
-  //   // 컴포넌트 언마운트 시 WebSocket 연결 종료
-  //   return () => {
-  //     socket.close();
-  //   };
-  // }, []);
+        // 모달 닫기 및 데이터 새로고침
+        setModalShow(false);
+        fetchAlertData(); // 저장 후 데이터 새로고침
+      } catch (error) {
+        console.error('Error updating anomaly:', error);
+        Swal.fire("저장 실패", "저장하는 중 오류가 발생했습니다.", "error");
+      }
+    };
+
+
+      // 컴포넌트가 마운트될 때 API 호출
+  useEffect(() => {
+    fetchAlertData();
+  }, []);
+
+  
   
 
   return (
@@ -210,30 +132,47 @@ CctvWebSocket();
           </Row>
         </Container>
 
+  
         {/* 이상 감지 현황 */}
         {showAlert && (
-          <div className={`alert-section ${splitView ? "half-width" : ""}`}>
-            <h5 className="error_title">이상 감지 현황</h5>
-            <div className={`alert-items ${alertData.length >= 3 ? "scrollable" : ""}`}>
-              {alertData.length === 0 ? (
-                <div className="no-alert">오늘 이상 감지가 없습니다</div>
-              ) : (
-                alertData.map((alert, index) => (
-                  <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
-                    <img src={alert.image} alt="CCTV Image" className="alert-image" />
-                    <div className="alert-details">
-                      <div className="alert-info">
-                        <span className="cctv-name">{alert.name}</span>
-                        <Button className="alert-btn">흉기 의심</Button>
-                      </div>
-                    </div>
-                    <span className="alert-timestamp">{alert.timestamp}</span>
-                  </div>
-                ))
-              )}
+  <div className={`alert-section ${splitView ? "half-width" : ""}`}>
+    <h5 className="error_title">이상 감지 현황</h5>
+    <div className={`alert-items ${alertData.length >= 3 ? "scrollable" : ""}`}>
+      {alertData.length === 0 ? (
+        <div className="no-alert">오늘 이상 감지가 없습니다</div>
+      ) : (
+        alertData.map((alert, index) => (
+          <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
+            <img src={`http://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
+            <div className="alert-details">
+              <div className="alert-info">
+                <span className="cctv-name">{alert.device_name}</span>
+                {/* 이상 행동에 따라 버튼 배경색을 동적으로 변경 */}
+                <Button
+                  className="alert-btn"
+                  style={{
+                    backgroundColor:
+                      alert.anomaly_type === "흉기"
+                        ? "red"
+                        : alert.anomaly_type === "오류"
+                        ? "orange"
+                        : alert.anomaly_type === "기타"
+                        ? "black"
+                        : "gray", // 기본 색상 (선택 사항)
+                        color: "white", // 그 외에는 흰색 글자
+                  }}
+                >
+                  {alert.anomaly_type}
+                </Button>
+              </div>
             </div>
+            <span className="alert-timestamp">{new Date(alert.detection_time).toLocaleString()}</span>
           </div>
-        )}
+        ))
+      )}
+    </div>
+  </div>
+)}
 
         {/* 선택된 이미지 모달 */}
         <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
@@ -243,43 +182,35 @@ CctvWebSocket();
           <Modal.Body className="cctvmodalerror_body">
             {selectedAlert && (
               <>
-                <img src={selectedAlert.image} alt={selectedAlert.name} className="img-fluid" />
+                <img src={`http://localhost:5000${selectedAlert.image_path}`} alt={selectedAlert.device_name} className="img-fluid" />
                 {/* 세부 정보 테이블 */}
                 <table className="table table-bordered mt-3">
                   <tbody>
                     <tr>
                       <th>cctv이름</th>
-                      <td>{selectedAlert.name}</td>
+                      <td>{selectedAlert.device_name}</td>
                     </tr>
                     <tr>
                       <th>발생 위치</th>
-                      <td>입구</td> {/* 임의로 추가된 정보 */}
+                      <td>{selectedAlert.location}</td> {/* 위치 정보 추가 */}
                     </tr>
                     <tr>
                       <th>이상 행동</th>
-                      <td>
-                        <Form.Select aria-label="Default select example">
-                          <option>종류 선택</option>
-                          <option value="1">흉기</option>
-                          <option value="2">오류</option>
-                          <option value="3">기타</option>
+                      <Form.Select aria-label="Default select example" value={anomalyType} onChange={handleAnomalyTypeChange} style={{width:'100%'}}>
+                          <option value="">종류 선택</option> {/* 기본 옵션 */}
+                          <option value="흉기">흉기</option> {/* 흉기 옵션 */}
+                          <option value="오류">오류</option> {/* 오류 옵션 */}
+                          <option value="기타">기타</option> {/* 기타 옵션 */}
                         </Form.Select>
-                      </td>
                     </tr>
                     <tr>
                       <th>감지 일시</th>
-                      <td>{selectedAlert.timestamp}</td>
+                      <td>{new Date(selectedAlert.detection_time).toLocaleString()}</td> {/* 감지 일시 추가 */}
                     </tr>
                     <tr>
                       <th>담당자 소견</th>
                       <td>
-                        <Form.Control
-                          as="textarea"
-                          rows={3}
-                          value={adminComment}
-                          onChange={handleCommentChange}
-                          placeholder="관리자 소견을 입력하세요"
-                        />
+                        <Form.Control as="textarea" rows={5} value={adminComment} onChange={handleCommentChange} placeholder="관리자 소견을 입력하세요" />
                       </td>
                     </tr>
                   </tbody>
@@ -287,17 +218,20 @@ CctvWebSocket();
               </>
             )}
           </Modal.Body>
+
+          {/* 모달 하단 버튼 */}
           <Modal.Footer className="cctvmodalerror">
             <Button variant="secondary" onClick={() => setModalShow(false)}>
               닫기
             </Button>
-            <Button variant="primary" onClick={() => Swal.fire("저장 완료", adminComment, "success")}>
+            <Button variant="primary" onClick={handleSaveChanges}>
               저장
             </Button>
           </Modal.Footer>
         </Modal>
-      </div>
-    </div>
+
+      </div> {/* main-container 끝 */}
+    </div> /* main-content 끝 */
   );
 };
 

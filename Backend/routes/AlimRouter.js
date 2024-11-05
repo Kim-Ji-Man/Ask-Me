@@ -115,4 +115,56 @@ router.get('/alertlist', async (req, res) => {
     }
 });
 
+
+router.get('/cctvalims', async (req, res) => {
+    const query = `
+      SELECT 
+          ar.id,
+          ar.device_id,
+          dd.device_name,
+          dd.location,
+          ar.anomaly_type,
+          ar.comment,
+          ar.closed_at,
+          al.detection_time,
+          al.image_path
+      FROM 
+          Anomaly_Resolution ar
+      JOIN 
+          Detection_Device dd ON ar.device_id = dd.device_id
+      JOIN 
+          Alert_Log al ON ar.alert_id = al.alert_id;
+    `;
+    
+    try {
+      const results = await db.executeQuery(query);
+      res.json(results); // 결과를 JSON으로 반환
+    } catch (err) {
+      console.error('Error fetching anomalies:', err);
+      res.status(500).json({ error: 'Failed to fetch anomalies' });
+    }
+  });
+
+
+  router.put('/update-anomaly/:id', async (req, res) => {
+    const { id } = req.params; // URL에서 anomaly ID를 가져옴
+    const { anomaly_type, admin_comment } = req.body; // 요청 본문에서 데이터 가져옴
+  
+    const query = `
+      UPDATE Anomaly_Resolution 
+      SET anomaly_type = ?, comment = ?
+      WHERE id = ?;
+    `;
+  
+    try {
+      // 데이터베이스 업데이트 실행
+      await db.executeQuery(query, [anomaly_type, admin_comment, id]);
+      res.status(200).json({ message: 'Anomaly updated successfully' });
+    } catch (err) {
+      console.error('Error updating anomaly:', err);
+      res.status(500).json({ error: 'Failed to update anomaly' });
+    }
+  });
+  
+
 module.exports = router;
