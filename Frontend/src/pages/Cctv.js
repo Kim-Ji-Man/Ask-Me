@@ -75,24 +75,31 @@ CctvWebSocket();
 
     const handleSaveChanges = async () => {
       if (!selectedAlert) return;
-  
+    
+      // Validation: Ensure a valid anomaly type is selected
+      if (anomalyType === "흉기의심") {
+        Swal.fire("저장 실패", "이상 행동을 선택하세요.", "warning");
+        return;
+      }
+    
+      if (!adminComment.trim()) {
+        Swal.fire("저장 실패", "담당자 소견을 입력하세요.", "warning");
+        return;
+      }
+    
       try {
         await axios.put(`/Alim/update-anomaly/${selectedAlert.id}`, {
           anomaly_type: anomalyType,
           admin_comment: adminComment,
         });
-  
         Swal.fire("저장 완료", "이상 행동과 관리자 소견이 성공적으로 저장되었습니다.", "success");
-  
-        // 모달 닫기 및 데이터 새로고침
-        setModalShow(false);
-        fetchAlertData(); // 저장 후 데이터 새로고침
+        setModalShow(false); // Close the modal
+        fetchAlertData(); // Refresh data after saving
       } catch (error) {
         console.error('Error updating anomaly:', error);
         Swal.fire("저장 실패", "저장하는 중 오류가 발생했습니다.", "error");
       }
     };
-
 
       // 컴포넌트가 마운트될 때 API 호출
   useEffect(() => {
@@ -204,7 +211,7 @@ CctvWebSocket();
                     <tr>
                       <th>이상 행동</th>
                       <Form.Select aria-label="Default select example" value={anomalyType} onChange={handleAnomalyTypeChange} style={{width:'100%'}}>
-                          <option value="">종류 선택</option> {/* 기본 옵션 */}
+                          <option value="흉기의심">종류 선택</option> {/* 기본 옵션 */}
                           <option value="흉기">흉기</option> {/* 흉기 옵션 */}
                           <option value="오류">오류</option> {/* 오류 옵션 */}
                           <option value="기타">기타</option> {/* 기타 옵션 */}
