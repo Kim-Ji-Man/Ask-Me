@@ -20,9 +20,7 @@ exports.registerStore = async (name, address, phone_number, business_number, lat
 // 매장 조회 로직 (SQL 쿼리 사용)
 exports.getStoreById = async (user_id) => {
     try {
-        const query = `
-            SELECT * FROM Stores WHERE user_id = ?
-        `;
+        const query = `SELECT * FROM Stores WHERE user_id = ?`;  // user_id로 매장 찾기
         const result = await db.executeQuery(query, [user_id]);
 
         // 결과가 없으면 예외를 던집니다.

@@ -61,7 +61,7 @@ const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함�
  *           description: Error registering user
  */
 router.post('/register', async (req, res) => {
-    const { username, mem_name, password, email, phone_number, role, gender, birth, nick, storeId } = req.body;
+    const { username, mem_name, password, email, phone_number, role, gender, birth, storeId , nick} = req.body;
 
     // 필수 값 검증
     if (!username || !mem_name || !password || !phone_number || !role || !gender || !birth ) {
@@ -86,7 +86,7 @@ router.post('/register', async (req, res) => {
 
     try {
         // 유저 등록 및 user_id 반환
-        const userId = await authController.registerUser( username, mem_name, password, email, phone_number, role, gender, birth, storeId);
+        const userId = await authController.registerUser( username, mem_name, password, email, phone_number, role, gender, birth, storeId, nick);
 
         // 성공 시 user_id와 함께 응답
         res.status(201).send({ message: 'User registered successfully', user_id: userId });
