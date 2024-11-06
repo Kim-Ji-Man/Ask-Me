@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-
 class CommunityPost extends StatefulWidget {
   @override
   _CommunityPostState createState() => _CommunityPostState();
@@ -18,7 +17,6 @@ class _CommunityPostState extends State<CommunityPost> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   String BaseUrl = dotenv.get("BASE_URL");
-
 
   // 갤러리에서 이미지 가져오기
   Future<void> _pickImage() async {
@@ -35,7 +33,7 @@ class _CommunityPostState extends State<CommunityPost> {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
-        _image = File(pickedFile.path); // 선택한 이미지를 리스트에 추가
+        _image = File(pickedFile.path);
       });
     }
   }
@@ -52,40 +50,61 @@ class _CommunityPostState extends State<CommunityPost> {
     final payload = json.decode(
       utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
     );
+
+    // userId 확인
+    print("Decoded User ID from token: ${payload['userId']}");
     return payload['userId'].toString();
   }
+
+  // 서버 통해 닉네임 불러오기
+  Future<String?> getUserNicknameFromServer(String userId) async {
+    final response = await http.get(Uri.parse('$BaseUrl/mypage/info/$userId'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['nick'];
+    } else {
+      print("Failed to fetch nickname from server.");
+      return null;
+    }
+  }
+
 
   // 게시글을 서버에 저장하는 함수
   Future<void> createPost(String title, String content) async {
     final userId = await getUserIdFromToken();
-    if (userId == null) {
-      // 사용자 ID를 가져오지 못하면 오류 처리
+    final nick = userId != null ? await getUserNicknameFromServer(userId) : null;
+
+    if (userId == null || nick == null) {
+      print("User ID or Nickname is null. Cannot create post.");
       return;
     }
 
     final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
 
+    print("Creating post with data: {user_id: $userId, nick: $nick, title: $title, content: $content}");
+
     final response = await http.post(
       Uri.parse('$BaseUrl/community/posts'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // JWT 토큰을 헤더에 추가
+        'Authorization': 'Bearer $token',
       },
       body: json.encode({
         'user_id': userId,
+        'nick': nick, // 닉네임 포함
         'title': title,
         'content': content,
-        'image': _image != null ? base64Encode(_image!.readAsBytesSync()) : null, // 이미지 base64로 인코딩
+        'image': _image != null ? base64Encode(_image!.readAsBytesSync()) : null,
       }),
     );
 
     if (response.statusCode == 201) {
-      Navigator.pop(context); // 성공 시 이전 화면으로 돌아가기
+      Navigator.pop(context);
     } else {
       throw Exception('Failed to create post');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +149,7 @@ class _CommunityPostState extends State<CommunityPost> {
                 border: InputBorder.none,
               ),
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              keyboardType: TextInputType.text, // 키보드가 자동으로 뜨게 함
+              keyboardType: TextInputType.text,
             ),
             Expanded(
               child: TextField(
@@ -155,16 +174,18 @@ class _CommunityPostState extends State<CommunityPost> {
               ),
             Row(
               children: [
-                ElevatedButton.icon(
-                  onPressed: _pickImage,
-                  icon: Icon(Icons.photo),
-                  label: Text('갤러리'),
+                IconButton(
+                  onPressed: _pickImageFromCamera,
+                  icon: Icon(Icons.photo_camera),
+                  color: Colors.black,
+                  iconSize: 30,
                 ),
                 SizedBox(width: 10),
-                ElevatedButton.icon(
-                  onPressed: _pickImageFromCamera,
-                  icon: Icon(Icons.camera),
-                  label: Text('카메라'),
+                IconButton(
+                  onPressed: _pickImage,
+                  icon: Icon(Icons.photo),
+                  color: Colors.black,
+                  iconSize: 30,
                 ),
               ],
             ),

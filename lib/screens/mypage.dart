@@ -3,15 +3,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/mypage_folder/mycommentpage.dart';
 import 'package:flutter_askme/screens/mypage_folder/mypostpage.dart';
 import 'package:flutter_askme/screens/mypage_folder/noticepage.dart';
+import 'package:flutter_askme/screens/mypage_folder/notificationsettings.dart';
 import 'package:flutter_askme/screens/mypage_folder/usersupport.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'mypage_folder/myinfopage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_askme/screens/login.dart';
+
 
 class Mypage extends StatefulWidget {
   @override
   _MypageState createState() => _MypageState();
+}
+
+
+class LogoutService {
+  Future<void> logoutUser(BuildContext context) async {
+    // SharedPreferences에서 토큰 삭제
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+
+    // 로그인 페이지로 이동
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
+    );
+  }
 }
 
 class _MypageState extends State<Mypage> {
@@ -114,7 +132,8 @@ class _MypageState extends State<Mypage> {
             width: 80,
             child: ElevatedButton(
               onPressed: () {
-                // 로그아웃 버튼 클릭 시 처리할 내용
+                final logoutService = LogoutService();
+                logoutService.logoutUser(context);
               },
               child: Text('로그아웃'),
               style: ElevatedButton.styleFrom(
@@ -140,7 +159,7 @@ class _MypageState extends State<Mypage> {
         children: [
           _buildOptionItem(Icons.campaign, '공지사항', context, NoticePage()),
           _buildOptionItem(Icons.person, '내 정보', context, MyInfoPage()),
-          _buildOptionItem(Icons.notifications, '알림설정', context, null),
+          _buildOptionItem(Icons.notifications, '알림설정', context, NotificationSettings()),
         ],
       ),
     );
@@ -192,7 +211,7 @@ class _MypageState extends State<Mypage> {
           currentUserNickname: nick,
           allComments: [],
         )),
-        _buildListTile('고객 지원', Icons.headset_mic, context, Usersupport()),
+        _buildListTile('고객 지원', Icons.headset_mic, context, UserSupport()),
       ],
     );
   }
