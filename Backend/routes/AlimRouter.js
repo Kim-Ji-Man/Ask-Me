@@ -269,6 +269,114 @@ router.get('/cctvalims', async (req, res) => {
         res.status(500).json({ message: '서버 오류가 발생했습니다.' });
     }
 });
+
+
+router.get('/app/Home/:userRole', async (req, res) => {
+    const { userRole } = req.params;
+
+    try {
+        if (userRole === 'guard') {
+            // 'guard' 역할에 대한 쿼리: 최신순으로 4개만 가져옴
+            const queryResult = await db.executeQuery(`
+                SELECT detection_time, image_path, device_id
+                FROM Alert_Log
+                ORDER BY detection_time DESC
+                LIMIT 4
+            `);
+            console.log("queryResult:", queryResult);
+
+            const alertLogs = Array.isArray(queryResult) ? queryResult : [];
+            console.log("Alert Logs:", alertLogs);
+
+            const result = await Promise.all(
+                alertLogs.map(async (log) => {
+                    const deviceData = await db.executeQuery(`
+                        SELECT store_id
+                        FROM Detection_Device
+                        WHERE device_id = ?
+                    `, [log.device_id]);
+
+                    if (deviceData.length > 0) {
+                        const storeId = deviceData[0].store_id;
+
+                        const storeData = await db.executeQuery(`
+                            SELECT address
+                            FROM Stores
+                            WHERE store_id = ?
+                        `, [storeId]);
+
+                        return {
+                            detection_time: log.detection_time,
+                            image_path: log.image_path || 'Default/Path/For/No/Image.jpg',
+                            address: storeData.length > 0 ? storeData[0].address : null,
+                        };
+                    }
+                    return null;
+                })
+            );
+
+            res.json(result.filter((data) => data !== null));
+
+        } else if (userRole === 'user') {
+            // 'user' 역할에 대한 쿼리: 최신순으로 4개만 가져옴
+            const anomalyResults = await db.executeQuery(`
+                SELECT alert_id
+                FROM Anomaly_Resolution
+                WHERE anomaly_type = '흉기'
+                ORDER BY alert_id DESC
+                LIMIT 4
+            `);
+            console.log("Anomaly Results:", anomalyResults);
+
+            const alertIds = anomalyResults.map(anomaly => anomaly.alert_id);
+
+            const alertLogs = await Promise.all(
+                alertIds.map(async (alertId) => {
+                    const logData = await db.executeQuery(`
+                        SELECT detection_time, image_path, device_id
+                        FROM Alert_Log
+                        WHERE alert_id = ?
+                    `, [alertId]);
+
+                    if (logData.length > 0) {
+                        const log = logData[0];
+                        const deviceData = await db.executeQuery(`
+                            SELECT store_id
+                            FROM Detection_Device
+                            WHERE device_id = ?
+                        `, [log.device_id]);
+
+                        if (deviceData.length > 0) {
+                            const storeId = deviceData[0].store_id;
+
+                            const storeData = await db.executeQuery(`
+                                SELECT address
+                                FROM Stores
+                                WHERE store_id = ?
+                            `, [storeId]);
+
+                            return {
+                                detection_time: log.detection_time,
+                                image_path: log.image_path || 'Default/Path/For/No/Image.jpg',
+                                address: storeData.length > 0 ? storeData[0].address : null,
+                            };
+                        }
+                    }
+                    return null;
+                })
+            );
+
+            res.json(alertLogs.filter((data) => data !== null));
+
+        } else {
+            return res.status(403).json({ message: '권한이 없습니다.' });
+        }
+
+    } catch (error) {
+        console.error('데이터 조회 중 오류 발생:', error);
+        res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    }
+});
   
 
 module.exports = router;

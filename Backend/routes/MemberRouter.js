@@ -226,5 +226,52 @@ router.delete('/Master/Delete/:userId', async (req, res) => {
     }
 });
 
+router.get('/push/:userId', async (req, res) => {
+    const user_id = req.params.userId; // userId를 숫자로 변환
+    console.log('Received user_id:', user_id); // user_id 값 확인
+    
+    const sql = `SELECT push_alert FROM Setting WHERE user_id = ?`;
+    
+    try {
+      const [results] = await db.executeQuery(sql, [user_id]); // MySQL 쿼리 실행
+        
+      if (results) {
+        res.send(results); // push_alert 값 반환
+      } else {
+        res.status(404).send({ error: '사용자를 찾을 수 없습니다.' });
+      }
+    } catch (err) {
+      console.error('Error fetching push settings:', err);
+      return res.status(500).send('Error fetching push settings');
+    }
+});
+
+router.post('/push/update/:user_id', async (req, res) => {
+    const user_id = req.params.user_id; // URL에서 user_id를 가져옴
+    const { push_alert } = req.body; // POST 요청의 body에서 push_alert 값을 가져옴
+    console.log(push_alert,user_id,"가져오니??");
+    
+  
+    if (push_alert === undefined) { // 잘못된 조건 수정
+      return res.status(400).send({ error: 'push_alert 값이 필요합니다.' });
+    }
+  
+    const sql = `UPDATE Setting SET push_alert = ?, updated_at = NOW() WHERE user_id = ?`;
+  
+    try {
+        const result = await db.executeQuery(sql, [push_alert, user_id]); // 구조 분해 할당 제거
+        
+        if (result && result.affectedRows > 0) {
+          res.status(200).send({ message: '푸시 알림 설정이 성공적으로 업데이트되었습니다.' });
+        } else {
+          res.status(404).send({ error: '사용자를 찾을 수 없습니다.' });
+        }
+      } catch (err) {
+        console.error('Error updating push settings:', err);
+        return res.status(500).send('Error updating push settings');
+      }
+});
+
+
 
 module.exports = router;
