@@ -128,6 +128,26 @@ class _LocationState extends State<Location> {
     );
   }
 
+  void _showAlertDialog2(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('알림'),
+          content: Text('2km 내에 흉기 감지가 있습니다.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('확인'),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
 // 흉기 마커 필터링 함수 (2km 이내)
   void _filterMarkersByDistance() async {
@@ -184,6 +204,9 @@ class _LocationState extends State<Location> {
       });
       if (filteredMarkers.isEmpty) {
         _showAlertDialog(context); // AlertDialog 호출
+      }
+      else{
+        _showAlertDialog2(context);
       }
     }
   }
