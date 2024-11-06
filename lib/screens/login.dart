@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_askme/screens/find_id_password.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // 토큰 저장을 위한 패키지
@@ -154,11 +155,14 @@ class _LoginState extends State<Login> {
               ),
               GestureDetector(
                 onTap: () {
-                  // 비밀번호 찾기 로직 추가
-                  print('비밀번호 찾기 페이지로 이동');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => FindIdPasswordPage()),
+                  );
                 },
                 child: Text(
-                  '비밀번호 찾기',
+                  '아이디 비밀번호 찾기',
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 16,

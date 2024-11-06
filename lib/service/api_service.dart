@@ -1,25 +1,54 @@
-// lib/services/api_service.dart
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:dio/dio.dart';
 
 class ApiService {
-  final String baseUrl;
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: 'http://10.0.2.2:5000',  // 서버 기본 URL
+      connectTimeout: Duration(milliseconds: 5000),  // 연결 타임아웃 설정
+      receiveTimeout: Duration(milliseconds: 3000),  // 응답 타임아웃 설정
+    ),
+  );
 
-  ApiService(this.baseUrl);
+  Future<Map<String, dynamic>?> signUp({
+    String? storeId, // 변경
+    required String nick, // nickname -> nick으로 변경
+    required String email,
+    required String username,
+    required String password,
+    required String phoneNumber, // 추가
+    required String name, // mem_name에 해당
+    required String gender,
+    required String birth,
+    required String role, // userType을 role로 변경
+  }) async {
+    final data = {
+      'storeId': storeId,  // guard일 경우에만 설정
+      'nick': nick, // nickname -> nick으로 변경
+      'username': username, // 서버에서 기대하는 필드 이름으로 전달
+      'email': email,
+      'password': password,
+      'phone_number': phoneNumber, // 추가된 필드
+      'mem_name': name, // 변경된 필드 이름
+      'gender': gender,
+      'birth': birth,
+      'role': role, // 변경된 필드 이름
+    };
 
-  // GET 요청을 통해 데이터를 가져오는 메서드
-  Future<Map<String, dynamic>> fetchData() async {
     try {
-      final response = await http.get(Uri.parse(baseUrl));
-
-      // 요청이 성공적인 경우
-      if (response.statusCode == 200) {
-        return json.decode(response.body); // JSON 데이터를 파싱하여 반환
+      final response = await _dio.post('/auth/register', data: data); // POST 요청 전송
+      if (response.statusCode == 201) { // 201 상태 코드 확인
+        return response.data;
       } else {
-        throw Exception('Failed to load data: ${response.statusCode}'); // 오류 처리
+        print("회원가입 실패: ${response.statusCode}");
+        return null;
       }
-    } catch (e) {
-      throw Exception('Error: $e'); // 예외 처리
+    } on DioError catch (e) {
+      if (e.response != null) {
+        print("서버 오류: ${e.response?.data}");
+      } else {
+        print("네트워크 오류: $e");
+      }
+      return null;
     }
   }
 }
