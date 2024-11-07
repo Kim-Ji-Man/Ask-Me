@@ -191,6 +191,70 @@ class _MyInfoPageState extends State<MyInfoPage> {
     }
   }
 
+  Future<void> _deleteAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) {
+      print('Error: No token found');
+      return;
+    }
+
+    final url = Uri.parse('$baseUrl/auth/delete/');
+    final response = await http.delete(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      print('Account deleted successfully');
+      // 로그인 화면이나 홈 화면으로 이동
+      Navigator.popUntil(context, (route) => route.isFirst);
+    } else {
+      print('Failed to delete account with status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
+  }
+
+  void _showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: Text('회원 탈퇴',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.bold, // 볼드체 적용
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('탈퇴 시 동일 아이디로 재가입이 불가능합니다.'),
+              SizedBox(height: 10),
+              Text('회원 탈퇴를 진행하시겠습니까?'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteAccount();
+              },
+              child: Text('확인'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('취소'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -237,8 +301,18 @@ class _MyInfoPageState extends State<MyInfoPage> {
             Divider(color: Colors.grey[300]),
             SizedBox(height: 20),
             _buildEditableField('새 비밀번호 확인', confirmNewPasswordController),
-            Divider(color: Colors.grey[300]),
-            SizedBox(height: 40),
+            Align(
+              alignment: Alignment.centerLeft, // 왼쪽 정렬
+              child: TextButton(
+                onPressed: _showDeleteDialog,
+                child: Text('회원탈퇴',
+                    style: TextStyle(
+                        color: Colors.grey,
+                      decoration: TextDecoration.underline,),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveChanges,
               child: Text('수정 완료'),
