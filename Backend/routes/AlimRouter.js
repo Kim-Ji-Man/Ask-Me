@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
-const { sendNotification } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+const { sendNotification,broadcastAlertFlutter } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
 
 let lastNotiId = null; // 마지막으로 처리한 noti_id를 저장
 
@@ -146,23 +146,64 @@ router.get('/cctvalims', async (req, res) => {
   });
 
 
-  router.put('/update-anomaly/:id', async (req, res) => {
+  
+router.put('/update-anomaly/:id', async (req, res) => {
     const { id } = req.params; // URL에서 anomaly ID를 가져옴
     const { anomaly_type, admin_comment } = req.body; // 요청 본문에서 데이터 가져옴
   
-    const query = `
+    // 1. Anomaly_Resolution 업데이트 쿼리
+    const updateQuery = `
       UPDATE Anomaly_Resolution 
       SET anomaly_type = ?, comment = ?
       WHERE id = ?;
     `;
   
+    // 2. 관련 데이터 조회 쿼리 (Alert_Log, Detection_Device, Stores 조인)
+    const selectQuery = `
+      SELECT 
+          a.detection_time, 
+          a.image_path, 
+          d.store_id,
+          s.name AS storeName
+      FROM 
+          Alert_Log a
+      JOIN 
+          Detection_Device d ON a.device_id = d.device_id
+      JOIN 
+          Stores s ON d.store_id = s.store_id
+      WHERE 
+          a.alert_id = (
+              SELECT alert_id FROM Anomaly_Resolution WHERE id = ?
+          );
+    `;
+  
     try {
-      // 데이터베이스 업데이트 실행
-      await db.executeQuery(query, [anomaly_type, admin_comment, id]);
-      res.status(200).json({ message: 'Anomaly updated successfully' });
+      // 1. Anomaly_Resolution 업데이트 실행
+      await db.executeQuery(updateQuery, [anomaly_type, admin_comment, id]);
+  
+      // 2. 관련 데이터 조회 실행
+      const result = await db.executeQuery(selectQuery, [id]);
+      
+      if (result.length > 0) {
+        const { detection_time, image_path, storeName } = result[0]; // 첫 번째 결과만 사용
+  
+        // anomaly_type이 '흉기'일 경우 플러터로 알림 전송
+        if (anomaly_type === '흉기') {
+          console.log(`흉기 감지: ${storeName}, ${detection_time}`);
+            console.log(detection_time,image_path,storeName,"제대로 되니????");
+            
+          // 흉기 감지 알림을 플러터로 전송
+          broadcastAlertFlutter(image_path, storeName, detection_time);
+        }
+  
+        res.status(200).json({ message: 'Anomaly updated successfully', storeName });
+      } else {
+        res.status(404).json({ error: 'No related data found' });
+      }
+      
     } catch (err) {
-      console.error('Error updating anomaly:', err);
-      res.status(500).json({ error: 'Failed to update anomaly' });
+      console.error('Error updating anomaly or fetching related data:', err);
+      res.status(500).json({ error: 'Failed to update anomaly or fetch related data' });
     }
   });
 
@@ -177,7 +218,7 @@ router.get('/cctvalims', async (req, res) => {
                 SELECT detection_time, image_path, device_id
                 FROM Alert_Log
             `);
-            console.log("queryResult:", queryResult);
+            // console.log("queryResult:", queryResult);
 
             const alertLogs = Array.isArray(queryResult) ? queryResult : [];
             console.log("Alert Logs:", alertLogs);
@@ -269,7 +310,6 @@ router.get('/cctvalims', async (req, res) => {
         res.status(500).json({ message: '서버 오류가 발생했습니다.' });
     }
 });
-
 
 router.get('/app/Home/:userRole', async (req, res) => {
     const { userRole } = req.params;
@@ -377,6 +417,10 @@ router.get('/app/Home/:userRole', async (req, res) => {
         res.status(500).json({ message: '서버 오류가 발생했습니다.' });
     }
 });
+
+
+
+  
   
 
 module.exports = router;
