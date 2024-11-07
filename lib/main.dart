@@ -1,9 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:flutter_askme/screens/initial.dart';
+import 'package:flutter_askme/service/WebSocketProvider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:provider/provider.dart'; // Provider 패키지 추가
 
 
 void main() async {
@@ -20,10 +21,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Initial(),
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
+    return ChangeNotifierProvider(
+      create: (_) => WebSocketProvider(), // WebSocketProvider를 전역으로 제공
+      child: MaterialApp(
+        home: Initial(),
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
+        ),
       ),
     );
   }

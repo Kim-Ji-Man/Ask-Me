@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'RealTimeAlertWidget.dart';
 import 'alert.dart';
 import 'community.dart';
 import 'location.dart';
@@ -98,7 +99,12 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
+      body: Stack(
+        children: [
+          _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
+          RealTimeAlertWidget(),   // 실시간 알림 위젯 추가 (화면 전체에서 작동)
+        ],
+      ), // 네비게이션에 따라 페이지를 선택
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white, // 배경색 흰색
         selectedItemColor: Colors.black, // 선택된 아이템 색상 검정
