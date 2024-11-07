@@ -334,7 +334,7 @@ const jwtToken = localStorage.getItem("jwtToken");
                 <FaUserCircle
                   size={24}
                   onClick={() => navigateTo("/Mypage")}
-                  style={defaultStyle}
+                  style={activeMenu === "/Mypage" ? activeStyle : defaultStyle}
                 />
               )}
 
@@ -394,11 +394,11 @@ const jwtToken = localStorage.getItem("jwtToken");
     </>
   )}
 </div>
-              <FaCog
+              {/* <FaCog
                 size={24}
                 onClick={() => navigateTo("/Settings")}
                 style={defaultStyle}
-              />
+              /> */}
             </div>
             <Nav.Link onClick={logout} style={defaultStyle}>
               로그아웃
