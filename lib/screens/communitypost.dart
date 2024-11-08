@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:path_provider/path_provider.dart';
+
 
 class CommunityPost extends StatefulWidget {
   @override
@@ -18,23 +22,33 @@ class _CommunityPostState extends State<CommunityPost> {
   final TextEditingController _contentController = TextEditingController();
   String BaseUrl = dotenv.get("BASE_URL");
 
-  // 갤러리에서 이미지 가져오기
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
+  // 권한 요청 및 갤러리에서 이미지 선택
+  Future<void> _requestPermissionAndPickImage() async {
+    PermissionStatus status = await Permission.photos.request();
+    if (status.isGranted) {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } else if (status.isDenied) {
+      print("갤러리 접근 권한이 거부되었습니다.");
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
     }
   }
 
-  // 카메라에서 이미지 가져오기
+  // 카메라에서 이미지 가져오기 및 갤러리에 저장
   Future<void> _pickImageFromCamera() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
       });
+      // 갤러리에 저장
+      final result = await ImageGallerySaver.saveFile(pickedFile.path);
+      print("이미지 갤러리에 저장됨: $result");
     }
   }
 
@@ -84,25 +98,35 @@ class _CommunityPostState extends State<CommunityPost> {
 
     print("Creating post with data: {user_id: $userId, nick: $nick, title: $title, content: $content}");
 
-    final response = await http.post(
-      Uri.parse('$BaseUrl/community/posts'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: json.encode({
-        'user_id': userId,
-        'nick': nick, // 닉네임 포함
-        'title': title,
-        'content': content,
-        'image': _image != null ? base64Encode(_image!.readAsBytesSync()) : null,
-      }),
-    );
+
+    var request = http.MultipartRequest('POST', Uri.parse('$BaseUrl/community/posts'));
+    request.headers['Authorization'] = 'Bearer $token';
+
+    // 게시글 텍스트 데이터 추가
+    request.fields['user_id'] = userId;
+    request.fields['nick'] = nick;
+    request.fields['title'] = title;
+    request.fields['content'] = content;
+
+    // 이미지 파일 추가 (null 체크)
+    if (_image != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          'image',
+          _image!.path,
+        ),
+      );
+    }
+
+
+    // 서버로 요청 전송
+    final response = await request.send();
 
     if (response.statusCode == 201) {
-      Navigator.pop(context);
+      print("게시글이 성공적으로 생성되었습니다.");
+      Navigator.pop(context); // 게시글 생성 후 이전 화면으로 이동
     } else {
-      throw Exception('Failed to create post');
+      print('게시글 생성 실패. 상태 코드: ${response.statusCode}');
     }
   }
 
@@ -182,7 +206,7 @@ class _CommunityPostState extends State<CommunityPost> {
                 ),
                 SizedBox(width: 10),
                 IconButton(
-                  onPressed: _pickImage,
+                  onPressed: _requestPermissionAndPickImage,
                   icon: Icon(Icons.photo),
                   color: Colors.black,
                   iconSize: 30,

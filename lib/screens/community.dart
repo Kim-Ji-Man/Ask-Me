@@ -6,6 +6,8 @@ import 'postdetail.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decode/jwt_decode.dart';
+
 
 class Community extends StatefulWidget {
   const Community({super.key});
@@ -27,11 +29,40 @@ class _CommunityState extends State<Community> {
   // 토큰을 가져오는 함수
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token'); // 저장된 토큰을 가져옴
+    final token = prefs.getString('token');
+    print("Retrieved token: $token");
+    return token;
   }
 
+  // jwt_decode 패키지를 사용하여 토큰에서 userId 추출
+  Future<int?> getUserIdFromToken() async {
+    final token = await getToken();
+    if (token == null) return null;
+
+    try {
+      Map<String, dynamic> payload = Jwt.parseJwt(token);
+      print("Decoded token payload: $payload"); // 페이로드 전체 출력
+
+      final userId = payload['userId'] ?? payload['user_id'];
+      print("Extracted userId: $userId");
+      return userId;
+    } catch (e) {
+      print("Error decoding token: $e");
+      return null;
+    }
+  }
+
+
   Future<void> fetchPosts() async {
-    final response = await http.get(Uri.parse('$BaseUrl/community/posts'));
+    final token = await getToken();
+
+    // 게시물 목록 가져오기
+    final response = await http.get(
+      Uri.parse('$BaseUrl/community/posts'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
@@ -40,9 +71,14 @@ class _CommunityState extends State<Community> {
 
       setState(() {
         posts = jsonData.map((post) {
-          return Post.fromJson(post); // Post 클래스의 fromJson 메서드 사용
+          return Post.fromJson(post);
         }).toList();
       });
+
+      // 각 게시물에 대해 좋아요 상태 확인
+      for (int i = 0; i < posts.length; i++) {
+        await _fetchLikeStatus(posts[i].id, i);
+      }
     } else {
       throw Exception('Failed to load posts');
     }
@@ -66,6 +102,69 @@ class _CommunityState extends State<Community> {
       fetchPosts(); // 새 게시글 추가 후 목록 갱신
     } else {
       throw Exception('Failed to create post');
+    }
+  }
+
+  Future<void> toggleLike(String postId, bool isLiked, int index) async {
+    final token = await getToken();
+    final userId = await getUserIdFromToken();
+
+    if (userId == null || postId == null) {
+      print("Error: userId or postId is null.");
+      return;
+    }
+
+    final url = Uri.parse('$BaseUrl/community/likes');
+
+    final response = isLiked
+        ? await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({"post_id": int.parse(postId), "user_id": userId}),
+    )
+        : await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({"post_id": int.parse(postId), "user_id": userId}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      setState(() {
+        posts[index].isLiked = !posts[index].isLiked;
+        posts[index].likes += posts[index].isLiked ? 1 : -1;
+      });
+    } else if (response.statusCode == 409) {
+      print('Like already exists.');
+    } else {
+      print('Failed to toggle like with status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
+  }
+
+  Future<void> _fetchLikeStatus(String postId, int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    final url = Uri.parse('$BaseUrl/community/likes');
+
+    final response = await http.get(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        posts[index].likes = data['likeCount'];  // 게시물의 좋아요 수
+        posts[index].isLiked = data['isLiked'];  // 사용자의 좋아요 여부
+      });
+    } else {
+      print('Failed to fetch like status');
     }
   }
 
@@ -100,16 +199,15 @@ class _CommunityState extends State<Community> {
 
                       if (response.statusCode == 200) {
                         final postDetail = Post.fromJson(json.decode(response.body));
-                        Navigator.push(
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PostDetail(post: postDetail),
                           ),
-                        ).then((value) {
-                          if (value == true) {
-                            fetchPosts();  // 수정 후 목록 갱신
-                          }
-                        });
+                        );
+                        if (result == true) {
+                          fetchPosts(); // 수정 또는 좋아요 상태 변경 후 목록 갱신
+                        }
                       } else {
                         throw Exception('Failed to load post detail');
                       }
@@ -155,14 +253,7 @@ class _CommunityState extends State<Community> {
                                       size: 18,
                                     ),
                                     onPressed: () {
-                                      setState(() {
-                                        posts[index].isLiked = !posts[index].isLiked;
-                                        if (posts[index].isLiked) {
-                                          posts[index].likes++;
-                                        } else {
-                                          posts[index].likes--;
-                                        }
-                                      });
+                                      toggleLike(posts[index].id, posts[index].isLiked, index);
                                     },
                                   ),
                                   SizedBox(width: 4),
@@ -227,11 +318,13 @@ class _CommunityState extends State<Community> {
 // 글 데이터 클래스
 class Post {
   final String id;
-  late final String title;
-  late final String content;
+  final String userId; // 게시글 작성자의 user_id
+  final String title;
+  final String content;
   final String location;
   final String time;
   final String nick;
+  final String image;
   int views;
   int comments;
   int likes;
@@ -239,7 +332,9 @@ class Post {
 
   Post({
     required this.id,
+    required this.userId,
     required this.title,
+    required this.image,
     required this.content,
     required this.location,
     required this.time,
@@ -254,7 +349,9 @@ class Post {
   factory Post.fromJson(Map<String, dynamic> json) {
     return Post(
       id: json['post_id'].toString(),
+      userId: json['user_id'].toString(), // JSON에서 user_id 가져오기
       title: json['title'],
+      image: json['image'] ?? '',
       content: json['content'],
       location: json['location'] ?? '',
       time: Post.formatDate(json['created_at']),

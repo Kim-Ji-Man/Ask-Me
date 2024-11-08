@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:flutter_askme/screens/initial.dart';
-import 'package:flutter_askme/screens/signup_folder/signup_step2.dart';
-import 'package:flutter_askme/screens/signup_folder/signup_step3.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
-import 'package:provider/provider.dart'; // provider 패키지 추가
-import 'package:flutter_askme/models/signup_data.dart'; // SignUpData 클래스 임포트
+
 
 void main() async {
   await dotenv.load(fileName: "assets/.env");
@@ -27,14 +24,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Initial(),
-      theme: ThemeData(
-        appBarTheme: AppBarTheme(
-          backgroundColor: Colors.white,
-          elevation: 0,
+    return ChangeNotifierProvider(
+      create: (_) => WebSocketProvider(), // WebSocketProvider를 전역으로 제공
+      child: MaterialApp(
+        home: Initial(),
+        theme: ThemeData(
+          scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
         ),
-        scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
       ),
     );
   }

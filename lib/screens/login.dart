@@ -5,6 +5,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_askme/screens/homepage.dart';
+import 'package:provider/provider.dart';
+
+import '../service/WebSocketProvider.dart'; // Provider 패키지 추가
+
 
 class Login extends StatefulWidget {
   @override
@@ -45,6 +49,15 @@ class _LoginState extends State<Login> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
 
+      final webSocketProvider =
+      Provider.of<WebSocketProvider>(context, listen: false);
+
+      final token = prefs.getString('token');
+
+      if (token != null) {
+        webSocketProvider.connectWebSocket(username, token); // WebSocket 연결 시 토큰 전달
+      }
+      // 로그인 성공 시 홈 페이지로 이동
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Homepage()),

@@ -33,14 +33,20 @@ dependencies:
   dio: ^5.7.0
   provider: ^6.0.3
   flutter_dotenv: ^5.2.1
+  web_socket_channel: ^3.0.1
+  flutter_local_notifications: ^18.0.0
   flutter:
     sdk: flutter
   image_picker: ^0.8.4+5
+  provider: ^6.1.2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   intl: ^0.17.0
   shared_preferences: ^2.0.9
+  image_gallery_saver: ^2.0.3
+  permission_handler: ^10.2.0
+  jwt_decode: ^0.3.1
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +74,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/
+    - images/knigeicon2.png
     - assets/.env
 
   # An image asset can refer to one or more resolution-specific "variants", see

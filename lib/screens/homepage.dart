@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'RealTimeAlertWidget.dart';
 import 'alert.dart';
 import 'community.dart';
 import 'location.dart';
 import 'mypage.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 // JWT 토큰을 디코딩하는 함수
 Future<void> decodeAndPrintToken() async {
@@ -31,29 +35,54 @@ Future<void> decodeAndPrintToken() async {
   print("JWT 페이로드 데이터: $payload");
 }
 
-
-
 class Homepage extends StatefulWidget {
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
-
-
 class _HomepageState extends State<Homepage> {
+  int _selectedIndex = 0; // 현재 선택된 페이지 인덱스
+  bool isSecurity = true; // 경비원 여부 설정 (경비원이면 true, 일반 사용자면 false)
+  List<dynamic> alerts = []; // 서버에서 받아온 알림 데이터를 저장할 리스트
+  String? userRole;
+  String baseUrl = dotenv.get("BASE_URL");
   @override
   void initState() {
     super.initState();
     decodeAndPrintToken(); // 토큰 디코딩 및 출력
+    loadUserRole(); // 사용자 역할에 따른 알림 데이터 로드
   }
 
+  Future<void> loadUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
 
-  int _selectedIndex = 0; // 현재 선택된 페이지 인덱스
-  bool isSecurity = true; // 경비원 여부 설정 (경비원이면 true, 일반 사용자면 false)
+    final parts = token.split('.');
+    if (parts.length != 3) throw Exception('Invalid token');
 
-  // 페이지 리스트에서 isSecurity 값을 Alert 페이지에 전달
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    String userRole = payload['role'];
+    print("userRole: $userRole");
+
+    // 서버에서 사용자 역할에 맞는 알림 데이터를 가져옴
+    final response = await http.get(Uri.parse('$baseUrl/Alim/app/Home/$userRole'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print("Fetched alim data: $data"); // 디버깅 용도
+      setState(() {
+        alerts = data;
+        // detection_time 기준으로 내림차순 정렬
+        alerts.sort((a, b) => DateTime.parse(b['detection_time']).compareTo(DateTime.parse(a['detection_time'])));
+      });
+    }
+  }
+
   List<Widget> _pages() => [
-    HomePageContent(),
+    HomePageContent(alerts: alerts), // 알림 데이터를 전달하여 표시
     Alert(isSecurity: isSecurity), // 경비원 권한에 따라 알림 표시
     Location(),
     Community(),
@@ -66,12 +95,16 @@ class _HomepageState extends State<Homepage> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
+      body: Stack(
+        children: [
+          _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
+          RealTimeAlertWidget(),   // 실시간 알림 위젯 추가 (화면 전체에서 작동)
+        ],
+      ), // 네비게이션에 따라 페이지를 선택
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.white, // 배경색 흰색
         selectedItemColor: Colors.black, // 선택된 아이템 색상 검정
@@ -94,6 +127,10 @@ class _HomepageState extends State<Homepage> {
 class HomePageContent extends StatelessWidget {
   final PageController _pageController = PageController(initialPage: 1);
   final int _totalPages = 5;
+  final List<dynamic> alerts; // 서버에서 받아온 알림 데이터를 저장
+  String baseUrl = dotenv.get("BASE_URL");
+
+  HomePageContent({required this.alerts});
 
   @override
   Widget build(BuildContext context) {
@@ -119,55 +156,73 @@ class HomePageContent extends StatelessWidget {
                 children: [
                   Text(
                     '위기 대응 지침',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style:
+                    TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.right,
                   ),
                   SizedBox(height: 16),
                   SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.25,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (index){
-                        if (index == 0) {
-                          Future.delayed(Duration(milliseconds: 300), () {
-                          _pageController.jumpToPage(_totalPages);
+                    height:
+                    MediaQuery.of(context).size.height * 0.25,
+                    child:
+                    PageView.builder(
+                      controller:
+                      _pageController,
+                      onPageChanged:
+                          (index) {
+                        if (index ==0){
+                          Future.delayed(Duration(milliseconds:
+                          300), () {
+                            _pageController.jumpToPage(_totalPages);
                           });
-                        } else if (index == _totalPages +1){
-                          Future.delayed(Duration(milliseconds: 300),(){
+                        } else if (index ==
+                            _totalPages +1){
+                          Future.delayed(Duration(milliseconds:
+                          300),(){
                             _pageController.jumpToPage(1);
                           });
                         }
                       },
-                      itemCount: _totalPages + 2 ,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                        return buildCard(context, _totalPages - 1);
-                      } else if (index == _totalPages +1) {
-                          return buildCard(context, 0);
-                      } else {
-                          return buildCard(context, index - 1);
+                      itemCount:
+                      _totalPages +2 ,
+                      itemBuilder:
+                          (context,index){
+                        if (index ==0){
+                          return buildCard(context,_totalPages -1);
+                        } else if (index ==
+                            _totalPages +1){
+                          return buildCard(context,0);
+                        } else{
+                          return buildCard(context,index -1);
                         }
-                     },
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 24),
+            SizedBox(height:
+            24),
             Text(
               '알림내역',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style:
+              TextStyle(fontSize:
+              16, fontWeight:
+              FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            SizedBox(height:
+            8),
             Expanded(
-              child: ListView(
-                children: [
-                  buildNotificationItem('1일 전', Icons.camera_alt),
-                  buildNotificationItem('2일 전', Icons.camera_alt),
-                  buildNotificationItem('5일 전', Icons.camera_alt),
-                  buildNotificationItem('7일 전', Icons.camera_alt),
-                  buildNotificationItem('10일 전', Icons.camera_alt),
-                ],
+              child:
+              ListView.builder(
+                itemCount:
+                alerts.length,
+                itemBuilder:
+                    (context,index){
+                  final alert =
+                  alerts[index];
+                  return buildNotificationItem(alert);
+                },
               ),
             ),
           ],
@@ -176,18 +231,30 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget buildNotificationItem(String timeAgo, IconData icon) {
+  Widget buildNotificationItem(dynamic alert) {
+    // Check if 'image_url' is null and provide a fallback
+    String? imagePath = alert['image_path'];  // Fetch the image path from alert
+    String baseUrl = dotenv.get("BASE_URL"); // Get base URL from environment variables
+
+    // Construct the full image URL or fallback to a local asset
+    String imageUrl = imagePath != null ? '$baseUrl$imagePath' : 'images/img_logo.png';
+
+    // Format the time ago string
+    String timeAgo = formatTimeAgo(alert['detection_time']);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         children: [
-          Icon(icon, size: 30, color: Colors.black), // 아이콘 색상 검정
+          // Use Image.network for server images and Image.asset for local fallback
+          imagePath != null
+              ? Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover)
+              : Image.asset(imageUrl, width: 50, height: 50, fit: BoxFit.cover),
           SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('흉기소지자 감지',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              Text('흉기소지자감지', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               Text(timeAgo),
             ],
           ),
@@ -196,8 +263,9 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget buildCard(BuildContext context, int index) {
-    List<String> imagePaths = [
+  Widget buildCard(BuildContext context,int index){
+    List<String>
+    imagePaths=[
       'images/card1.png',
       'images/card2.png',
       'images/card3.png',
@@ -205,20 +273,34 @@ class HomePageContent extends StatelessWidget {
       'images/card5.png',
     ];
 
-    return Card(
-      color: Colors.white, // 카드 배경 흰색
-      elevation: 4, // 카드의 그림자 높이
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // 모서리 둥글게
-      ),
-      child: SizedBox(
-        width: double.infinity, // Card가 최대한 넓게 확장
-        height: 200, // Card의 높이를 설정
-        child: Image.asset(
-         imagePaths[index],
-          fit: BoxFit.cover, // 이미지를 Card에 꽉 차게 함
-        ),
+    return Card(color:
+    Colors.white,elevation:
+    4,shape:
+    RoundedRectangleBorder(borderRadius:
+    BorderRadius.circular(15)),
+      child:SizedBox(width:
+      double.infinity,height:
+      200,child:
+      Image.asset(imagePaths[index],fit:
+      BoxFit.cover),
       ),
     );
+  }
+}
+
+String formatTimeAgo(String detectionTime){
+  DateTime detectedTime=
+  DateTime.parse(detectionTime);
+  Duration difference=
+  DateTime.now().difference(detectedTime);
+
+  if(difference.inDays>0){
+    return'${difference.inDays}일 전';
+  }else if(difference.inHours>0){
+    return'${difference.inHours}시간 전';
+  }else if(difference.inMinutes>0){
+    return'${difference.inMinutes}분 전';
+  }else{
+    return'방금 전';
   }
 }

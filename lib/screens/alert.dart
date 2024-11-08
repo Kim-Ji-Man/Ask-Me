@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class Alert extends StatefulWidget {
   final bool isSecurity;
@@ -88,10 +89,6 @@ class _AlertState extends State<Alert> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 4),
-            // Text(
-            //   '현재 사용자 역할: ${userRole ?? "알 수 없음"}', // 역할 출력
-            //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            // ),
             Expanded(
               child: ListView.builder(
                 itemCount: alerts.length,
@@ -101,6 +98,7 @@ class _AlertState extends State<Alert> {
                     formatTimeAgo(alert['detection_time']),
                     alert['image_path'],
                     alert['address'] ?? '주소 정보 없음',
+                    alert['detection_time'],
                   );
                 },
               ),
@@ -111,44 +109,127 @@ class _AlertState extends State<Alert> {
     );
   }
 
-  Widget buildNotificationItem(String timeAgo, String? imagePath, String location) {
-    // 이미지 경로가 null이 아니면 localhost URL로 변환
+  Widget buildNotificationItem(String timeAgo, String? imagePath, String location,  String detectionTime) {
     String imageUrl = imagePath != null ? '$baseUrl$imagePath' : 'images/img_logo.png';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.network(
-            widget.isSecurity ? imageUrl : 'images/img_logo.png',
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) => Icon(Icons.error), // 이미지 로드 실패 시 대체 아이콘
-          ),
-          SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '흉기소지자 감지',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  '$location\n 근처에 위험 요소가 감지되었습니다. 주의를 기울여 주세요.',
-                  style: TextStyle(fontSize: 14, color: Colors.black),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  timeAgo,
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AlertDetails(
+              imageUrl: widget.isSecurity ? imageUrl : 'images/img_logo.png',
+              location: location,
+              detectionTime: detectionTime,
             ),
           ),
-        ],
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.network(
+              widget.isSecurity ? imageUrl : 'images/img_logo.png',
+              width: 40,
+              height: 40,
+              errorBuilder: (context, error, stackTrace) => Icon(Icons.error),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '흉기소지자 감지',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '$location\n 근처에 위험 요소가 감지되었습니다. 주의를 기울여 주세요.',
+                    style: TextStyle(fontSize: 14, color: Colors.black),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    timeAgo,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AlertDetails extends StatelessWidget {
+  final String imageUrl;
+  final String location;
+  final String detectionTime;
+
+  const AlertDetails({
+    Key? key,
+    required this.imageUrl,
+    required this.location,
+    required this.detectionTime,
+  }) : super(key: key);
+
+
+  String formatExactDateTime(String detectionTime) {
+    try {
+      DateTime dateTime = DateTime.parse(detectionTime);
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(dateTime);
+    } catch (e) {
+      print("Date parsing error: $e");
+      return detectionTime;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text('알림 세부 정보', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+      ),
+      backgroundColor: Colors.white,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            imageUrl != 'images/img_logo.png'
+                ? Image.network(imageUrl, width: double.infinity, height: 400, fit: BoxFit.cover)
+                : Image.asset('images/img_logo.png', width: double.infinity, height: 400, fit: BoxFit.cover),
+            SizedBox(height: 24),
+            Text(
+              '발생 위치',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+            '$location',
+             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
+            Text(
+              '감지 일시',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 8),
+            Text(
+              '${formatExactDateTime(detectionTime)}',
+              style: TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
       ),
     );
   }
