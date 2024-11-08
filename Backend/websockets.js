@@ -6,9 +6,9 @@ const db = require('./models/db');
 let clients = [];
 
 function createWebSocketServer(server) {
-    const wss = new WebSocket.Server({ server });
+    const ws = new WebSocket.Server({ server });
 
-    wss.on('connection', (ws, req) => {
+    ws.on('connection', (ws, req) => {
         // URL에서 쿼리 파라미터로 전달된 JWT 토큰 추출
         const params = new URLSearchParams(req.url.split('?')[1]);
         const token = params.get('token');
