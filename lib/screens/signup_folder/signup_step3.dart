@@ -13,6 +13,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _phoneNumberController = TextEditingController(); // 전화번호 컨트롤러 추가
   TextEditingController _birthdateController = TextEditingController();
+  TextEditingController _genderController = TextEditingController(); // 성별 컨트롤러 추가
   String? _selectedGender;
   String? _birthdateError;
   String? _phoneNumberError; // 전화번호 유효성 검사 에러 메시지
@@ -33,6 +34,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
                 onTap: () {
                   setState(() {
                     _selectedGender = "남성";
+                    _genderController.text = "남성"; // 선택된 성별을 입력 필드에 나타내기
                   });
                   Navigator.pop(context);
                 },
@@ -42,6 +44,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
                 onTap: () {
                   setState(() {
                     _selectedGender = "여성";
+                    _genderController.text = "여성"; // 선택된 성별을 입력 필드에 나타내기
                   });
                   Navigator.pop(context);
                 },
@@ -107,11 +110,16 @@ class _SignUpStep3State extends State<SignUpStep3> {
       formattedBirthdate,
     );
 
-    print('Debug - Nick: ${signUpData.nick}, Role: ${signUpData.role}');
+    // 디버깅 메시지 추가 - API 호출 전에 값 출력
+    print('Debug - Store ID before sending: ${signUpData.storeId}');
+    print('Debug - Nick before sending: ${signUpData.nick}');
+    print('Debug - Email before sending: ${signUpData.email}');
+    print('Debug - Username before sending: ${signUpData.username}');
+    print('Debug - Role before sending: ${signUpData.role}');
 
     // SignUpData에서 데이터 가져오기
     final response = await _apiService.signUp(
-      storeId: signUpData.storeName,
+      storeId: signUpData.storeId,// int? 타입을 String? 타입으로 변환
       nick: signUpData.nick!, // nickname -> nick으로 변경
       email: signUpData.email!,
       username: signUpData.username!,
@@ -122,6 +130,8 @@ class _SignUpStep3State extends State<SignUpStep3> {
       birth: formattedBirthdate,
       role: signUpData.role == 'guard' ? 'guard' : 'user',
     );
+    // 호출 후 응답 디버깅 메시지
+    print('Debug - Response after API call: $response');
 
     if (response != null) {
       print("회원가입 성공: $response");
@@ -178,6 +188,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
               onTap: _showGenderSelectionDialog,
               child: AbsorbPointer(
                 child: TextField(
+                  controller: _genderController, // 성별 컨트롤러 연결
                   decoration: InputDecoration(
                     labelText: '성별',
                     hintText: _selectedGender ?? '성별을 선택해주세요',

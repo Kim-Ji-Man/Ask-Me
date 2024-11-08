@@ -10,40 +10,44 @@ class ApiService {
   );
 
   Future<Map<String, dynamic>?> signUp({
-    String? storeId, // 변경
-    required String nick, // nickname -> nick으로 변경
+    int? storeId, // int 타입으로 변경
+    required String nick,
     required String email,
     required String username,
     required String password,
-    required String phoneNumber, // 추가
-    required String name, // mem_name에 해당
+    required String phoneNumber,
+    required String name,
     required String gender,
     required String birth,
-    required String role, // userType을 role로 변경
+    required String role,
   }) async {
     final data = {
-      'storeId': storeId,  // guard일 경우에만 설정
-      'nick': nick, // nickname -> nick으로 변경
-      'username': username, // 서버에서 기대하는 필드 이름으로 전달
+      if (storeId != null) 'storeId': storeId, // storeId가 있으면 그대로 int로 추가
+      'nick': nick,
+      'username': username,
       'email': email,
       'password': password,
-      'phone_number': phoneNumber, // 추가된 필드
-      'mem_name': name, // 변경된 필드 이름
+      'phone_number': phoneNumber,
+      'mem_name': name,
       'gender': gender,
       'birth': birth,
-      'role': role, // 변경된 필드 이름
+      'role': role,
     };
 
     try {
-      final response = await _dio.post('/auth/register', data: data); // POST 요청 전송
-      if (response.statusCode == 201) { // 201 상태 코드 확인
+      final response = await _dio.post('/auth/register', data: data);
+      if (response.statusCode == 201) {
         return response.data;
       } else {
+        print("data입니다 $data");
+
         print("회원가입 실패: ${response.statusCode}");
         return null;
       }
     } on DioError catch (e) {
       if (e.response != null) {
+        print("data입니다 $data");
+
         print("서버 오류: ${e.response?.data}");
       } else {
         print("네트워크 오류: $e");

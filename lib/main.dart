@@ -30,6 +30,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       home: Initial(),
       theme: ThemeData(
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+        ),
         scaffoldBackgroundColor: Colors.white, // 전체 배경색을 흰색으로 설정
       ),
     );
