@@ -3,6 +3,20 @@
   background-color: #F4F7FE;
 }
 
+
+body {
+  font-family: 'Pretendard', sans-serif;
+}
+
+.regular-text {
+  font-size: 16px; /* 기본 폰트 크기 */
+  font-weight: normal;
+}
+
+.highlight-text strong {
+  font-weight: bold; /* 하이라이트 텍스트만 bold 처리 */
+}
+
 .map-icon-container {
   position: fixed;
   bottom: 20px;

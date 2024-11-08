@@ -5,6 +5,7 @@ const express = require('express');
 const session = require('express-session');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const multer = require('multer'); // multer 추가
 const exampleRoutes = require('./routes/example'); 
 const authRouter = require('./routes/authRouter'); 
 const sessionConfig = require('./config/sessionConfig');
@@ -17,6 +18,7 @@ const newsRoutes = require('./routes/newsRoutes'); // 뉴스 라우터
 const MemberRouter = require('./routes/MemberRouter');
 const AlimRouter = require('./routes/AlimRouter'); // 알림 라우터 추가
 const ErrormRouter = require('./routes/ErrorRouter');
+const storesRouter = require('./routes/storesRouter');
 const authFindRoutes = require('./routes/authFindRoutes');
 const MapRouter = require('./routes/MapRouter');
 const kakaoLoginRouter = require('./routes/kakaoLogin');
@@ -34,8 +36,6 @@ const MasterMainDashboard = require('./routes/MainDashboardRouter')
 const app = express();
 const server = http.createServer(app);
 createWebSocketServer(server);
-
-
 
 // Swagger 설정
 const swaggerOption = {
@@ -75,6 +75,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/', exampleRoutes);
 app.use('/auth', authRouter); 
+app.use('/stores', storesRouter); 
 app.use('/api', cameraRouter);
 app.use('/api', newsRoutes);
 app.use('/Member', MemberRouter);

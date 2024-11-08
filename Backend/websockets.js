@@ -24,6 +24,7 @@ function createWebSocketServer(server) {
                 // 클라이언트와 역할 저장
                 clients.push({ ws, role: userRole });
                 console.log(`새로운 클라이언트가 연결되었습니다. 역할: ${userRole}`);
+                console.log(`현재 연결된 클라이언트 수: ${clients.length}`);
             } catch (err) {
                 console.error('유효하지 않은 토큰:', err);
                 ws.close(); // 유효하지 않은 토큰이면 연결 종료
@@ -81,5 +82,27 @@ async function sendMember(message) {
         }
     });
 }
+function broadcastAlertFlutter(imageUrl, storeName, detectionTime) {
+    console.log("broadcastAlertFlutter 함수가 호출되었습니다."); // 함수가 호출되었는지 확인
+    console.log(`전달된 인자들: imageUrl=${imageUrl}, storeName=${storeName}, detectionTime=${detectionTime}`);
 
-module.exports = { createWebSocketServer, sendNotification, broadcastAlert,sendMember };
+    console.log(`흉기 감지 알림 전송: ${storeName}, ${detectionTime}`);
+    
+    const message = {
+        type: 'alert',
+        imageUrl: imageUrl,
+        storeName: storeName,
+        detectionTime: detectionTime
+    };
+
+    clients.forEach((client) => {
+        if (client.ws.readyState === WebSocket.OPEN) {
+            console.log(`전송할 메시지: ${JSON.stringify(message)}`); // 이 로그가 출력되는지 확인
+            client.ws.send(JSON.stringify(message));
+        } else {
+            console.log("WebSocket이 열려 있지 않습니다.");
+        }
+    });
+}
+
+module.exports = { createWebSocketServer, sendNotification, broadcastAlert,sendMember,broadcastAlertFlutter };

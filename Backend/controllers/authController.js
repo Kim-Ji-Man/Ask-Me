@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 const pool = require('../config/dbConfig');
 
-async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, nick=null, storeId = null) {
+async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null, nick=null) {
     console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth, nick);
 
     const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 포함

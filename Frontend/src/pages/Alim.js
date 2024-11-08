@@ -12,7 +12,13 @@ const Alim = () => {
   const [alims, setAlims] = useState([]);
   const [filteredAlims, setFilteredAlims] = useState([]);
   const [expandedDevice, setExpandedDevice] = useState(null);
+  const [isButtonClicked, setIsButtonClicked] = useState(false); 
   const [searchTerm, setSearchTerm] = useState('');
+  const handleButtonClick = (deviceName) => {
+    setExpandedDevice(expandedDevice === deviceName ? null : deviceName);
+    setIsButtonClicked(!isButtonClicked);  // 버튼 클릭 상태 토글
+  };
+
   CctvWebSocket();
 
   useEffect(() => {
@@ -92,16 +98,23 @@ const Alim = () => {
               <div className="d-flex align-items-center justify-content-start">
                 <h4 className="device-title">{deviceName}</h4>
                 {deviceAlims.length > 4 && (
-                  <Button
-                    className="plus-btn ms-2"
-                    onClick={() => setExpandedDevice(isExpanded ? null : deviceName)}
-                  >
-                    <BsThreeDots size={24} />
-                    <div className="tooltip-textalim">  
-                      클릭하면 전체가 보이고 다시 한 번 더 클릭하면 4개만 보입니다.
-                      <div className="tooltip-arrowalim"></div>
-                    </div>
-                  </Button>
+     <Button
+     className="plus-btn ms-2"
+     onClick={() => handleButtonClick(deviceName)}
+     style={{
+       backgroundColor: isButtonClicked && expandedDevice === deviceName ? 'blue' : '',  // 클릭 시 파란색, 아니면 원래 색깔
+       color: isButtonClicked && expandedDevice === deviceName ? 'white' : '',  // 텍스트 색상도 변경
+     }}
+   >
+     <BsThreeDots size={24} />
+     <div className="tooltip-textalim">
+       {isButtonClicked && expandedDevice === deviceName 
+         ? "클릭하면 4개만 보입니다."
+         : "클릭하면 전체가 보입니다." 
+         }
+       <div className="tooltip-arrowalim"></div>
+     </div>
+   </Button>
                 )}
               </div>
               <Row>
