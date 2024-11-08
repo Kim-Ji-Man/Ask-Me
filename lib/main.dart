@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:flutter_askme/screens/initial.dart';
+import 'package:flutter_askme/service/WebSocketProvider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
+import 'package:provider/provider.dart'; // Provider 패키지 추가
+import 'package:flutter_askme/models/signup_data.dart';
 
 
 void main() async {
