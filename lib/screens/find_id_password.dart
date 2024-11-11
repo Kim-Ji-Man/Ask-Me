@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../service/api_service.dart';
 
 class FindIdPasswordPage extends StatefulWidget {
   @override
@@ -10,6 +11,116 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController idController = TextEditingController(); // 아이디 입력 필드 컨트롤러
+  final ApiService apiService = ApiService(); // ApiService 인스턴스 생성
+
+  Future<void> findId() async {
+    // 요청 전에 입력된 데이터 출력
+    print("보내는 데이터: {mem_name: ${nameController.text}, phone_number: ${phoneController.text}}");
+
+    // API 호출 후 응답 데이터 출력
+    try {
+      String? userId = await apiService.findId(
+        nameController.text,
+        phoneController.text,
+      );
+
+      // 응답 데이터 출력
+      print("서버 응답 데이터: $userId");
+
+      // 응답 결과 처리
+      if (userId != null && userId.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('아이디 찾기 성공'),
+            content: Text('회원님의 아이디는 $userId 입니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('아이디 찾기 실패'),
+            content: Text('입력하신 정보로 회원님을 찾을 수 없습니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      print("오류 발생: $e");
+    }
+  }
+
+  Future<void> resetPassword() async {
+    // 요청 전에 입력된 데이터 출력
+    print("보내는 데이터: {username: ${idController.text}, phone_number: ${phoneController.text}}");
+
+    // API 호출 후 응답 데이터 출력
+    try {
+      String? tempPassword = await apiService.resetPassword(
+        idController.text,
+        phoneController.text,
+      );
+
+      // 디버깅 로그 추가
+      print("받은 임시 비밀번호: $tempPassword");
+
+
+      // 응답 결과 처리
+      if (tempPassword != null && tempPassword.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('비밀번호 재설정 성공'),
+            content: Text('임시 비밀번호는 $tempPassword 입니다. 비밀번호를 변경해 주세요.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('비밀번호 재설정 실패'),
+            content: Text('입력하신 정보가 일치하지 않습니다. 다시 시도해 주세요.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text('확인'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      print("오류 발생: $e");
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +200,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                           style: TextStyle(
                               color: !isIdSelected ? Color(0xFF0F148D) : Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16
-                          ),
+                              fontSize: 16),
                         ),
                       ),
                     ),
@@ -128,13 +238,21 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                   hintStyle: TextStyle(color: Colors.grey[400]),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 270),
               ElevatedButton(
                 onPressed: () {
-                  // 아이디 찾기 로직 추가
+                  // 아이디 찾기 로직 실행
+                  findId();
                 },
-                child: Text('아이디 찾기'),
+                child: Text(
+                  '아이디 찾기',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18, // 텍스트의 스타일은 여기서 설정
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
                   backgroundColor: Color(0xFF0F148D),
                 ),
               ),
@@ -168,12 +286,21 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 ),
               ),
               SizedBox(height: 20),
+              Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  // 비밀번호 재설정 로직 추가
+                  // 비밀번호 재설정 로직 추가 필요
+                  resetPassword();
                 },
-                child: Text('비밀번호 재설정'),
+                child: Text(
+                  '비밀번호 재설정',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18, // 텍스트의 스타일은 여기서 설정
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
                   backgroundColor: Color(0xFF0F148D),
                 ),
               ),

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 
 import '../service/WebSocketProvider.dart'; // Provider 패키지 추가
 
-
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -50,12 +49,13 @@ class _LoginState extends State<Login> {
       await prefs.setString('token', data['token']);
 
       final webSocketProvider =
-      Provider.of<WebSocketProvider>(context, listen: false);
+          Provider.of<WebSocketProvider>(context, listen: false);
 
       final token = prefs.getString('token');
 
       if (token != null) {
-        webSocketProvider.connectWebSocket(username, token); // WebSocket 연결 시 토큰 전달
+        webSocketProvider.connectWebSocket(
+            username, token); // WebSocket 연결 시 토큰 전달
       }
       // 로그인 성공 시 홈 페이지로 이동
       Navigator.pushReplacement(
@@ -137,28 +137,27 @@ class _LoginState extends State<Login> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 40),
                 _isLoading
                     ? CircularProgressIndicator()
                     : ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      loginUser(
-                        _usernameController.text,
-                        _passwordController.text,
-                      );
-                    }
-                  },
-                  child: Text(
-                    '로그인',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                    backgroundColor: Color(0xFF0F148D),
-                  ),
-                ),
-                SizedBox(height: 20),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            loginUser(
+                              _usernameController.text,
+                              _passwordController.text,
+                            );
+                          }
+                        },
+                        child: Text(
+                          '로그인',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 50),
+                          backgroundColor: Color(0xFF0F148D),
+                        ),
+                      ),
                 Text(
                   _message,
                   style: TextStyle(color: Colors.red),
@@ -172,7 +171,7 @@ class _LoginState extends State<Login> {
                     );
                   },
                   child: Text(
-                    '아이디 비밀번호 찾기',
+                    '아이디/비밀번호 찾기',
                     style: TextStyle(
                       color: Colors.grey[500],
                       fontSize: 16,

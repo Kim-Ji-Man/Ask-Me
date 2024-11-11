@@ -11,9 +11,11 @@ class SignUpStep3 extends StatefulWidget {
 class _SignUpStep3State extends State<SignUpStep3> {
   final ApiService _apiService = ApiService(); // ApiService 인스턴스 생성
   TextEditingController _nameController = TextEditingController();
-  TextEditingController _phoneNumberController = TextEditingController(); // 전화번호 컨트롤러 추가
+  TextEditingController _phoneNumberController =
+      TextEditingController(); // 전화번호 컨트롤러 추가
   TextEditingController _birthdateController = TextEditingController();
-  TextEditingController _genderController = TextEditingController(); // 성별 컨트롤러 추가
+  TextEditingController _genderController =
+      TextEditingController(); // 성별 컨트롤러 추가
   String? _selectedGender;
   String? _birthdateError;
   String? _phoneNumberError; // 전화번호 유효성 검사 에러 메시지
@@ -119,8 +121,10 @@ class _SignUpStep3State extends State<SignUpStep3> {
 
     // SignUpData에서 데이터 가져오기
     final response = await _apiService.signUp(
-      storeId: signUpData.storeId,// int? 타입을 String? 타입으로 변환
-      nick: signUpData.nick!, // nickname -> nick으로 변경
+      storeId: signUpData.storeId,
+      // int? 타입을 String? 타입으로 변환
+      nick: signUpData.nick!,
+      // nickname -> nick으로 변경
       email: signUpData.email!,
       username: signUpData.username!,
       password: signUpData.password!,
@@ -178,6 +182,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
               decoration: InputDecoration(
                 labelText: '전화번호',
                 hintText: '010-1234-5678',
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 errorText: _phoneNumberError, // 전화번호 에러 메시지
               ),
             ),
@@ -206,6 +211,7 @@ class _SignUpStep3State extends State<SignUpStep3> {
               decoration: InputDecoration(
                 labelText: '생년월일',
                 hintText: 'YYYY-MM-DD',
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 errorText: _birthdateError, // 생년월일 에러 메시지
               ),
             ),

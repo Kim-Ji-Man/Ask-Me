@@ -40,10 +40,12 @@ class _SignUpStep1State extends State<SignUpStep1> {
       if (response.statusCode == 200) {
         List<dynamic> stores = response.data;
         setState(() {
-          _storeList = stores.map((store) => {
-            'id': store['store_id'], // 'id' 대신 'store_id' 사용
-            'name': store['name'],
-          }).toList();
+          _storeList = stores
+              .map((store) => {
+                    'id': store['store_id'], // 'id' 대신 'store_id' 사용
+                    'name': store['name'],
+                  })
+              .toList();
         });
       } else {
         print('Failed to load store list');
@@ -52,7 +54,6 @@ class _SignUpStep1State extends State<SignUpStep1> {
       print('Error fetching store list: $e');
     }
   }
-
 
   void _onStoreSelected(Map<String, dynamic> store) {
     setState(() {
@@ -67,8 +68,6 @@ class _SignUpStep1State extends State<SignUpStep1> {
     // 디버깅 출력
     print('Debug - Store ID: ${signUpData.storeId}');
   }
-
-
 
   void _showStoreSelectionDialog() {
     showDialog(
@@ -110,7 +109,6 @@ class _SignUpStep1State extends State<SignUpStep1> {
         _nickController.text, // 닉네임 저장
         _emailController.text, // 이메일 저장
       );
-
 
       // 매장 ID도 함께 저장 (필요할 경우)
       signUpData.storeId = _selectedStoreId;
