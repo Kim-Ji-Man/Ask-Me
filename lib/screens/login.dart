@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // 토큰 저장을 위한 패키지
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:provider/provider.dart';
-
+import '../service/PushNotificationService.dart';
 import '../service/WebSocketProvider.dart'; // Provider 패키지 추가
 
 
@@ -29,6 +29,21 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+
+  String? extractUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        throw Exception('Invalid token');
+      }
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payloadMap = json.decode(payload);
+      return payloadMap['userId']?.toString();
+    } catch (e) {
+      print('토큰에서 userId 추출 실패: $e');
+      return null;
+    }
+  }
   // 로그인 처리 로직
   Future<void> loginUser(String username, String password) async {
     setState(() {
@@ -50,13 +65,23 @@ class _LoginState extends State<Login> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
 
-      final webSocketProvider =
-      Provider.of<WebSocketProvider>(context, listen: false);
+      String? userId = extractUserIdFromToken(data['token']);
 
       final token = prefs.getString('token');
-
+      print("저장된 JWT 토큰: $token");
       if (token != null) {
-        webSocketProvider.connectWebSocket(username, token); // WebSocket 연결 시 토큰 전달
+        String? userId = extractUserIdFromToken(token); // JWT 토큰에서 userId 추출
+
+        if (userId != null) {
+
+          final webSocketProvider = Provider.of<WebSocketProvider>(context, listen: false);
+          webSocketProvider.connectWebSocket(userId, data['token']);
+
+          PushNotificationService pushService = PushNotificationService();
+
+          // initOneSignal을 호출하기 전에 userId를 사용하여 fetchExternalUserIdAndLogin을 호출
+          await pushService.initOneSignal(userId,context); // userId 전달
+        }
       }
       // 로그인 성공 시 홈 페이지로 이동
       Navigator.pushReplacement(
@@ -66,6 +91,8 @@ class _LoginState extends State<Login> {
     } else {
       setState(() {
         _message = '로그인 실패';
+        print('로그인 실패: ${response.statusCode}');
+        print('서버 응답: ${response.body}');
       });
     }
 
