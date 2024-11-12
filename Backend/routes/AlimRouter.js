@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
+
 const { sendNotification,broadcastAlertFlutter } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+const { notifyUsers } = require('../onesignalService'); // WebSocket 알림 전송 함수 임포트
+
 
 let lastNotiId = null; // 마지막으로 처리한 noti_id를 저장
 
@@ -147,7 +150,7 @@ router.get('/cctvalims', async (req, res) => {
 
 
   
-router.put('/update-anomaly/:id', async (req, res) => {
+  router.put('/update-anomaly/:id', async (req, res) => {
     const { id } = req.params; // URL에서 anomaly ID를 가져옴
     const { anomaly_type, admin_comment } = req.body; // 요청 본문에서 데이터 가져옴
   
@@ -187,13 +190,16 @@ router.put('/update-anomaly/:id', async (req, res) => {
       if (result.length > 0) {
         const { detection_time, image_path, storeName } = result[0]; // 첫 번째 결과만 사용
   
-        // anomaly_type이 '흉기'일 경우 플러터로 알림 전송
+        // anomaly_type이 '흉기'일 경우 플러터로 실시간 알림 및 푸시 알림 전송
         if (anomaly_type === '흉기') {
           console.log(`흉기 감지: ${storeName}, ${detection_time}`);
-            console.log(detection_time,image_path,storeName,"제대로 되니????");
-            
-          // 흉기 감지 알림을 플러터로 전송
+          console.log(detection_time,image_path,storeName,"제대로 되니????");
+  
+          // 실시간 알림 전송 (예: WebSocket 또는 다른 방법으로)
           broadcastAlertFlutter(image_path, storeName, detection_time);
+  
+          // 푸시 알림 전송
+          await notifyUsers(image_path, storeName, detection_time);
         }
   
         res.status(200).json({ message: 'Anomaly updated successfully', storeName });

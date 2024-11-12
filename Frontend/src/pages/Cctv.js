@@ -19,10 +19,10 @@ const CCTV = () => {
 CctvWebSocket();
 
   const cctvAddresses = [
-    "http://localhost:8000/video_feed1",
-    "http://localhost:8000/video_feed2",
-    "http://localhost:8000/video_feed1",
-    "http://localhost:8000/video_feed2",
+    "https://localhost:8000/video_feed1",
+    "https://localhost:8000/video_feed2",
+    "https://localhost:8000/video_feed1",
+    "https://localhost:8000/video_feed2",
   ];
 
   const videoUrl = cctvAddresses[0];
@@ -194,7 +194,7 @@ CctvWebSocket();
               ) : (
                 getFilteredAlerts().map((alert, index) => (
                   <div className="alert-item" key={index} onClick={() => handleAlertClick(alert)}>
-                    <img src={`http://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
+                    <img src={`https://localhost:5000${alert.image_path}`} alt="CCTV Image" className="alert-image" />
                     <div className="alert-details">
                       <div className="alert-info">
                         <span className="cctv-name">{alert.device_name}</span>
@@ -231,7 +231,7 @@ CctvWebSocket();
           <Modal.Body className="cctvmodalerror_body">
             {selectedAlert && (
               <>
-                <img src={`http://localhost:5000${selectedAlert.image_path}`} alt={selectedAlert.device_name} className="img-fluid" />
+                <img src={`https://localhost:5000${selectedAlert.image_path}`} alt={selectedAlert.device_name} className="img-fluid" />
                 {/* 세부 정보 테이블 */}
                 <table className="table table-bordered mt-3">
                   <tbody>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../axios';
 import '../css/FindAccount.css';
 
 const FindAccount = () => {
@@ -8,8 +8,7 @@ const FindAccount = () => {
   const [passwordUsername, setPasswordUsername] = useState('');
   const [passwordPhoneNumber, setPasswordPhoneNumber] = useState('');
 
-  // Axios 기본 경로 설정
-  axios.defaults.baseURL = 'http://localhost:5000'; 
+
     
   // 아이디 찾기 핸들러
   const handleFindId = async () => {

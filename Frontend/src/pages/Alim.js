@@ -63,7 +63,7 @@ const Alim = () => {
 
   const handleDownload = (url) => {
     const link = document.createElement('a');
-    link.href = `http://localhost:5000${url}`;
+    link.href = `https://localhost:5000${url}`;
     link.download = url.substring(url.lastIndexOf('/') + 1);
     document.body.appendChild(link);
     link.click();
@@ -110,7 +110,7 @@ const Alim = () => {
      <div className="tooltip-textalim">
        {isButtonClicked && expandedDevice === deviceName 
          ? "클릭하면 4개만 보입니다."
-         : "클릭하면 전체가 보입니다." 
+         : "클릭하면 전체가 보입니다."
          }
        <div className="tooltip-arrowalim"></div>
      </div>
@@ -131,7 +131,7 @@ const Alim = () => {
                         })}
                       </div>
                       <img
-                        src={`http://localhost:5000${alim.image}`}
+                        src={`https://localhost:5000${alim.image}`}
                         onClick={() => handleShow(alim)}
                         className="media-content"
                         alt="알림 이미지"
@@ -163,7 +163,7 @@ const Alim = () => {
                   <Col xs={6}>
                     <div className="image-container">
                       <img
-                        src={`http://localhost:5000${selectedAlim?.image}`}
+                        src={`https://localhost:5000${selectedAlim?.image}`}
                         alt="알림 이미지"
                       />
                       <div className="download-section">

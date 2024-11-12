@@ -10,7 +10,7 @@ const exampleRoutes = require('./routes/example');
 const authRouter = require('./routes/authRouter'); 
 const sessionConfig = require('./config/sessionConfig');
 const cors = require('cors');
-const http = require('http'); 
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const cameraRouter = require('./routes/camera'); // 카메라 라우터 추가
@@ -30,11 +30,18 @@ const mypageRouter = require('./routes/mypageRouter');
 const { createWebSocketServer, sendNotification, broadcastAlert } = require('./websockets'); 
 const bodyParser = require('body-parser');
 const MasterMainDashboard = require('./routes/MainDashboardRouter')
-
+const { setExternalUserIdOnServer } = require('./onesignalService');
 
 // Express 앱 초기화
 const app = express();
-const server = http.createServer(app);
+
+
+const options = {
+  key: fs.readFileSync(path.join(__dirname, 'server.key')),
+  cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
+};
+
+const server = https.createServer(options,app);
 createWebSocketServer(server);
 
 // Swagger 설정
@@ -93,6 +100,10 @@ app.use('/Masterdashboard',MasterMainDashboard)
 app.use(bodyParser.json());
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정
+
+
+app.post('/setExternalUserIdOnServer', setExternalUserIdOnServer);
+
 
 // 이미지 업로드 엔드포인트
 app.post('/upload_image', (req, res) => {

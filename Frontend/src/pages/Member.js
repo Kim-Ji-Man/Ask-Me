@@ -44,7 +44,7 @@ const Member = () => {
         if (decodedToken.role === 'admin' && decodedToken.storeId) {
           // admin 역할일 때 storeId에 맞는 회원 목록 요청
           axios
-            .get(`http://localhost:5000/Member/guards/all/${decodedToken.storeId}`, {
+            .get(`/Member/guards/all/${decodedToken.storeId}`, {
               headers: {
                 Authorization: `Bearer ${token}`
               }
@@ -59,7 +59,7 @@ const Member = () => {
         } else if (decodedToken.role === 'master') {
           // master 역할일 때 전체 회원 목록 요청
           axios
-            .get(`http://localhost:5000/Member`, {
+            .get(`/Member`, {
               headers: {
                 Authorization: `Bearer ${token}`
               }
@@ -132,7 +132,7 @@ const Member = () => {
   
             // 비밀번호 확인 API 호출
             axios.post(
-              'http://localhost:5000/Member/VerifyPassword',
+              '/Member/VerifyPassword',
               {
                 password: inputPassword, // 입력된 비밀번호
                 token: token,            // 토큰 추가

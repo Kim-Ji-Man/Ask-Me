@@ -16,7 +16,7 @@ class WebSocketService {
       return;
     }
 
-    this.socket = new WebSocket(`ws://localhost:5000?token=${token}`);
+    this.socket = new WebSocket(`wss://localhost:5000?token=${token}`);
 
     this.socket.onopen = () => {
       console.log("WebSocket 연결 성공");

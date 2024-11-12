@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Col, Container, Row, Image, Form } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../axios';
 import '../css/Login.css';
 import Swal from "sweetalert2";
 
@@ -36,7 +36,7 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/auth/login', {
+      const res = await axios.post('/auth/login', {
         username: username,
         password: password
       });

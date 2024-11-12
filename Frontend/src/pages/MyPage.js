@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import '../css/MyPage.css'; 
-import axios from 'axios';
+import axios from '../axios';
 import Swal from "sweetalert2";
 
 const MyPage = () => {
@@ -28,13 +28,13 @@ const MyPage = () => {
     const token = localStorage.getItem('jwtToken');
   
     try {
-      const response = await axios.get(`http://localhost:5000/mypage/info/${userId}`, {
+      const response = await axios.get(`/mypage/info/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
   
-      const storeResponse = await axios.get(`http://localhost:5000/auth/stores/${userId}`, {
+      const storeResponse = await axios.get(`/auth/stores/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ const MyPage = () => {
     const token = localStorage.getItem('jwtToken');
 
     try {
-      const response = await axios.put(`http://localhost:5000/auth/update`, {
+      const response = await axios.put(`/auth/update`, {
         email: userInfo.email,
         phone_number: userInfo.phone,
         mem_name: userInfo.name,
@@ -137,7 +137,7 @@ const MyPage = () => {
     const token = localStorage.getItem('jwtToken');
   
     try {
-      const response = await axios.post('http://localhost:5000/find/change-password', {
+      const response = await axios.post('/find/change-password', {
         username,
         current_password: currentPassword,
         new_password: newPassword,
