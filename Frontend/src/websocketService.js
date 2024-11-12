@@ -31,7 +31,13 @@ class WebSocketService {
       console.log("수신한 데이터:", data);
 
       // 등록된 모든 리스너들에게 메시지를 전달
-      this.listeners.forEach((listener) => listener(data));
+      this.listeners.forEach((listener) => {
+        if (typeof listener === 'function') {
+          listener(data);
+        } else {
+          console.error('리스너가 함수가 아닙니다:', listener);
+        }
+      });
     };
 
     let reconnectAttempts = 0;
@@ -51,6 +57,10 @@ class WebSocketService {
 
   // 메시지 리스너 추가
   addListener(listener) {
+    if (typeof listener !== 'function') {
+      console.error('리스너는 반드시 함수여야 합니다.');
+      return;
+    }
     this.listeners.push(listener);
   }
 

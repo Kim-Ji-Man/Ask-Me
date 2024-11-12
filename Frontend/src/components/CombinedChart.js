@@ -18,13 +18,13 @@ for (let month = 1; month <= 12; month++) {
   dataSets[month] = {
     morning: {
       weapons: generateRandomData(),
-      arrivals: generateRandomData(),
-      dropouts: generateRandomData(),
+      entry: generateRandomData(),
+      exit: generateRandomData(),
     },
     afternoon: {
       weapons: generateRandomData(),
-      arrivals: generateRandomData(),
-      dropouts: generateRandomData(),
+      entry: generateRandomData(),
+      exit: generateRandomData(),
     },
   };
 }
@@ -85,7 +85,7 @@ const CombinedChart = () => {
   // 데이터셋 선택
   const currentData = selectedMonth 
     ? (showMorning ? dataSets[selectedMonth].morning : dataSets[selectedMonth].afternoon) 
-    : { weapons: [], arrivals: [], dropouts: [] };
+    : { weapons: [], entry: [], exit: [] };
 
   const data = {
     labels: currentLabels,
@@ -97,12 +97,12 @@ const CombinedChart = () => {
       },
       {
         label: '들어온 사람',
-        data: currentData.arrivals,
+        data: currentData.entry,
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
       },
       {
         label: '나간 사람',
-        data: currentData.dropouts,
+        data: currentData.exit,
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],

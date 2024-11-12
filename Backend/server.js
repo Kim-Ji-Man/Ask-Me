@@ -31,6 +31,9 @@ const { createWebSocketServer, sendNotification, broadcastAlert } = require('./w
 const bodyParser = require('body-parser');
 const MasterMainDashboard = require('./routes/MainDashboardRouter')
 const { setExternalUserIdOnServer } = require('./onesignalService');
+const { sendTestEmail } = require('./routes/notificationRoutes.js'); // 알림 처리 파일 불러오기
+
+
 
 // Express 앱 초기화
 const app = express();
@@ -97,6 +100,7 @@ app.use('/community', likeRouter);
 app.use('/community', reportRouter);
 app.use('/mypage', mypageRouter);
 app.use('/Masterdashboard',MasterMainDashboard)
+
 app.use(bodyParser.json());
 
 app.use(express.json({ limit: '50mb' })); // 이미지 데이터 처리 위한 크기 설정
@@ -133,17 +137,21 @@ app.post('/notify', (req, res) => {
     res.status(200).send('Notification sent');
   });
   
-  // 흉기 감지 알림 API 엔드포인트
-  app.post('/alert', (req, res) => {
-    const { detected } = req.body;
-  
-    if (detected) {
-      console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
-      broadcastAlert('Weapon detected!'); // 흉기 감지 알림 전송
-    }
-  
-    res.status(200).send('Alert received');
-  });
+app.post("/alert", async (req, res) => {
+  const { detected, message } = req.body;
+
+  if (detected) {
+    console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
+    broadcastAlert(message); // WebSocket으로 알림 전송
+
+    // 이메일 및 SMS 알림 전송
+    await sendTestEmail(); // 새로운 알림 기능 실행
+    
+    res.status(200).send("알림 전송 완료");
+  } else {
+    res.status(400).send("알림 실패");
+  }
+});
   
 
 // 기본 라우트

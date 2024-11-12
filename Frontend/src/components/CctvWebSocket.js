@@ -4,9 +4,10 @@ import useWebSocket from '../Hooks/useWebSocket'; // 커스텀 훅 임포트
 import axios from 'axios';
 
 const CctvWebSocket = () => {
-  const [captureImage, setCaptureImage] = useState(null);
-  const [videoUrl, setVideoUrl] = useState("http://localhost:8000/video_feed2");
-  const token = localStorage.getItem('jwtToken');
+  const [captureImage, setCaptureImage] = useState(null); // 캡처된 이미지 상태
+  const [videoUrl, setVideoUrl] = useState("http://localhost:8000/video_feed2"); // 비디오 스트림 URL
+  const [isRecording, setIsRecording] = useState(false); // 녹화 상태
+  const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
 
   // 웹소켓 메시지 처리 함수
   const handleMessage = async (data) => {
@@ -17,14 +18,14 @@ const CctvWebSocket = () => {
           responseType: 'blob'
         });
         const imageBlob = response.data;
-        const imageUrl = URL.createObjectURL(imageBlob);
-        setCaptureImage(imageUrl);
+        const imageUrl = URL.createObjectURL(imageBlob); // Blob 데이터를 URL로 변환
+        setCaptureImage(imageUrl); // 캡처된 이미지 상태 업데이트
 
         // 알림 표시
         Swal.fire({
           title: '흉기거수자 확인!',
           text: '알림이 전송되었습니다.',
-          imageUrl: imageUrl,
+          imageUrl: imageUrl, // 캡처된 이미지 사용
           imageWidth: 400,
           imageHeight: 200,
           imageAlt: '캡처된 이미지',
@@ -34,7 +35,7 @@ const CctvWebSocket = () => {
           allowEnterKey: false
         }).then(result => {
           if (result.isConfirmed) {
-            // 로컬 스토리지에 값 저장
+            // 트래킹 모드 시작
             localStorage.setItem('startTrackingMode', 'true');
             window.location.reload(); // 페이지 새로 고침
           }
@@ -45,26 +46,36 @@ const CctvWebSocket = () => {
     }
   };
 
+  // 웹소켓 훅에서 웹소켓 메시지 수신
+  useWebSocket(handleMessage); // `useWebSocket` 훅에서 메시지 처리
+
   // 트래킹 모드 알림
   const triggerTrackingMode = () => {
+    const videoUrlWithRecord = `${videoUrl}?record=true`; // record=true로 URL 설정
+  
     Swal.fire({
       width: '70%',
       title: '<strong>트래킹 모드</strong>',
       html: `
-        <h6></h6>
-        <img src="${videoUrl}" alt="Video Stream" style="width: 80%; height: auto;"/>
+        <h6>실시간 감지된 비디오 스트리밍</h6>
+        <img id="video-stream" src="${videoUrlWithRecord}" autoPlay muted style="width: 80%; height: auto;"/>
       `,
-      confirmButtonText: '확인',
+      confirmButtonText: '녹화 종료',
       allowOutsideClick: false,
       allowEscapeKey: false,
       allowEnterKey: false
-    })
+    }).then(() => {
+        window.location.reload(); // 페이지 새로 고침
+    });
   };
 
-   // 페이지 로드 후 트래킹 모드 시작
-   useEffect(() => {
-    if (localStorage.getItem('startTrackingMode') === 'true') {
+  // 페이지 로드 후 트래킹 모드 시작
+  useEffect(() => {
+    const isTrackingMode = localStorage.getItem('startTrackingMode') === 'true';
+
+    if (isTrackingMode) {
       triggerTrackingMode(); // 트래킹 모드 시작
+      setIsRecording(true); // 녹화 시작
       localStorage.removeItem('startTrackingMode'); // 값 제거
     }
   }, []);
@@ -79,7 +90,7 @@ const CctvWebSocket = () => {
           <img src={captureImage} alt="Captured frame" />
         </div>
       )}
-      <video src={videoUrl} autoPlay style={{ width: '100%', height: 'auto' }} />
+      <video id="video-stream" src={videoUrl} autoPlay muted style={{ width: '100%', height: 'auto' }} />
     </div>
   );
 };

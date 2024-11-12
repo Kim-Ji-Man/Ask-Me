@@ -11,12 +11,14 @@ const BASE_URL = process.env.BASE_URL || 'https://localhost:5000';
 let clients = [];
 
 function createWebSocketServer(server) {
+
   const wss = new WebSocket.Server({ server });
 
   wss.on("connection", (ws, req) => {
     // URL에서 쿼리 파라미터로 전달된 JWT 토큰 추출
     const params = new URLSearchParams(req.url.split("?")[1]);
     const token = params.get("token");
+
 
     if (token) {
       try {
