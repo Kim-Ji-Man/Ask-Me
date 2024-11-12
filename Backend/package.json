@@ -19,6 +19,7 @@
     "jwt-decode": "^4.0.0",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.11.3",
+    "nodemailer": "^6.9.15",
     "puppeteer": "^23.5.3",
     "qs": "^6.13.0",
     "react": "^18.3.1",
@@ -30,6 +31,7 @@
     "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "twilio": "^5.3.5",
     "web-vitals": "^2.1.4",
     "ws": "^8.18.0"
   },
