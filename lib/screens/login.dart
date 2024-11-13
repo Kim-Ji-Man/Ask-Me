@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/find_id_password.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // 토큰 저장을 위한 패키지
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:provider/provider.dart';
-
+import '../service/PushNotificationService.dart';
 import '../service/WebSocketProvider.dart'; // Provider 패키지 추가
+
 
 class Login extends StatefulWidget {
   @override
@@ -15,11 +16,11 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>(); // Form의 상태를 추적하는 Key
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String BaseUrl = dotenv.get("BASE_URL");
-  bool _isLoading = false;
+  bool _isLoading = false; // 로그인 중 로딩 상태 관리
   String _message = '';
 
   @override
@@ -29,6 +30,22 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+
+  String? extractUserIdFromToken(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        throw Exception('Invalid token');
+      }
+      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payloadMap = json.decode(payload);
+      return payloadMap['userId']?.toString();
+    } catch (e) {
+      print('토큰에서 userId 추출 실패: $e');
+      return null;
+    }
+  }
+  // 로그인 처리 로직
   Future<void> loginUser(String username, String password) async {
     setState(() {
       _isLoading = true;
@@ -45,17 +62,27 @@ class _LoginState extends State<Login> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      // 토큰 저장
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
 
-      final webSocketProvider =
-          Provider.of<WebSocketProvider>(context, listen: false);
+      String? userId = extractUserIdFromToken(data['token']);
 
       final token = prefs.getString('token');
-
+      print("저장된 JWT 토큰: $token");
       if (token != null) {
-        webSocketProvider.connectWebSocket(
-            username, token); // WebSocket 연결 시 토큰 전달
+        String? userId = extractUserIdFromToken(token); // JWT 토큰에서 userId 추출
+
+        if (userId != null) {
+
+          final webSocketProvider = Provider.of<WebSocketProvider>(context, listen: false);
+          webSocketProvider.connectWebSocket(userId, data['token']);
+
+          PushNotificationService pushService = PushNotificationService();
+
+          // initOneSignal을 호출하기 전에 userId를 사용하여 fetchExternalUserIdAndLogin을 호출
+          await pushService.initOneSignal(userId,context); // userId 전달
+        }
       }
       // 로그인 성공 시 홈 페이지로 이동
       Navigator.pushReplacement(
@@ -65,11 +92,13 @@ class _LoginState extends State<Login> {
     } else {
       setState(() {
         _message = '로그인 실패';
+        print('로그인 실패: ${response.statusCode}');
+        print('서버 응답: ${response.body}');
       });
     }
 
     setState(() {
-      _isLoading = false;
+      _isLoading = false; // 로딩 상태 업데이트
     });
   }
 
@@ -141,23 +170,23 @@ class _LoginState extends State<Login> {
                 _isLoading
                     ? CircularProgressIndicator()
                     : ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            loginUser(
-                              _usernameController.text,
-                              _passwordController.text,
-                            );
-                          }
-                        },
-                        child: Text(
-                          '로그인',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(double.infinity, 50),
-                          backgroundColor: Color(0xFF0F148D),
-                        ),
-                      ),
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      loginUser(
+                        _usernameController.text,
+                        _passwordController.text,
+                      );
+                    }
+                  },
+                  child: Text(
+                    '로그인',
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size(double.infinity, 50),
+                    backgroundColor: Color(0xFF0F148D),
+                  ),
+                ),
                 Text(
                   _message,
                   style: TextStyle(color: Colors.red),

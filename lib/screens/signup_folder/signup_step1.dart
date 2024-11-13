@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'signup_step2.dart'; // 새로 만든 페이지를 임포트합니다.
 import 'package:provider/provider.dart'; // Provider 패키지 임포트
 import 'package:flutter_askme/models/signup_data.dart';
@@ -17,12 +18,12 @@ class _SignUpStep1State extends State<SignUpStep1> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _storeNameController = TextEditingController();
   final TextEditingController _nickController =
-      TextEditingController(); // nickname -> nick으로 변경
+  TextEditingController(); // nickname -> nick으로 변경
   final TextEditingController _emailController = TextEditingController();
 
   List<Map<String, dynamic>> _storeList = [];
   int? _selectedStoreId;
-
+  String BaseUrl = dotenv.get("BASE_URL");
   final Dio _dio = Dio(); // Dio 인스턴스 생성
 
   @override
@@ -35,16 +36,16 @@ class _SignUpStep1State extends State<SignUpStep1> {
 
   Future<void> _fetchStores() async {
     try {
-      final response = await _dio.get('http://10.0.2.2:5000/stores/names');
+      final response = await _dio.get('$BaseUrl/stores/names');
       print(response.data); // 서버 응답 데이터 출력
       if (response.statusCode == 200) {
         List<dynamic> stores = response.data;
         setState(() {
           _storeList = stores
               .map((store) => {
-                    'id': store['store_id'], // 'id' 대신 'store_id' 사용
-                    'name': store['name'],
-                  })
+            'id': store['store_id'], // 'id' 대신 'store_id' 사용
+            'name': store['name'],
+          })
               .toList();
         });
       } else {

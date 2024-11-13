@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "329859932227",
+    "project_id": "askme-dc81b",
+    "storage_bucket": "askme-dc81b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:329859932227:android:ccab749cd8120dd2bb74f6",
+        "android_client_info": {
+          "package_name": "com.example.flutter_askme"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZVEPrRNTuQaQF2G78qz02ADUDqBeouNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

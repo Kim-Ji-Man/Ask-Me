@@ -15,12 +15,13 @@ class WebSocketProvider with ChangeNotifier {
     if (isLoggedIn) return; // 이미 로그인되어 있으면 중복 연결 방지
 
     jwtToken = token; // JWT 토큰 저장
+    print("JWT 토큰 값: $jwtToken");
     print("WebSocket 서버에 연결 시도 중...");
 
     // WebSocket 서버에 연결 (Node.js 서버 주소 입력)
     try {
       // JWT 토큰을 URL 쿼리 파라미터로 추가
-      final uri = Uri.parse('ws://$baseSocket/?token=$jwtToken');
+      final uri = Uri.parse('wss://$baseSocket/?token=$jwtToken');
       channel = WebSocketChannel.connect(uri);
 
       print("WebSocket 서버에 연결되었습니다.");
@@ -32,6 +33,7 @@ class WebSocketProvider with ChangeNotifier {
     // 서버로부터 메시지를 수신할 때 처리
     channel.stream.listen(
           (message) {
+            print("서버로부터 메시지 수신: $message");
         if (message == null || message.isEmpty) {
           print("서버로부터 빈 메시지 또는 null 수신됨."); // 메시지가 없거나 빈 값일 때
           return;
@@ -58,7 +60,10 @@ class WebSocketProvider with ChangeNotifier {
         notifyListeners(); // UI 업데이트를 위해 알림 전송
       },
       onError: (error) {
-        print("WebSocket 오류 발생: $error"); // 오류 발생 시 로그 출력
+        print("WebSocket 오류 발생: $error"); // 구체적인 오류 출력
+        if (error is WebSocketChannelException) {
+          print("WebSocketChannelException 발생!");
+        }
       },
       onDone: () {
         print("WebSocket 연결이 종료되었습니다."); // 연결 종료 시 로그 출력
