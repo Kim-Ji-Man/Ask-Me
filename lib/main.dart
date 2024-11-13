@@ -15,7 +15,6 @@ import 'package:flutter_askme/screens/signup_folder/signup_step2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'models/signup_data.dart';
 
 // GlobalKey로 NavigatorState 관리
