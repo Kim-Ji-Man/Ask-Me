@@ -72,7 +72,19 @@ router.post('/settings/:userId', async (req, res) => {
 // 내가 작성한 글 조회
 router.get('/posts/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const query = 'SELECT post_id, title, content FROM Posts WHERE user_id = ?';
+    const query = `
+        SELECT 
+            Posts.post_id, 
+            Posts.title, 
+            Posts.content, 
+            Posts.created_at, 
+            Posts.image, 
+            Users.nick 
+        FROM Posts 
+        LEFT JOIN Users ON Posts.user_id = Users.user_id 
+        WHERE Posts.user_id = ?
+        ORDER BY Posts.created_at DESC
+    `;
 
     try {
         const results = await db.executeQuery(query, [userId]);
@@ -85,7 +97,23 @@ router.get('/posts/:userId', async (req, res) => {
 // 내가 작성한 댓글 조회
 router.get('/comments/:userId', async (req, res) => {
     const userId = req.params.userId;
-    const query = 'SELECT comment_id, content FROM Comments WHERE user_id = ?';
+    const query = `
+        SELECT 
+            Comments.comment_id, 
+            Comments.content, 
+            Comments.created_at AS comment_created_at,
+            Posts.post_id,
+            Posts.title AS post_title,
+            Posts.content AS post_content,
+            Posts.created_at AS post_created_at,
+            Posts.image AS post_image,
+            Users.nick AS author_nick
+        FROM Comments
+        LEFT JOIN Posts ON Comments.post_id = Posts.post_id
+        LEFT JOIN Users ON Posts.user_id = Users.user_id
+        WHERE Comments.user_id = ?
+        ORDER BY Comments.created_at DESC
+    `;
 
     try {
         const results = await db.executeQuery(query, [userId]);
