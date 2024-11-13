@@ -72,7 +72,7 @@ class _MypageState extends State<Mypage> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       print("Fetched user data: $data"); // 디버깅 용도
-      print("Nickname: ${data['nick']}, Username: ${data['username']}");
+      print("Nickname: ${data['nick']}, Username: ${data['username']},$userId");
 
 
       return {
@@ -203,14 +203,10 @@ class _MypageState extends State<Mypage> {
   Widget _buildListTiles(BuildContext context) {
     return Column(
       children: [
-        // _buildListTile('내가 작성한 글', Icons.article, context, MyPostPage(
-        //   currentUserNickname: nick,
-        //   allPosts: [],
-        // )),
-        // _buildListTile('내가 작성한 댓글', Icons.chat_outlined, context, MyCommentPage(
-        //   currentUserNickname: nick,
-        //   allComments: [],
-        // )),
+        _buildListTile('내가 작성한 글', Icons.article, context, MyPostPage(
+        )),
+        _buildListTile('내가 작성한 댓글', Icons.chat_outlined, context, MyCommentPage(
+        )),
         _buildListTile('고객 지원', Icons.headset_mic, context, UserSupport()),
       ],
     );

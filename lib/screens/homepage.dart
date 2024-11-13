@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'RealTimeAlertWidget.dart';
 import 'alert.dart';
-import 'community.dart';
+import 'community_folder/community.dart';
 import 'location.dart';
 import 'mypage.dart';
 import 'dart:convert';
