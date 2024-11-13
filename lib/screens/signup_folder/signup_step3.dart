@@ -78,6 +78,23 @@ class _SignUpStep3State extends State<SignUpStep3> {
     return phoneRegExp.hasMatch(phoneNumber);
   }
 
+  // 입력 중에 YYYY-MM-DD 형식으로 자동 포맷팅하는 함수
+  String _formatBirthdateInput(String birthdate) {
+    // 숫자만 남김
+    birthdate = birthdate.replaceAll(RegExp(r'\D'), '');
+
+    // 길이에 따라 포맷팅 적용
+    if (birthdate.length >= 8) {
+      return '${birthdate.substring(0, 4)}-${birthdate.substring(4, 6)}-${birthdate.substring(6, 8)}';
+    } else if (birthdate.length >= 6) {
+      return '${birthdate.substring(0, 4)}-${birthdate.substring(4, 6)}';
+    } else if (birthdate.length >= 4) {
+      return '${birthdate.substring(0, 4)}-${birthdate.substring(4)}';
+    } else {
+      return birthdate; // 4자 미만이면 그대로 반환
+    }
+  }
+
   // 생년월일 변환 함수 추가 (YYYY-MM-DD -> YYMMDD)
   String _formatBirthdate(String birthdate) {
     return birthdate.replaceAll('-', '').substring(2);
@@ -144,6 +161,20 @@ class _SignUpStep3State extends State<SignUpStep3> {
     }
   }
 
+  // 전화번호 포맷팅 함수 추가
+  String _formatPhoneNumber(String phoneNumber) {
+    phoneNumber = phoneNumber.replaceAll(RegExp(r'\D'), ''); // 숫자만 남김
+    if (phoneNumber.length > 10) {
+      return '${phoneNumber.substring(0, 3)}-${phoneNumber.substring(3, 7)}-${phoneNumber.substring(7, 11)}';
+    } else if (phoneNumber.length > 6) {
+      return '${phoneNumber.substring(0, 3)}-${phoneNumber.substring(3, 6)}-${phoneNumber.substring(6)}';
+    } else if (phoneNumber.length > 3) {
+      return '${phoneNumber.substring(0, 3)}-${phoneNumber.substring(3)}';
+    } else {
+      return phoneNumber;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,11 +210,19 @@ class _SignUpStep3State extends State<SignUpStep3> {
             TextField(
               controller: _phoneNumberController,
               keyboardType: TextInputType.phone,
+              onChanged: (value) {
+                String formattedPhoneNumber = _formatPhoneNumber(value);
+                _phoneNumberController.value = TextEditingValue(
+                  text: formattedPhoneNumber,
+                  selection: TextSelection.collapsed(
+                      offset: formattedPhoneNumber.length),
+                );
+              },
               decoration: InputDecoration(
                 labelText: '전화번호',
                 hintText: '010-1234-5678',
                 hintStyle: TextStyle(color: Colors.grey[400]),
-                errorText: _phoneNumberError, // 전화번호 에러 메시지
+                errorText: _phoneNumberError,
               ),
             ),
             SizedBox(height: 16),
@@ -204,15 +243,23 @@ class _SignUpStep3State extends State<SignUpStep3> {
             ),
             SizedBox(height: 16),
 
-            // 생년월일 텍스트 필드
+            // 생년월일 입력 필드
             TextField(
               controller: _birthdateController,
               keyboardType: TextInputType.datetime,
+              onChanged: (value) {
+                String formattedBirthdate = _formatBirthdateInput(value);
+                _birthdateController.value = TextEditingValue(
+                  text: formattedBirthdate,
+                  selection: TextSelection.collapsed(
+                      offset: formattedBirthdate.length),
+                );
+              },
               decoration: InputDecoration(
                 labelText: '생년월일',
                 hintText: 'YYYY-MM-DD',
                 hintStyle: TextStyle(color: Colors.grey[400]),
-                errorText: _birthdateError, // 생년월일 에러 메시지
+                errorText: _birthdateError,
               ),
             ),
             Spacer(),
