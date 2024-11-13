@@ -185,16 +185,20 @@ router.delete('/Master/Delete/:userId', async (req, res) => {
     
 
     // SQL 쿼리 초기화
-    let deleteUserSql, deleteGuardStoreSql, deleteStoresSql;
+    let deleteUserSql, deleteGuardStoreSql, deleteStoresSql,deleteMasterAlertsSql;
 
     try {
         if (member_jic === 'guard') {
             // Guard 삭제 로직
             deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';
             deleteGuardStoreSql = 'DELETE FROM Guards_Stores WHERE guard_id = ?';
+            deleteMasterAlertsSql = 'DELETE FROM MasterAlerts WHERE user_id = ?'; 
+
 
             // 트랜잭션 시작
             await db.beginTransaction();
+            await db.executeQuery(deleteMasterAlertsSql, [userId]); 
+            console.log("MasterAlerts에서 삭제 완료");
             await db.executeQuery(deleteUserSql, [userId]);
             await db.executeQuery(deleteGuardStoreSql, [userId]);
             await db.commit();
@@ -202,8 +206,12 @@ router.delete('/Master/Delete/:userId', async (req, res) => {
             res.send({ message: 'Guard가 성공적으로 삭제되었습니다.' });
         } else if (member_jic === 'admin') {
             // Admin 삭제 로직
+            deleteMasterAlertsSql = 'DELETE FROM MasterAlerts WHERE user_id = ?'; 
             deleteStoresSql = 'DELETE FROM Stores WHERE user_id = ?';  // 외래 키 참조된 레코드 먼저 삭제
             deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';    // 그 다음 Users에서 삭제
+
+            await db.executeQuery(deleteMasterAlertsSql, [userId]); 
+            console.log("MasterAlerts에서 삭제 완료");
 
             // Stores 테이블에서 해당 사용자 삭제
             await db.executeQuery(deleteStoresSql, [userId]); 
@@ -215,6 +223,11 @@ router.delete('/Master/Delete/:userId', async (req, res) => {
         } else {
             // 일반 사용자 삭제 로직
             deleteUserSql = 'DELETE FROM Users WHERE user_id = ?';
+            deleteMasterAlertsSql = 'DELETE FROM MasterAlerts WHERE user_id = ?'; 
+            
+            await db.executeQuery(deleteMasterAlertsSql, [userId]); 
+            console.log("MasterAlerts에서 삭제 완료");
+
             await db.executeQuery(deleteUserSql, [userId]);
             res.send({ message: 'User가 성공적으로 삭제되었습니다.' });
         }

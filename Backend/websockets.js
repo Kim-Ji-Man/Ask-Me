@@ -92,68 +92,87 @@ function broadcastAlert(message) {
 
 
 
-function broadcastAlertFlutter(imageUrl, storeName, detectionTime) {
-    console.log("broadcastAlertFlutter 함수가 호출되었습니다."); // 함수가 호출되었는지 확인
-    console.log(
-      `전달된 인자들: imageUrl=${imageUrl}, storeName=${storeName}, detectionTime=${detectionTime}`
-    );
-  
-    // 1. OneSignal 푸시 알림 전송
-    db.executeQuery('SELECT external_user_id FROM Users')
-      .then((rows) => {
-        const userIds = rows
-          .map((row) => row.external_user_id)
-          .filter((id) => id !== null);
-        console.log(rows);
-  
-        if (userIds.length > 0) {
-          // imagePath 대신 imageUrl을 사용하도록 수정
-          const fullImageUrl = `${BASE_URL}${imageUrl}`;
-          const notificationData = {
-            app_id: ONESIGNAL_APP_ID,
-            include_external_user_ids: userIds,
-            headings: { en: "알림: 위험 상황 발생" },
-            contents: {
-              en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.`,
-            },
-            // big_picture: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHQSlp-XpvakG5gepaJ08stmv7YZLgwmgmFg&s',            
-            // Android에서 큰 텍스트를 표시하기 위한 설정
-            // android_accent_color: "#00FF00", // 색상 변경 가능
-            // small_icon: 'askmelogo',
-            // large_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
-          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
-            
-          };
-  
-          console.log(notificationData, "푸시데이타");
-  
-          sendPushNotification(userIds, notificationData);
-        } else {
-          console.log("푸시 알림을 보낼 외부 사용자 ID가 없습니다.");
+function broadcastAlertFlutter(imageUrl, storeName, detectionTime, alertId) {
+  console.log("broadcastAlertFlutter 함수가 호출되었습니다."); // 함수가 호출되었는지 확인
+  console.log(
+    `전달된 인자들: imageUrl=${imageUrl}, storeName=${storeName}, detectionTime=${detectionTime}`
+  );
+
+  // 1. OneSignal 푸시 알림 전송
+  db.executeQuery('SELECT external_user_id ,user_id FROM Users')
+    .then(async (rows) => {
+      const userIds = rows
+        .map((row) => row.external_user_id)
+        .filter((id) => id !== null);
+      console.log(rows);
+
+      if (userIds.length > 0) {
+        // imagePath 대신 imageUrl을 사용하도록 수정
+        const fullImageUrl = `${BASE_URL}${imageUrl}`;
+        const notificationData = {
+          app_id: ONESIGNAL_APP_ID,
+          include_external_user_ids: userIds,
+          headings: { en: "알림: 위험 상황 발생" },
+          contents: {
+            en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.`,
+          },
+          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`,
+        };
+
+        console.log(notificationData, "푸시데이타");
+
+        // Notification 테이블에 데이터 삽입 (알림 전송 전에)
+        for (const row of rows) {
+            await db.executeQuery(
+                `INSERT INTO Notification (user_id, alert_id, noti_method, sent_at, message, image, status)
+                 VALUES (?, ?, 'push', NOW(), ?, ?, 'pending');`,
+                [row.user_id, alertId, `${detectionTime}에 흉기 감지`, fullImageUrl]
+            );
         }
-      })
-      .catch((error) => {
-        console.error("푸시 알림 전송 중 오류 발생:", error);
-      });
-  
-    // 2. WebSocket으로 실시간 알림 전송
-    const message = {
-      type: "alert",
-      imageUrl: imageUrl, // 여기도 일관되게 imageUrl 사용
-      storeName: storeName,
-      detectionTime: detectionTime,
-    };
-  
-    clients.forEach((client) => {
-      if (client.ws.readyState === WebSocket.OPEN) {
-        console.log(`전송할 메시지 (WebSocket): ${JSON.stringify(message)}`);
-        client.ws.send(JSON.stringify(message));
+
+        // 푸시 알림 전송
+        await sendPushNotification(userIds, notificationData);
+
+        // 성공적으로 보낸 후 Notification 상태 업데이트
+        for (const row of rows) {
+            await db.executeQuery(
+                `UPDATE Notification SET status = 'success' WHERE user_id = ? AND alert_id = ?;`,
+                [row.user_id, alertId]
+            );
+        }
       } else {
-        console.log("WebSocket이 열려 있지 않습니다.");
+        console.log("푸시 알림을 보낼 외부 사용자 ID가 없습니다.");
+      }
+    })
+    .catch(async (error) => {
+      console.error("푸시 알림 전송 중 오류 발생:", error);
+
+      // 오류 발생 시 Notification 상태를 failure로 업데이트
+      for (const row of rows) {
+          await db.executeQuery(
+              `UPDATE Notification SET status = 'failure' WHERE user_id = ? AND alert_id = ?;`,
+              [row.user_id, alertId]
+          );
       }
     });
-  }
 
+  // 2. WebSocket으로 실시간 알림 전송
+  const message = {
+    type: "alert",
+    imageUrl: imageUrl,
+    storeName: storeName,
+    detectionTime: detectionTime,
+  };
+
+  clients.forEach((client) => {
+    if (client.ws.readyState === WebSocket.OPEN) {
+      console.log(`전송할 메시지 (WebSocket): ${JSON.stringify(message)}`);
+      client.ws.send(JSON.stringify(message));
+    } else {
+      console.log("WebSocket이 열려 있지 않습니다.");
+    }
+  });
+}
 module.exports = {
   createWebSocketServer,
   sendNotification,

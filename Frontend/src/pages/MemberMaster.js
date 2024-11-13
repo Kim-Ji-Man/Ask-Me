@@ -127,7 +127,7 @@ const MemberMaster = () => {
                 console.log(member_jic, '나오니??? 직책');
 
                 // 통합된 삭제 API 호출
-                const deleteEndpoint = `http://localhost:5000/Member/Master/Delete/${user_id}`;
+                const deleteEndpoint = `/Member/Master/Delete/${user_id}`;
                 
                 axios.delete(deleteEndpoint, {
                   headers: { 

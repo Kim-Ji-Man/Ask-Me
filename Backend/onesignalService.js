@@ -100,7 +100,7 @@ const sendPushNotification = async (userIds, notificationData) => {
 };
 
 // 역할이 "guard"인 사용자에게 푸시 알림을 보내는 함수
-const notifyUsers = async (imagePath, storeName, detectionTime) => {
+const notifyUsers = async (imagePath, storeName, detectionTime, alertId) => {
   try {
       // 전체 사용자 조회
       const rows = await db.executeQuery("SELECT user_id, external_user_id FROM Users WHERE role = 'guard';");
@@ -108,10 +108,8 @@ const notifyUsers = async (imagePath, storeName, detectionTime) => {
       // external_user_id가 null인 사용자를 처리하기 위해 setExternalUserId 호출
       for (const row of rows) {
           if (!row.external_user_id) {
-              // external_user_id가 없는 경우 OneSignal에 등록
               console.log(`사용자 ${row.user_id}의 외부 사용자 ID가 설정되지 않았습니다. 설정 중...`);
-              
-              await setExternalUserId(row.user_id);  // req 대신 user_id만 전달
+              await setExternalUserId(row.user_id);
           }
       }
 
@@ -125,28 +123,46 @@ const notifyUsers = async (imagePath, storeName, detectionTime) => {
 
       // 상대경로인 imagePath에 BASE_URL을 붙여서 절대경로 생성
       const fullImageUrl = `${BASE_URL}${imagePath}`;
+      
+      // Notification 테이블에 데이터 삽입 (알림 전송 전에)
+      for (const row of rows) {
+          await db.executeQuery(
+              `INSERT INTO Notification (user_id, alert_id, noti_method, sent_at, message, image, status)
+               VALUES (?, ?, 'push', NOW(), ?, ?, 'pending');`,
+              [row.user_id, alertId, `${detectionTime}에 흉기의심 감지`, fullImageUrl]
+          );
+      }
 
-      // 외부 사용자 ID 목록 로그 출력
-      console.log('푸시 알림 전송 대상 외부 사용자 ID 목록:', externalUserIds);
-
+      // 푸시 알림 전송 데이터 구성
       const notificationData = {
           app_id: ONESIGNAL_APP_ID,
           include_external_user_ids: externalUserIds,
           headings: { en: '알림: 위험 상황 발생 guard' },
-          contents: { en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.` },          
-          // android_accent_color: 'FF0000FF',  // Android에서 큰 텍스트를 표시하기 위한 설정
-          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
-
-
+          contents: { en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.` },
+          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`,
       };
-    
-      console.log(notificationData,"푸시데이타");
 
       // 푸시 알림 전송
       await sendPushNotification(externalUserIds, notificationData);
 
+      // 성공적으로 보낸 후 Notification 상태 업데이트
+      for (const row of rows) {
+          await db.executeQuery(
+              `UPDATE Notification SET status = 'success' WHERE user_id = ? AND alert_id = ?;`,
+              [row.user_id, alertId]
+          );
+      }
+
   } catch (error) {
       console.error('푸시 알림 전송 중 오류:', error);
+
+      // 오류 발생 시 Notification 상태를 failure로 업데이트
+      for (const row of rows) {
+          await db.executeQuery(
+              `UPDATE Notification SET status = 'failure' WHERE user_id = ? AND alert_id = ?;`,
+              [row.user_id, alertId]
+          );
+      }
   }
 };
 module.exports = { setExternalUserIdOnServer, sendPushNotification, notifyUsers };

@@ -3,6 +3,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const storeController = require('../controllers/storeController');
 const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+const db = require('../models/db');
+
 
 
 /**
@@ -90,6 +92,18 @@ router.post('/register', async (req, res) => {
 
         // 성공 시 user_id와 함께 응답
         res.status(201).send({ message: 'User registered successfully', user_id: userId });
+
+        const alertContent = `${mem_name}님이 ${role}로 가입하셨습니다.`;
+        const insertAlertQuery = `INSERT INTO MasterAlerts (master_alert_content, created_at, status, user_id) VALUES (?, NOW(), '가입', ?)`;
+
+        db.executeQuery(insertAlertQuery, [alertContent, userId], (err) => {
+            if (err) {
+                console.error('Error inserting alert into MasterAlerts:', err);
+                return res.status(500).send('Error registering user and adding alert');
+            }
+            console.log('회원가입 성공');
+            
+        });
 
         // WebSocket으로 회원가입 알림 전송
         sendMember(`회원 ${mem_name}님이 성공적으로 가입되었습니다.`);
