@@ -4,7 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
-Backend/.env
+.env
 /Fastapi/venv/
 /Fastapi/venv/Lib/site-packages/cv2/
 /Fastapi/venv/Lib/site-packages/torch/lib/
