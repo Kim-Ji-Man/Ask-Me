@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_askme/screens/community.dart';
-import 'package:flutter_askme/screens/postdeletepage.dart';
-import 'package:flutter_askme/screens/posteditpage.dart';
+import 'package:flutter_askme/screens/community_folder/community.dart';
+import 'package:flutter_askme/screens/community_folder/postdeletepage.dart';
+import 'package:flutter_askme/screens/community_folder/posteditpage.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
-
-
-
+import 'package:flutter_askme/models/post.dart';
 
 class Comment {
   String content;
@@ -21,9 +19,10 @@ class Comment {
 }
 
 class PostDetail extends StatefulWidget {
-  final Post post;
+  late final Post post;
+  final String? currentUserId;
 
-  PostDetail({required this.post});
+  PostDetail({required this.post, this.currentUserId});
 
   @override
   _PostDetailState createState() => _PostDetailState();
@@ -34,6 +33,7 @@ class _PostDetailState extends State<PostDetail> {
   String? currentUserId;
   bool isLiked = false;
   int likeCount = 0;
+  String? nick;
 
   @override
   void initState() {
@@ -41,15 +41,61 @@ class _PostDetailState extends State<PostDetail> {
     isLiked = widget.post.isLiked;
     likeCount = widget.post.likes;
     fetchComments();
+
+    print("Passed currentUserId from MyPostPage: ${widget.currentUserId}");
+    print("Post Author userId: ${widget.post.userId}");
+    print("Post ID: ${widget.post.id}"); // post.id 값을 확인하는 print 문 추가
+    print("Post Title: ${widget.post.title}");
+    print("Post Content: ${widget.post.content}");
+
+    // 조건에 따라 userId 또는 currentUserId로 nick을 가져오기
+    if (widget.post.userId.isEmpty) {
+      fetchNickByUserId(widget.currentUserId);
+    } else {
+      fetchNickByUserId(widget.post.userId);
+    }
+
     fetchCurrentUserId();
   }
 
   final List<Comment> comments = [];
   final TextEditingController commentController = TextEditingController();
 
-  get isAuthor => null;
 
-  // 서버에서 댓글 목록 가져오기
+  Future<void> fetchNickByUserId(String? userId) async {
+    if (userId == null) {
+      print("User ID is null, cannot fetch nick.");
+      return;
+    }
+
+    final url = Uri.parse('$BaseUrl/community/posts');
+    final response = await http.get(url, headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final nick = data['nick'];
+      setState(() {
+        widget.post = Post(
+          id: widget.post.id,
+          userId: userId,
+          title: widget.post.title,
+          content: widget.post.content,
+          location: widget.post.location,
+          time: widget.post.time,
+          nick: nick,
+          image: widget.post.image,
+          views: widget.post.views,
+          comments: widget.post.comments,
+          likes: widget.post.likes,
+          isLiked: widget.post.isLiked,
+        );
+      });
+      print("Fetched Nickname by userId: $nick");
+    } else {
+      print("Failed to fetch nick. Status code: ${response.statusCode}");
+    }
+  }
+
   Future<void> fetchComments() async {
     final response = await http.get(
       Uri.parse('$BaseUrl/community/posts/${widget.post.id}/comments'),
@@ -76,12 +122,91 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
-  // PostDetail 페이지 내 toggleLike 메서드
+  Future<void> editPost(String newTitle, String newContent, String? newImage) async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    final response = await http.put(
+      Uri.parse('$BaseUrl/community/posts/${widget.post.id}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        "title": newTitle,
+        "content": newContent,
+        "image": newImage ?? widget.post.image,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        widget.post = Post(
+          id: widget.post.id,
+          userId: widget.post.userId,
+          title: newTitle,
+          content: newContent,
+          image: newImage ?? widget.post.image,
+          location: widget.post.location,
+          time: widget.post.time,
+          nick: widget.post.nick,
+          views: widget.post.views,
+          comments: widget.post.comments,
+          likes: widget.post.likes,
+          isLiked: widget.post.isLiked,
+        );
+      });
+      print("Post updated successfully.");
+    } else {
+      print("Failed to update post. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<void> deletePost() async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    final response = await http.delete(
+      Uri.parse('$BaseUrl/community/posts/${widget.post.id}'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pop(context, true);
+      print("Post deleted successfully.");
+    } else {
+      print("Failed to delete post. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<void> fetchCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+
+    if (token != null) {
+      print("Retrieved token: $token");
+      final parts = token.split('.');
+      if (parts.length == 3) {
+        final payload = json.decode(
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+        );
+        setState(() {
+          currentUserId = payload['userId'].toString();
+        });
+        print("Fetched User ID from Token: $currentUserId");
+      } else {
+        print("Invalid token format.");
+      }
+    } else {
+      print("No token found. Current User ID not set.");
+    }
+  }
+
   Future<void> toggleLike() async {
     final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
 
     if (isLiked) {
-      // 좋아요 삭제
       final response = await http.delete(
         Uri.parse('$BaseUrl/community/likes'),
         headers: {
@@ -99,7 +224,6 @@ class _PostDetailState extends State<PostDetail> {
         print("Failed to remove like. Status code: ${response.statusCode}");
       }
     } else {
-      // 좋아요 추가
       final response = await http.post(
         Uri.parse('$BaseUrl/community/likes'),
         headers: {
@@ -119,7 +243,6 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
-
   Future<String?> getUserIdFromToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -134,22 +257,6 @@ class _PostDetailState extends State<PostDetail> {
     return payload['userId'].toString();
   }
 
-  Future<void> fetchCurrentUserId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-
-    if (token != null) {
-      final parts = token.split('.');
-      final payload = json.decode(
-        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
-      );
-      setState(() {
-        currentUserId = payload['user_id'].toString();
-      });
-    }
-  }
-
-  // 댓글 추가 메서드 (nick 없이 저장)
   Future<void> addComment(String content) async {
     final userId = await getUserIdFromToken();
     if (userId == null) {
@@ -175,7 +282,7 @@ class _PostDetailState extends State<PostDetail> {
     );
 
     if (response.statusCode == 201) {
-      await fetchComments(); // 댓글을 다시 불러옵니다.
+      await fetchComments();
       commentController.clear();
     } else {
       print("Failed to add comment. Status code: ${response.statusCode}");
@@ -204,8 +311,6 @@ class _PostDetailState extends State<PostDetail> {
       return null;
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -239,19 +344,11 @@ class _PostDetailState extends State<PostDetail> {
                       ),
                     ),
                   );
-                  if (result == true) {
-                    Navigator.pop(context, true);
+                  if (result is Map<String, String>) {
+                    await editPost(result['title']!, result['content']!, result['image']);
                   }
                 } else if (value == 'delete') {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PostDeletePage(postId: widget.post.id),
-                    ),
-                  );
-                  if (result == true) {
-                    Navigator.pop(context, true);
-                  }
+                  await deletePost();
                 }
               },
               itemBuilder: (context) => [
