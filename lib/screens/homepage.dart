@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-
 // JWT 토큰을 디코딩하는 함수
 Future<void> decodeAndPrintToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -46,6 +45,7 @@ class _HomepageState extends State<Homepage> {
   List<dynamic> alerts = []; // 서버에서 받아온 알림 데이터를 저장할 리스트
   String? userRole;
   String baseUrl = dotenv.get("BASE_URL");
+
   @override
   void initState() {
     super.initState();
@@ -104,11 +104,11 @@ class _HomepageState extends State<Homepage> {
           _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
           RealTimeAlertWidget(),   // 실시간 알림 위젯 추가 (화면 전체에서 작동)
         ],
-      ), // 네비게이션에 따라 페이지를 선택
+      ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white, // 배경색 흰색
-        selectedItemColor: Colors.black, // 선택된 아이템 색상 검정
-        unselectedItemColor: Colors.grey, // 선택되지 않은 아이템 색상 회색
+        backgroundColor: Colors.white,
+        selectedItemColor: Colors.indigo[800],
+        unselectedItemColor: Colors.grey[400],
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
@@ -156,44 +156,33 @@ class HomePageContent extends StatelessWidget {
                 children: [
                   Text(
                     '위기 대응 지침',
-                    style:
-                    TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.right,
                   ),
                   SizedBox(height: 16),
                   SizedBox(
-                    height:
-                    MediaQuery.of(context).size.height * 0.25,
-                    child:
-                    PageView.builder(
-                      controller:
-                      _pageController,
-                      onPageChanged:
-                          (index) {
-                        if (index ==0){
-                          Future.delayed(Duration(milliseconds:
-                          300), () {
+                    height: MediaQuery.of(context).size.height * 0.25,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        if (index == 0) {
+                          Future.delayed(Duration(milliseconds: 300), () {
                             _pageController.jumpToPage(_totalPages);
                           });
-                        } else if (index ==
-                            _totalPages +1){
-                          Future.delayed(Duration(milliseconds:
-                          300),(){
+                        } else if (index == _totalPages + 1) {
+                          Future.delayed(Duration(milliseconds: 300), () {
                             _pageController.jumpToPage(1);
                           });
                         }
                       },
-                      itemCount:
-                      _totalPages +2 ,
-                      itemBuilder:
-                          (context,index){
-                        if (index ==0){
-                          return buildCard(context,_totalPages -1);
-                        } else if (index ==
-                            _totalPages +1){
-                          return buildCard(context,0);
-                        } else{
-                          return buildCard(context,index -1);
+                      itemCount: _totalPages + 2,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return buildCard(context, _totalPages - 1);
+                        } else if (index == _totalPages + 1) {
+                          return buildCard(context, 0);
+                        } else {
+                          return buildCard(context, index - 1);
                         }
                       },
                     ),
@@ -201,26 +190,17 @@ class HomePageContent extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height:
-            24),
+            SizedBox(height: 24),
             Text(
               '알림내역',
-              style:
-              TextStyle(fontSize:
-              16, fontWeight:
-              FontWeight.bold),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height:
-            8),
+            SizedBox(height: 8),
             Expanded(
-              child:
-              ListView.builder(
-                itemCount:
-                alerts.length,
-                itemBuilder:
-                    (context,index){
-                  final alert =
-                  alerts[index];
+              child: ListView.builder(
+                itemCount: alerts.length,
+                itemBuilder: (context, index) {
+                  final alert = alerts[index];
                   return buildNotificationItem(alert);
                 },
               ),
@@ -263,9 +243,8 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget buildCard(BuildContext context,int index){
-    List<String>
-    imagePaths=[
+  Widget buildCard(BuildContext context, int index) {
+    List<String> imagePaths = [
       'images/card1.png',
       'images/card2.png',
       'images/card3.png',
@@ -273,34 +252,30 @@ class HomePageContent extends StatelessWidget {
       'images/card5.png',
     ];
 
-    return Card(color:
-    Colors.white,elevation:
-    4,shape:
-    RoundedRectangleBorder(borderRadius:
-    BorderRadius.circular(15)),
-      child:SizedBox(width:
-      double.infinity,height:
-      200,child:
-      Image.asset(imagePaths[index],fit:
-      BoxFit.cover),
+    return Card(
+      color: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: SizedBox(
+        width: double.infinity,
+        height: 200,
+        child: Image.asset(imagePaths[index], fit: BoxFit.cover),
       ),
     );
   }
 }
 
-String formatTimeAgo(String detectionTime){
-  DateTime detectedTime=
-  DateTime.parse(detectionTime);
-  Duration difference=
-  DateTime.now().difference(detectedTime);
+String formatTimeAgo(String detectionTime) {
+  DateTime detectedTime = DateTime.parse(detectionTime);
+  Duration difference = DateTime.now().difference(detectedTime);
 
-  if(difference.inDays>0){
-    return'${difference.inDays}일 전';
-  }else if(difference.inHours>0){
-    return'${difference.inHours}시간 전';
-  }else if(difference.inMinutes>0){
-    return'${difference.inMinutes}분 전';
-  }else{
-    return'방금 전';
+  if (difference.inDays > 0) {
+    return '${difference.inDays}일 전';
+  } else if (difference.inHours > 0) {
+    return '${difference.inHours}시간 전';
+  } else if (difference.inMinutes > 0) {
+    return '${difference.inMinutes}분 전';
+  } else {
+    return '방금 전';
   }
 }
