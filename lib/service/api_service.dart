@@ -1,13 +1,23 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://10.0.2.2:5000', // 서버 기본 URL
-      connectTimeout: Duration(milliseconds: 5000), // 연결 타임아웃 설정
-      receiveTimeout: Duration(milliseconds: 3000), // 응답 타임아웃 설정
-    ),
-  );
+  late String BaseUrl;
+  late final Dio _dio;
+
+  ApiService() {
+    // dotenv에서 BASE_URL을 가져와서 초기화
+    BaseUrl = dotenv.get("BASE_URL");
+
+    // Dio 인스턴스를 생성자에서 초기화
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: BaseUrl, // 서버 기본 URL
+        connectTimeout: Duration(milliseconds: 5000), // 연결 타임아웃 설정
+        receiveTimeout: Duration(milliseconds: 3000), // 응답 타임아웃 설정
+      ),
+    );
+  }
 
   Future<Map<String, dynamic>?> signUp({
     int? storeId, // int 타입으로 변경

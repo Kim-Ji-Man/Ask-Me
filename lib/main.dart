@@ -7,13 +7,18 @@ import 'package:flutter_askme/service/WebSocketProvider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_askme/screens/login.dart';
+import 'package:flutter_askme/screens/signup_folder/signup_step2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'models/signup_data.dart';
+
 // GlobalKey로 NavigatorState 관리
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+// JWT 토큰에서 userId 추출 함수
 String? extractUserIdFromToken(String token) {
   try {
     final parts = token.split('.');
@@ -32,15 +37,29 @@ String? extractUserIdFromToken(String token) {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // .env 파일 로드
   await dotenv.load(fileName: "assets/.env");
 
+  // HTTP 인증서 무시 설정
   HttpOverrides.global = MyHttpOverrides();
 
+  // KakaoMap API 키 초기화
   String key = dotenv.get("KAKAOMAP_KEY");
   AuthRepository.initialize(appKey: key);
-  runApp(const MyApp());
+
+  // MultiProvider로 여러 Provider 설정
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => SignUpData()), // SignUpData Provider
+        ChangeNotifierProvider(create: (context) => WebSocketProvider()), // WebSocketProvider
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
+// HTTP 인증서 무시 클래스
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -49,6 +68,7 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
+// MyApp 클래스 정의
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -72,7 +92,7 @@ class _MyAppState extends State<MyApp> {
         String? userId = extractUserIdFromToken(token);
 
         if (userId != null) {
-          await _pushNotificationService.initOneSignal(userId,context); // context 없이 초기화 가능
+          await _pushNotificationService.initOneSignal(userId, context); // context 전달하여 초기화
         }
       }
     });
@@ -80,14 +100,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => WebSocketProvider(),
-      child: MaterialApp(
-        navigatorKey: navigatorKey, // GlobalKey 설정
-        home: Initial(),
-        theme: ThemeData(
-          scaffoldBackgroundColor: Colors.white,
-        ),
+    return MaterialApp(
+      navigatorKey: navigatorKey, // GlobalKey 설정
+      home: Initial(), // 초기 화면 설정
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white, // 테마 설정
       ),
     );
   }
