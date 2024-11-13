@@ -73,7 +73,7 @@ async function registerKakaoUser(kakaoId, mem_name, email, phoneNumber, role, ge
 
 // JWT 토큰 생성
 function generateToken(payload) {
-    return jwt.sign(payload, 'your_jwt_secret', { expiresIn: '1h' }); // payload에 userId, storeId 포함
+    return jwt.sign(payload, 'your_jwt_secret', { expiresIn: '24h' }); // payload에 userId, storeId 포함
 }
 
 // 로그인 함수

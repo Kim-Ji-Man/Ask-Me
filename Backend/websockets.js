@@ -116,12 +116,14 @@ function broadcastAlertFlutter(imageUrl, storeName, detectionTime) {
             contents: {
               en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.`,
             },
-            big_picture: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHQSlp-XpvakG5gepaJ08stmv7YZLgwmgmFg&s',            
+            // big_picture: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHQSlp-XpvakG5gepaJ08stmv7YZLgwmgmFg&s',            
             // Android에서 큰 텍스트를 표시하기 위한 설정
-            android_accent_color: "#00FF00", // 색상 변경 가능
-            small_icon: 'askmelogo',
-            large_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
-        };
+            // android_accent_color: "#00FF00", // 색상 변경 가능
+            // small_icon: 'askmelogo',
+            // large_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
+          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
+            
+          };
   
           console.log(notificationData, "푸시데이타");
   

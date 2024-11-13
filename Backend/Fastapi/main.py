@@ -25,7 +25,7 @@ import requests
 app = FastAPI()
 
 # CORS 설정
-origins = ["http://localhost:3000", "http://localhost:5000"]
+origins = ["https://localhost:3000", "https://localhost:5000"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -182,7 +182,7 @@ async def detect_weapon(data: DetectionData):
         # Node.js 서버에 알림 요청 전송
         alert_payload = {"detected": True, "message": "흉기 감지됨!"}
         try:
-            response = requests.post("http://localhost:5000/alert", json=alert_payload)
+            response = requests.post("https://localhost:5000/alert", json=alert_payload)
             response.raise_for_status()
             print("Node.js 서버로 알림 전송 성공")
         except requests.RequestException as e:

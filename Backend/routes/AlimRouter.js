@@ -4,9 +4,13 @@ const db = require('../models/db');
 
 const { sendNotification,broadcastAlertFlutter } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
 const { notifyUsers } = require('../onesignalService'); // WebSocket 알림 전송 함수 임포트
-
+const moment = require('moment-timezone'); // moment-timezone 라이브러리 임포트
 
 let lastNotiId = null; // 마지막으로 처리한 noti_id를 저장
+
+const formatDetectionTime = (detectionTime) => {
+    return moment(detectionTime).tz('Asia/Seoul').format('YYYY년 M월 D일 A h:mm');
+  };
 
 // 5초마다 새로운 알림 확인
 setInterval(async () => {
@@ -196,10 +200,13 @@ router.get('/cctvalims', async (req, res) => {
           console.log(detection_time,image_path,storeName,"제대로 되니????");
   
           // 실시간 알림 전송 (예: WebSocket 또는 다른 방법으로)
-          broadcastAlertFlutter(image_path, storeName, detection_time);
+
+          const formattedTime = formatDetectionTime(detection_time);
+
+          broadcastAlertFlutter(image_path, storeName, formattedTime);
   
           // 푸시 알림 전송
-          await notifyUsers(image_path, storeName, detection_time);
+          await notifyUsers(image_path, storeName, formattedTime);
         }
   
         res.status(200).json({ message: 'Anomaly updated successfully', storeName });

@@ -133,16 +133,13 @@ const notifyUsers = async (imagePath, storeName, detectionTime) => {
           app_id: ONESIGNAL_APP_ID,
           include_external_user_ids: externalUserIds,
           headings: { en: '알림: 위험 상황 발생 guard' },
-          contents: { en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.` },
-          // data: { image_path: 'https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580'},  // 데이터에 이미지 경로 추가
-          
-          // big_picture: fullImageUrl,  // Android용 이미지 URL 추가
-          
-          android_accent_color: 'FF0000FF',  // Android에서 큰 텍스트를 표시하기 위한 설정
-          // large_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
+          contents: { en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.` },          
+          // android_accent_color: 'FF0000FF',  // Android에서 큰 텍스트를 표시하기 위한 설정
+          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`, // 큰 아이콘으로도 이미지를 사용할 수 있음
+
 
       };
-      
+    
       console.log(notificationData,"푸시데이타");
 
       // 푸시 알림 전송

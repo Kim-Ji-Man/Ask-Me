@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const CctvWebSocket = () => {
   const [captureImage, setCaptureImage] = useState(null); // 캡처된 이미지 상태
-  const [videoUrl, setVideoUrl] = useState("http://localhost:8000/video_feed2"); // 비디오 스트림 URL
+  const [videoUrl, setVideoUrl] = useState("https://localhost:8000/video_feed2"); // 비디오 스트림 URL
   const [isRecording, setIsRecording] = useState(false); // 녹화 상태
   const token = localStorage.getItem('jwtToken'); // 로컬 스토리지에서 JWT 토큰 가져오기
 
@@ -14,7 +14,7 @@ const CctvWebSocket = () => {
     if (data.type === 'alert') {
       try {
         // 이미지 캡처 API 호출
-        const response = await axios.get("http://localhost:8000/capture_image", {
+        const response = await axios.get("https://localhost:8000/capture_image", {
           responseType: 'blob'
         });
         const imageBlob = response.data;
