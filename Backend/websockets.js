@@ -116,7 +116,9 @@ function broadcastAlertFlutter(imageUrl, storeName, detectionTime, alertId) {
           contents: {
             en: `${storeName}에서 ${detectionTime}에 흉기 사건이 감지되었습니다.`,
           },
-          small_icon: `https://postfiles.pstatic.net/MjAyNDExMTJfMjUz/MDAxNzMxMzk1MDg3OTI3.mPDIKY_31mF_NCR_zeMqh62CAKeFUiZuQEsGAD-1SRIg.u2MmNlY9Yy_eV4LBBMJG5AYYQMsA0qXPUCRQaVLk9kQg.PNG/AskMeLogo.png?type=w580`,
+          small_icon: `ic_notification`,
+           android_accent_color: "08298A",
+          large_icon: `https://postfiles.pstatic.net/MjAyNDExMTRfMTc2/MDAxNzMxNTQ3MzE2NTg4.T_IrKzpT4UHQPETMkmUs2EMVCWiYTAyshlIFOOO2LW0g.w7cgaa5Y_G7XGyiMasaR0UXq9wOzzX3rk3MjtjdjoJ4g.PNG/KakaoTalk_20241114_094837945_02.png?type=w580`,
         };
 
         console.log(notificationData, "푸시데이타");
