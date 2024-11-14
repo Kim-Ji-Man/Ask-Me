@@ -92,8 +92,16 @@ router.post('/register', async (req, res) => {
 
         // 성공 시 user_id와 함께 응답
         res.status(201).send({ message: 'User registered successfully', user_id: userId });
+        let alertContent;
+        if (role === 'admin') {
+            alertContent = `${mem_name}님이 관리자로 가입하셨습니다.`;
+        } else if (role === 'guard') {
+            alertContent = `${mem_name}님이 경비원으로 가입하셨습니다.`;
+        } else {
+            alertContent = `${mem_name}님이 일반사용자로 가입하셨습니다.`;
+        }
 
-        const alertContent = `${mem_name}님이 ${role}로 가입하셨습니다.`;
+        
         const insertAlertQuery = `INSERT INTO MasterAlerts (master_alert_content, created_at, status, user_id) VALUES (?, NOW(), '가입', ?)`;
 
         db.executeQuery(insertAlertQuery, [alertContent, userId], (err) => {

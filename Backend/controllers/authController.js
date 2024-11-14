@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../models/db');
 const pool = require('../config/dbConfig');
 
-async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null, nick=null) {
+async function registerUser(username, mem_name, password, email, phoneNumber, role, gender, birth, storeId = null, nick = null) {
     console.log("register:", username, mem_name, password, email, phoneNumber, role, gender, birth, nick);
 
     const allowedRoles = ['user', 'admin', 'master', 'guard']; // 경비원 역할 포함
@@ -17,15 +17,18 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
     // 현재 시간 설정
     const created_at = new Date(); // 현재 시간
 
-    // account_status 설정
-    const account_status = (role === 'guard') ? 'inactive' : 'active'; // 경비원일 경우 inactive, 그 외는 active
+    // account_status 설정 (경비원일 경우 inactive)
+    const account_status = (role === 'guard') ? 'inactive' : 'active';
 
-    // SQL 쿼리 작성
-    const query = `INSERT INTO Users (username, mem_name, password, email, phone_number, role, gender, created_at, account_status, birth, nick) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    // Users 테이블에 사용자 정보 삽입
+    const query = `
+        INSERT INTO Users (username, mem_name, password, email, phone_number, role, gender, created_at, account_status, birth, nick)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
     
     const params = [
         username,
-        mem_name, 
+        mem_name,
         hashedPassword,
         email,
         phoneNumber,
@@ -37,24 +40,56 @@ async function registerUser(username, mem_name, password, email, phoneNumber, ro
         nick
     ];
 
-    // 쿼리 실행
-    await db.executeQuery(query, params);
+    try {
+        // 1. Users 테이블에 사용자 등록
+        console.log("Inserting user into Users table...");
+        await db.executeQuery(query, params);
+        console.log("User inserted successfully.");
 
-    // 경비원인 경우 매장에 배정하는 로직은 나중에 처리 가능
-    if (role === 'guard' && storeId) {
-        const user = await db.executeQuery(`SELECT user_id FROM Users WHERE email = ?`, [email]);
-        const guardId = user[0].user_id;
+        // 2. 방금 추가된 유저의 user_id 가져오기 (Users 테이블에서 이메일로 조회)
+        const userQuery = `
+            SELECT user_id FROM Users WHERE email = ? LIMIT 1
+        `;
+        
+        console.log("Fetching user_id from Users table...");
+        
+        // 쿼리 실행 후 결과 받기 (배열이 아닌 객체로 반환될 수 있으므로 구조 분해 할당 제거)
+        const userResult = await db.executeQuery(userQuery, [email]);
 
-        // 경비원이 속한 매장에 추가 (storeId가 제공된 경우에만 실행)
-        const guardStoreQuery = `INSERT INTO Guards_Stores (user_id, store_id) VALUES (?, ?)`;
-        await db.executeQuery(guardStoreQuery, [guardId, storeId]);
+        console.log("userResult:", userResult);  // 쿼리 결과 출력
+
+        // 결과가 없을 경우 에러 처리
+        if (!userResult || userResult.length === 0) {
+            console.error('No user found with the provided email.');
+            throw new Error('User registration failed: No user found with the provided email.');
+        }
+
+        const userId = userResult[0]?.user_id || userResult.user_id;  // 배열 또는 객체 모두 처리
+
+        if (!userId) {
+            throw new Error('User registration failed: user_id is undefined.');
+        }
+
+        console.log(`등록된 사용자 ID: ${userId}`);
+
+        // 3. 경비원인 경우 Guards_Stores 테이블에 매장 정보 추가
+        if (role === 'guard' && storeId) {
+            const guardStoreQuery = `
+                INSERT INTO Guards_Stores (user_id, store_id)
+                VALUES (?, ?)
+            `;
+            console.log(`Inserting guard into Guards_Stores table with user_id ${userId} and storeId ${storeId}`);
+            await db.executeQuery(guardStoreQuery, [userId, storeId]);
+            console.log("Guard inserted into Guards_Stores successfully.");
+        }
+
+        // 4. 정확한 user_id 반환
+        return userId;
+
+    } catch (err) {
+        console.error('Error during registration:', err);
+        throw err; // 에러를 다시 던져서 호출한 곳에서 처리할 수 있도록 함
     }
-
-    // 방금 추가된 유저의 user_id 가져오기
-    const [result] = await db.executeQuery('SELECT LAST_INSERT_ID() as user_id');
-
-    // user_id 반환
-    return result.user_id;
 }
 
 
