@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_askme/screens/homepage.dart';
 import 'package:flutter_askme/screens/initial.dart';
 import 'package:flutter_askme/service/PushNotificationService.dart';
+import 'package:flutter_askme/screens/login.dart';
+import 'package:flutter_askme/screens/signup_folder/signup_step2.dart';
+import 'package:flutter_askme/screens/signup_folder/signup_step3.dart';
 import 'package:flutter_askme/service/WebSocketProvider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:kakao_map_plugin/kakao_map_plugin.dart';
@@ -12,7 +15,6 @@ import 'package:flutter_askme/screens/signup_folder/signup_step2.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'models/signup_data.dart';
 
 // GlobalKey로 NavigatorState 관리
