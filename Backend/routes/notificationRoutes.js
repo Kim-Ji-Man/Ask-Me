@@ -8,6 +8,7 @@ const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUT
 // SMS 발송 함수
 async function sendSms(phoneNumber, message) {
     try {
+        console.log('Sending SMS to:', phoneNumber);
         const messageInstance = await client.messages.create({
             body: message,
             messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID,
@@ -49,8 +50,7 @@ function isValidPhoneNumber(phoneNumber) {
     return re.test(String(phoneNumber)); // 전화번호가 유효한 경우 true 반환
 }
 
-// 이메일 발송 및 기록
-async function sendTestEmail() {
+async function sendTest() {
     try {
         // 데이터베이스 연결
         const connection = await db.getConnection();
@@ -64,11 +64,30 @@ async function sendTestEmail() {
         const [alerts] = await connection.execute('SELECT alert_id FROM Alert_Log ORDER BY created_at DESC LIMIT 1');
         const alertId = alerts.length > 0 ? alerts[0].alert_id : null;
 
+        async function getAlertImagePath(connection, alertId) {
+            const query = 'SELECT image_path FROM Alert_Log WHERE alert_id = ?';
+            const [rows] = await connection.execute(query, [alertId]);
+
+            if (rows.length > 0) {
+                const relativePath = rows[0].image_path;
+
+                const cleanedPath = relativePath.replace(/\.\./g, '');  // 모든 ..를 빈 문자열로 대체
+
+                return cleanedPath;
+            }
+            return null;
+        }
+
         if (!alertId) {
             console.error('No alert_id found in Alert_Log.');
             return;
         }
 
+        // 알림 이미지 경로 가져오기
+        const imagePath = await getAlertImagePath(connection, alertId);
+        console.log('Image path:', imagePath);
+
+        // 이미지가 존재할 경우, 이메일에 첨부
         for (const user of users) {
             const email = user.email;
             const userId = user.user_id;
@@ -86,64 +105,44 @@ async function sendTestEmail() {
                 continue; // 이메일 알림이 비활성화된 경우 건너뛰기
             }
 
-            // SMS 알림 설정 확인
-            const [smsSettings] = await connection.execute('SELECT sms_alert FROM Setting WHERE user_id = ?', [userId]);
-            if (smsSettings.length === 0 || !smsSettings[0].sms_alert) {
-                console.log(`SMS alerts 비활성화된 사용자:`, user);
-                continue; // SMS 알림이 비활성화된 경우 건너뛰기
-            }
-
-            // 이메일 유효성 검사
-            if (!email || !isValidEmail(email) || isExampleEmail(email)) {
-                console.error(`유효한 Email 주소가 아닌 사용자:`, user);
-                await logNotification(connection, userId, alertId, 'email', 'Failed', 'failure');
-                continue; // 유효하지 않으면 다음 사용자로 넘어가기
-            }
-
-
-            const message = '흉기 탐지 알림.';
-                
             // 이메일 발송
             try {
                 const info = await transporter.sendMail({
                     from: process.env.EMAIL_USER,
                     to: email,
                     subject: 'AskMe',
-                    text: message,
+                    text: '흉기 탐지 알림입니다.',
+                    attachments: imagePath ? [{
+                        filename: 'detected-image.jpg',  // 이미지 파일명
+                        path: imagePath,  // 이미지 경로
+                    }] : [],
                 });
                 console.log(`Email sent to ${email}: ${info.response}`);
 
                 // 이메일 발송 성공 시 기록
-                await logNotification(connection, userId, alertId, 'email', message, 'success');
+                await logNotification(connection, userId, alertId, 'email', '흉기 탐지 알림입니다.', 'success', imagePath);
 
             } catch (error) {
                 console.error(`Error sending email to ${email}:`, error.message);
 
                 // 이메일 발송 실패 시 기록
-                // await logNotification(connection, userId, alertId, 'email', message, 'failure');
-            }
-
-             // SMS 발송 전 전화번호 유효성 검사
-             if (!isValidPhoneNumber(user.phone_number)) {
-                console.error(`유효하지 않은 전화번호: ${user.phone_number}`);
-                await logNotification(connection, userId, alertId, 'sms', '유효하지 않은 전화번호', 'failure');
-                continue; // 유효하지 않은 전화번호인 경우 SMS 발송을 건너뜀
+                await logNotification(connection, userId, alertId, 'email', '흉기 탐지 알림입니다.', 'failure', imagePath);
             }
 
             // SMS 발송
             try {
+                const message = `흉기 탐지 알림입니다. 이미지: ${imagePath ? imagePath : '이미지 없음'}`;
                 await sendSms(user.phone_number, message);
-                await logNotification(connection, userId, alertId, 'sms', message, 'success');
+                await logNotification(connection, userId, alertId, 'sms', message, 'success', imagePath);
             } catch (error) {
                 console.error(`Error sending SMS to ${user.phone_number}:`, error.message);
-                await logNotification(connection, userId, alertId, 'sms', message, 'failure');
+                await logNotification(connection, userId, alertId, 'sms', '흉기 탐지 알림입니다.', 'failure', imagePath);
             }
-
         }
 
     } catch (error) {
-    console.error('Error:', error);
-    }   
+        console.error('Error:', error);
+    }
 }
 
 // 이메일 유효성 검사 함수
@@ -152,4 +151,6 @@ function isValidEmail(email) {
     return re.test(String(email).toLowerCase()) && email !== 'master'; // 'master' 제외
 }
 
-module.exports = { sendTestEmail };
+// sendTest(); // 테스트
+
+module.exports = { sendTest };

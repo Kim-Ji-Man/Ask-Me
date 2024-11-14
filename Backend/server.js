@@ -1,4 +1,3 @@
-
 require('dotenv').config();
 
 const express = require('express');
@@ -29,22 +28,21 @@ const reportRouter = require('./routes/reportRouter');
 const mypageRouter = require('./routes/mypageRouter');
 const { createWebSocketServer, sendNotification, broadcastAlert } = require('./websockets'); 
 const bodyParser = require('body-parser');
-const MasterMainDashboard = require('./routes/MainDashboardRouter')
+const MasterMainDashboard = require('./routes/MainDashboardRouter');
 const { setExternalUserIdOnServer } = require('./onesignalService');
-const { sendTestEmail } = require('./routes/notificationRoutes.js'); // 알림 처리 파일 불러오기
-
-
+const { sendTest } = require('./routes/notificationRoutes.js'); // 알림 처리 파일 불러오기
 
 // Express 앱 초기화
 const app = express();
 
-
+// SSL 인증서 설정 (예시)
 const options = {
   key: fs.readFileSync(path.join(__dirname, 'server.key')),
-  cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
+  cert: fs.readFileSync(path.join(__dirname, 'server.cert')),
 };
 
-const server = https.createServer(options,app);
+
+const server = https.createServer(options, app);
 createWebSocketServer(server);
 
 // Swagger 설정
@@ -58,7 +56,7 @@ const swaggerOption = {
         },
         servers: [
             {
-                url: 'http://localhost:5000',
+                url: 'https://localhost:5000', // https 프로토콜로 설정
                 description: 'Development server'
             }
         ],
@@ -99,7 +97,7 @@ app.use('/community', commentRouter);
 app.use('/community', likeRouter);
 app.use('/community', reportRouter);
 app.use('/mypage', mypageRouter);
-app.use('/Masterdashboard',MasterMainDashboard)
+app.use('/Masterdashboard', MasterMainDashboard)
 
 app.use(bodyParser.json());
 
@@ -135,7 +133,7 @@ app.post('/notify', (req, res) => {
     }
   
     res.status(200).send('Notification sent');
-  });
+});
   
 app.post("/alert", async (req, res) => {
   const { detected, message } = req.body;
@@ -145,7 +143,7 @@ app.post("/alert", async (req, res) => {
     broadcastAlert(message); // WebSocket으로 알림 전송
 
     // 이메일 및 SMS 알림 전송
-    await sendTestEmail(); // 새로운 알림 기능 실행
+    await sendTest(); // 새로운 알림 기능 실행
     
     res.status(200).send("알림 전송 완료");
   } else {
