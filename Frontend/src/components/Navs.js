@@ -185,6 +185,7 @@ const jwtToken = localStorage.getItem("jwtToken");
   // 로그아웃 함수
   const logout = () => {
     localStorage.removeItem("jwtToken");
+    localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("username");
     setIsLoggedIn(false);
