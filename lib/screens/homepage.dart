@@ -217,7 +217,8 @@ class HomePageContent extends StatelessWidget {
     String baseUrl = dotenv.get("BASE_URL"); // Get base URL from environment variables
 
     // Construct the full image URL or fallback to a local asset
-    String imageUrl = imagePath != null ? '$baseUrl$imagePath' : 'images/img_logo.png';
+    String correctedPath = imagePath!.replaceAll(RegExp(r'^\.\.'), '');
+    String imageUrl = imagePath != null ? '$baseUrl$correctedPath' : 'images/img_logo.png';
 
     // Format the time ago string
     String timeAgo = formatTimeAgo(alert['detection_time']);
