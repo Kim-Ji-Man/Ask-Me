@@ -5,15 +5,70 @@ const db = require('../models/db');
 
 // 게시글 신고 생성
 router.post("/reports", async (req, res) => {
-    const { post_id, user_id, reason_id } = req.body;
+    const { post_id, user_id, reason_ids } = req.body; // reason_ids는 배열로 받음
     const created_at = new Date(); // 현재 시간
 
     try {
-        const result = await db.executeQuery(
-            "INSERT INTO Reports (post_id, user_id, reason_id, created_at) VALUES (?, ?, ?, ?)",
-            [post_id, user_id, reason_id, created_at]
+        // 여러 개의 reason_id 처리
+        for (const reason_id of reason_ids) {
+            await db.executeQuery(
+                "INSERT INTO Reports (post_id, user_id, reason_id, created_at) VALUES (?, ?, ?, ?)",
+                [post_id, user_id, reason_id, created_at]
+            );
+        }
+
+        res.status(201).json({ message: "신고가 접수되었습니다." });
+    } catch (err) {
+        console.error("Error details:", err); // 에러 로그 출력
+        res.status(500).json({ error: "신고 접수 실패", details: err });
+    }
+});
+
+router.post("/reports/status", async (req, res) => {
+    const { post_id, user_id } = req.body;
+    console.log("신고 들어오니??");
+    
+
+    try {
+        // 해당 유저가 해당 게시물을 신고했는지 확인
+        const [existingReport] = await db.executeQuery(
+            "SELECT COUNT(*) as reportCount FROM Reports WHERE post_id = ? AND user_id = ?",
+            [post_id, user_id]
         );
-        res.status(201).json({ report_id: result.insertId, message: "신고가 접수되었습니다." });
+
+        // 방어적 코드: existingReport가 undefined일 경우 처리
+        if (!existingReport || existingReport.length === 0) {
+            return res.status(200).json({ isReported: false });
+        }
+
+        const reportCount = existingReport.reportCount || 0; // 배열이 아닌 객체로 처리
+        console.log(reportCount);
+        
+        if (reportCount > 0) {
+            return res.status(200).json({ isReported: true,reportCount:reportCount });
+        } else {
+            return res.status(200).json({ isReported: false });
+        }
+    } catch (err) {
+        console.error("Error fetching report status:", err);
+        res.status(500).json({ error: "신고 상태를 가져오는 데 실패했습니다.", details: err });
+    }
+});
+
+router.post("/comment-reports/comment", async (req, res) => {
+    const { comment_id, user_id, reason_ids } = req.body;
+    const created_at = new Date(); // 현재 시간
+
+    try {
+        // 여러 개의 reason_id 처리
+        for (const reason_id of reason_ids) {
+            await db.executeQuery(
+                "INSERT INTO CommentReports (comment_id, user_id, reason_id, created_at) VALUES (?, ?, ?, ?)",
+                [comment_id, user_id, reason_id, created_at]
+            );
+        }
+
+        res.status(201).json({ message: "신고가 접수되었습니다." });
     } catch (err) {
         console.error("Error details:", err); // 에러 로그 출력
         res.status(500).json({ error: "신고 접수 실패", details: err });
@@ -21,21 +76,76 @@ router.post("/reports", async (req, res) => {
 });
 
 // 댓글 신고 생성
-router.post("/comment-reports", async (req, res) => {
-    const { comment_id, user_id, reason_id } = req.body;
-    const created_at = new Date(); // 현재 시간
+// router.post("/comment-reports/toggle", async (req, res) => {
+//     const { comment_id, user_id, reason_ids } = req.body;
+  
+//     if (!reason_ids || reason_ids.length === 0) {
+//       return res.status(400).json({ message: "신고 사유가 필요합니다." });
+//     }
+  
+//     try {
+//       const [existingReport] = await db.executeQuery(
+//         "SELECT * FROM CommentReports WHERE comment_id = ? AND user_id = ?",
+//         [comment_id, user_id]
+//       );
+  
+//       if (!existingReport || existingReport.length === 0) {
+//         // 아직 신고하지 않은 경우 -> 새로 추가
+//         for (const reason_id of reason_ids) {
+//           await db.executeQuery(
+//             "INSERT INTO CommentReports (comment_id, user_id, reason_id) VALUES (?, ?, ?)",
+//             [comment_id, user_id, reason_id]
+//           );
+//         }
+  
+//         // 총 신고 수 계산
+//         const [reportCountResult] = await db.executeQuery(
+//           "SELECT COUNT(*) AS reportCount FROM CommentReports WHERE comment_id = ?",
+//           [comment_id]
+//         );
+  
+//         // reportCount가 undefined인지 확인 후 처리
+//         if (!reportCountResult || reportCountResult.length === 0) {
+//           return res.status(500).json({ message: "신고 횟수를 가져오는 데 실패했습니다." });
+//         }
+  
+//         const reportCount = reportCountResult[0].reportCount;
+//         console.log(isReported,reportCount,"댓글 신고수 나오니???");
+        
+//         res.status(201).json({ message: "댓글이 성공적으로 신고되었습니다.", isReported: true, reportCount });
+//       } else {
+//         // 이미 신고한 경우 -> 다시 신고하지 못하도록 응답
+//         return res.status(403).json({ message: "이미 이 댓글을 신고했습니다.", isReported: true });
+//       }
+//     } catch (err) {
+//       console.error("Error toggling comment report:", err);
+//       res.status(500).json({ error: "댓글 신고 처리 실패", details: err });
+//     }
+//   });
 
+  router.post("/comment-reports/status", async (req, res) => {
+    const { comment_id, user_id } = req.body;
+  
     try {
-        const result = await db.executeQuery(
-            "INSERT INTO CommentReports (comment_id, user_id, reason_id, created_at) VALUES (?, ?, ?, ?)",
-            [comment_id, user_id, reason_id, created_at]
-        );
-        res.status(201).json({ report_id: result.insertId, message: "댓글 신고가 접수되었습니다." });
+      // 해당 댓글에 대한 사용자별로 이미 신고했는지 여부와 총 신고 수 조회
+      const [reportStatus] = await db.executeQuery(
+        `SELECT 
+           COUNT(*) AS reportCount, 
+           EXISTS(SELECT 1 FROM CommentReports WHERE comment_id = ? AND user_id = ?) AS isReported 
+         FROM CommentReports 
+         WHERE comment_id = ?`,
+        [comment_id, user_id, comment_id]
+      );
+  
+      res.status(200).json({
+        reportCount: reportStatus.reportCount,
+        isReported: reportStatus.isReported === 1,
+      });
     } catch (err) {
-        console.error("Error details:", err); // 에러 로그 출력
-        res.status(500).json({ error: "댓글 신고 접수 실패", details: err });
+      console.error("Error fetching report status:", err);
+      res.status(500).json({ error: "댓글 신고 상태 조회 실패", details: err });
     }
-});
+  });
 
 // 모든 신고 내역 조회 (관리자 전용)
 router.get("/reports", async (req, res) => {
