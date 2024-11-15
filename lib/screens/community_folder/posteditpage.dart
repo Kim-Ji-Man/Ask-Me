@@ -46,7 +46,13 @@ class _PostEditPageState extends State<PostEditPage> {
     );
 
     if (response.statusCode == 200) {
-      Navigator.pop(context, true); // 수정 완료 후 true 반환
+      // 수정된 제목과 내용을 함께 반환
+      Navigator.pop(context, {
+        'title': titleController.text,
+        'content': contentController.text,
+        // 만약 이미지도 수정할 수 있다면 여기에 추가
+        // 'image': imageUrl
+      });
     } else {
       print("Failed to update post. Status code: ${response.statusCode}");
     }

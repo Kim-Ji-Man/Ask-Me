@@ -41,8 +41,8 @@ class Post {
       time: formatDate(json['created_at'] ?? DateTime.now().toString()), // 날짜 형식 변환 적용
       nick: json['nick'] ?? '알 수 없는 사용자',
       views: json['views'] ?? 0,
-      comments: json['comments'] ?? 0,
-      likes: json['likes'] ?? 0,
+      comments: json['comment_count'] ?? 0,
+      likes: json['likes_count'] ?? 0,
       isLiked: json['is_liked'] ?? false,
     );
   }

@@ -89,7 +89,7 @@ class _CommunityState extends State<Community> {
     if (response.statusCode == 200) {
       final List<dynamic> jsonData = json.decode(response.body);
 
-      print("Fetched posts data: $jsonData");
+      print("Fetched posts data12: $jsonData");
 
       setState(() {
         posts = jsonData.map((post) {
