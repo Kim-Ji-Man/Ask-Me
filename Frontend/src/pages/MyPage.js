@@ -65,10 +65,21 @@ const MyPage = () => {
 
   // 취소, 초기값
   const handleCancel = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setUserInfo(initialUserInfo); // 초기값으로 되돌림
+    Swal.fire({
+      title: '정말로 초기화 하시겠습니까?',
+      text: '변경한 내용은 모두 사라집니다.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: '확인',
+      cancelButtonText: '취소'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setUserInfo(initialUserInfo); // 초기값으로 되돌림
+      }
+    });
   };
 
 
@@ -98,6 +109,7 @@ const MyPage = () => {
           text: '사용자 정보가 성공적으로 수정되었습니다.',
           confirmButtonText: '확인'
         });
+        window.location.reload(); // 새로고침
       } else {
         throw new Error('정보 수정 실패');
       }

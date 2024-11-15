@@ -17,9 +17,10 @@ import io
 import datetime
 from collections import defaultdict
 import os
-from db import get_db_cursor
+from db import get_db_connection, get_db_cursor
 from pydantic import BaseModel
 import requests
+import aiohttp
 
 # FastAPI 애플리케이션 생성
 app = FastAPI()
@@ -55,7 +56,7 @@ manager = ConnectionManager()
 # YOLO 모델 초기화 (모델 이름을 함수 내로 옮기지 않음)
 model = YOLO("yolo11n.pt")  # 기본 모델
 
-def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, save_directory="videos"):
+def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, save_directory_vid="../uploads/videos"):
     model = YOLO(model_name)
     
     # 비디오 캡처 시작
@@ -69,7 +70,7 @@ def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, sa
         # 파일 이름 생성
         base_filename = "video"
         extension = ".avi"
-        video_filename = generate_unique_filename(save_directory, base_filename, extension)
+        video_filename = generate_unique_filename(save_directory_vid, base_filename, extension)
 
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         out = cv2.VideoWriter(video_filename, fourcc, 30.0, (640, 480))
@@ -155,61 +156,100 @@ class DetectionData(BaseModel):
 
 @app.post('/detect_weapon')
 async def detect_weapon(data: DetectionData):
-    save_directory_img = "images"
-    save_directory_vid = "videos"
+    save_directory_img = "../uploads/images"
+    save_directory_vid = "../uploads/videos"
+
     level = 'high'
-    
+
+    # 새로운 파일 이름 생성 (단 한번만 호출)
     image_filename = generate_unique_filename(save_directory_img, "captured", ".jpg")
     video_filename = generate_unique_filename(save_directory_vid, "video", ".avi")
 
-    # 경로 생성
-    image_path = image_filename
-    video_path = video_filename
+    async def save_to_database():
+        """데이터베이스에 알림 정보 저장"""
+        try:
+            connection = get_db_connection()
+            cursor = connection.cursor()
 
-
-    # 데이터베이스에 삽입
-    try:
-        with get_db_cursor() as (cursor, connection):
             insert_query = """
                 INSERT INTO Alert_Log (detection_time, detected_weapon, level, device_id, image_path, video_path)
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, (
-            datetime.datetime.now(), 'Knife',  level, data.device_id, image_path, video_path))
-            connection.commit()  # 트랜잭션 커밋
-        print("DB 저장 완료")
+                datetime.datetime.now(), 'Knife', level, data.device_id, image_filename, video_filename))
+            
+            # 생성된 alert_id 가져오기
+            alert_id = cursor.lastrowid
 
-        # Node.js 서버에 알림 요청 전송
+            # Anomaly_Resolution에 데이터 저장
+            insert_anomaly_query = """
+                INSERT INTO Anomaly_Resolution (device_id, anomaly_type, alert_id)
+                VALUES (%s, %s, %s)
+            """
+            cursor.execute(insert_anomaly_query, (
+                data.device_id, '흉기의심', alert_id))
+                
+            connection.commit()
+
+            print("DB 저장 완료")
+            return image_filename, video_filename
+
+        except Exception as db_error:
+            if connection:
+                connection.rollback()  # 오류 시 롤백
+            print(f"DB 저장 중 오류 발생: {db_error}")
+            raise Exception(f"DB 저장 중 오류 발생: {str(db_error)}")
+
+        finally:
+            if cursor:
+                cursor.close()
+            if connection:
+                connection.close()
+
+    async def send_alert_to_node():
+        """Node.js 서버로 알림 요청 전송"""
         alert_payload = {"detected": True, "message": "흉기 감지됨!"}
         try:
-            response = requests.post("https://localhost:5000/alert", json=alert_payload)
-            response.raise_for_status()
-            print("Node.js 서버로 알림 전송 성공")
-        except requests.RequestException as e:
+            async with aiohttp.ClientSession() as session:
+                async with session.post("https://localhost:5000/alert", json=alert_payload, ssl=False) as response:
+                    response.raise_for_status()
+                    print("Node.js 서버로 알림 전송 성공")
+        except Exception as e:
             print(f"Node.js 서버 알림 전송 실패: {e}")
+            raise Exception(f"Node.js 서버 알림 전송 실패: {str(e)}")
 
-        return {"message": "Weapon detection alert saved to database and alert sent"}
-    
+    try:
+        # 데이터베이스 저장 및 알림 전송을 비동기로 병렬 실행
+        image_video_task = asyncio.create_task(save_to_database())
+        alert_task = asyncio.create_task(send_alert_to_node())
+
+        # 두 작업이 모두 완료될 때까지 대기
+        image_filename, video_filename = await asyncio.gather(image_video_task, alert_task)
+
+        return {
+            "message": "Weapon detection alert saved to database and alert sent",
+            "image_path": image_filename,
+            "video_path": video_filename
+        }
+
     except Exception as e:
-        return {"error": f"DB 저장 중 오류 발생: {str(e)}"}
+        return {"error": f"예기치 않은 오류 발생: {str(e)}"}
 
 # 파일 이름 생성 함수
 def generate_unique_filename(directory, base_filename, extension):
-    # 디렉터리 내 파일 탐색 및 일련번호 결정
-    existing_files = [f for f in os.listdir(directory) if f.startswith(base_filename) and f.endswith(extension)]
-    if existing_files:
-        # 이미 존재하는 파일 중 일련번호를 찾아 가장 큰 값에 +1
-        existing_numbers = [int(f.split('_')[-1].split('.')[0]) for f in existing_files]
-        next_number = max(existing_numbers) + 1
-    else:
-        next_number = 1
-
-    # 새로운 파일 이름 생성
-    new_filename = f"{base_filename}_{next_number}{extension}"
-
-    # 경로를 '/' 구분자로 고정
-    directory = directory.replace("\\", "/")  # \를 /로 변환
-    return f"{directory}/{new_filename}"
+    # 디렉터리 내 파일이 존재하는지 확인 및 일련번호 생성
+    os.makedirs(directory, exist_ok=True)
+    next_number = 1
+    
+    while True:
+        new_filename = f"{base_filename}_{next_number}{extension}"
+        full_path = os.path.join(directory, new_filename).replace("\\", "/")
+        
+        # 파일이 존재하지 않으면 해당 이름을 사용
+        if not os.path.exists(full_path):
+            return full_path
+        # 파일이 이미 존재하면 숫자 증가
+        next_number += 1
 
 @app.websocket("/ws/count_stats")
 async def websocket_endpoint(websocket: WebSocket):
@@ -242,7 +282,7 @@ async def capture_image():
     if not ret:
         return JSONResponse(status_code=500, content={"error": "Cannot encode image"})
 
-    save_directory_img = "images"
+    save_directory_img = "../uploads/images"
     os.makedirs(save_directory_img, exist_ok=True)
     
     # 파일 이름 생성

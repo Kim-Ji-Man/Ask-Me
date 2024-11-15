@@ -78,7 +78,7 @@ const Member = () => {
     } else {
       console.log("토큰이 없습니다.");
     }
-  }, [showModal, storeId]);
+  }, [showModal, storeId, token]);
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
