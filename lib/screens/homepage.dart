@@ -3,11 +3,19 @@ import 'RealTimeAlertWidget.dart';
 import 'alert.dart';
 import 'community_folder/community.dart';
 import 'location.dart';
+import 'login.dart';
 import 'mypage.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'mypage_folder/mycommentpage.dart';
+import 'mypage_folder/myinfopage.dart';
+import 'mypage_folder/mypostpage.dart';
+import 'mypage_folder/noticepage.dart';
+import 'mypage_folder/notificationsettings.dart';
+import 'mypage_folder/usersupport.dart';
 
 // JWT 토큰을 디코딩하는 함수
 Future<void> decodeAndPrintToken() async {
@@ -19,19 +27,28 @@ Future<void> decodeAndPrintToken() async {
     return;
   }
 
-  // JWT는 점(.)으로 구분된 세 가지 부분으로 구성됩니다.
   final parts = token.split('.');
   if (parts.length != 3) {
     print("유효하지 않은 토큰 형식입니다.");
     return;
   }
 
-  // payload 부분(두 번째)을 디코딩합니다.
   final payload = json.decode(
     utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
   );
 
   print("JWT 페이로드 데이터: $payload");
+}
+
+class LogoutService {
+  Future<void> logoutUser(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token'); // 토큰 삭제
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => Login()), // 로그인 페이지로 이동
+    );
+  }
 }
 
 class Homepage extends StatefulWidget {
@@ -44,6 +61,7 @@ class _HomepageState extends State<Homepage> {
   bool isSecurity = true; // 경비원 여부 설정 (경비원이면 true, 일반 사용자면 false)
   List<dynamic> alerts = []; // 서버에서 받아온 알림 데이터를 저장할 리스트
   String? userRole;
+  String? nick = "사용자"; // 기본 닉네임 설정
   String baseUrl = dotenv.get("BASE_URL");
 
   @override
@@ -51,6 +69,7 @@ class _HomepageState extends State<Homepage> {
     super.initState();
     decodeAndPrintToken(); // 토큰 디코딩 및 출력
     loadUserRole(); // 사용자 역할에 따른 알림 데이터 로드
+    _loadUserProfile(); // 사용자 프로필 정보 로드
   }
 
   Future<void> loadUserRole() async {
@@ -81,12 +100,45 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  Future<void> _loadUserProfile() async {
+    final userInfo = await fetchUserInfo();
+    if (userInfo != null) {
+      setState(() {
+        nick = userInfo['nick'] ?? "사용자"; // 닉네임 값을 가져와서 설정
+      });
+    }
+  }
+
+  Future<Map<String, String>?> fetchUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return null;
+
+    final parts = token.split('.');
+    if (parts.length != 3) throw Exception('Invalid token');
+
+    final payload = json.decode(
+      utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+    );
+    final userId = payload['userId'];
+    final response = await http.get(Uri.parse('$baseUrl/mypage/info/$userId'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return {
+        "nick": data['nick'],
+        "username": data['username'],
+      };
+    }
+    return null;
+  }
+
   List<Widget> _pages() => [
-    HomePageContent(alerts: alerts), // 알림 데이터를 전달하여 표시
+    HomePageContent(alerts: alerts, nick: nick ?? "사용자"),
     Alert(isSecurity: isSecurity), // 경비원 권한에 따라 알림 표시
     Location(),
     Community(),
-    Mypage(),
+    // Mypage(),
   ];
 
   void _onItemTapped(int index) {
@@ -98,24 +150,24 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.indigo[800], // 전체 배경 색상 설정
       body: Stack(
         children: [
           _pages()[_selectedIndex], // 네비게이션에 따라 페이지를 선택
-          RealTimeAlertWidget(),   // 실시간 알림 위젯 추가 (화면 전체에서 작동)
+          RealTimeAlertWidget(), // 실시간 알림 위젯 추가 (화면 전체에서 작동)
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.indigo[800],
-        unselectedItemColor: Colors.grey[400],
+        backgroundColor: Colors.white, // 배경색 흰색
+        selectedItemColor: Colors.indigo[800], // 선택된 아이템 색상
+        unselectedItemColor: Colors.grey, // 선택되지 않은 아이템 색상
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: '홈'),
           BottomNavigationBarItem(icon: Icon(Icons.notifications), label: '알림 내역'),
           BottomNavigationBarItem(icon: Icon(Icons.location_on), label: '내 근처'),
           BottomNavigationBarItem(icon: Icon(Icons.comment), label: '커뮤니티'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
+          // BottomNavigationBarItem(icon: Icon(Icons.person), label: '마이페이지'),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -125,158 +177,215 @@ class _HomepageState extends State<Homepage> {
 }
 
 class HomePageContent extends StatelessWidget {
-  final PageController _pageController = PageController(initialPage: 1);
-  final int _totalPages = 5;
   final List<dynamic> alerts; // 서버에서 받아온 알림 데이터를 저장
-  String baseUrl = dotenv.get("BASE_URL");
+  final String nick; // 닉네임 값
 
-  HomePageContent({required this.alerts});
+  HomePageContent({required this.alerts, required this.nick});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0, // 그림자 제거
-        centerTitle: true,
-        title: Image.asset(
-          'images/img_logo2.png',
-          height: 70,
+    return Column(
+      children: [
+        // 상단 색상 배경 영역을 대체하는 'AppBar' 형태의 Container
+        Container(
+          color: Colors.indigo[800],
+          padding: EdgeInsets.fromLTRB(20, 24, 20, 10), // 위쪽 여백 추가
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset(
+                  'images/logo2.png', // 로고 이미지
+                  height: 50, // 로고 크기 조정
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.logout, color: Colors.white),
+                onPressed: () {
+                  final logoutService = LogoutService();
+                  logoutService.logoutUser(context);
+                },
+              ),
+            ],
+          ),
         ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              child: Column(
+        // 상단 색상 배경 아래에 프로필 영역 추가
+        Container(
+          width: MediaQuery.of(context).size.width,
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 30),
+          color: Colors.indigo[800], // 배경색을 상단과 맞춤
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.grey[300],
+                child: Icon(Icons.person, color: Colors.white),
+              ),
+              SizedBox(width: 16),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '위기 대응 지침',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.right,
+                    '$nick 님,',
+                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(height: 16),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.25,
-                    child: PageView.builder(
-                      controller: _pageController,
-                      onPageChanged: (index) {
-                        if (index == 0) {
-                          Future.delayed(Duration(milliseconds: 300), () {
-                            _pageController.jumpToPage(_totalPages);
-                          });
-                        } else if (index == _totalPages + 1) {
-                          Future.delayed(Duration(milliseconds: 300), () {
-                            _pageController.jumpToPage(1);
-                          });
-                        }
-                      },
-                      itemCount: _totalPages + 2,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return buildCard(context, _totalPages - 1);
-                        } else if (index == _totalPages + 1) {
-                          return buildCard(context, 0);
-                        } else {
-                          return buildCard(context, index - 1);
-                        }
-                      },
-                    ),
+                  Text(
+                    '안녕하세요',
+                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: 24),
-            Text(
-              '알림내역',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Expanded(
-              child: ListView.builder(
-                itemCount: alerts.length,
-                itemBuilder: (context, index) {
-                  final alert = alerts[index];
-                  return buildNotificationItem(alert);
-                },
+            ],
+          ),
+        ),
+        // 흰색 배경의 카드 영역
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.38,
+                        child: _buildCard('전체 알림수', '83', Icons.notifications_active, Color(0xFF569BFA)),
+                      ),
+                      SizedBox(width: 20),
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.38,
+                        child: _buildCard('당일 알림수', '0', Icons.notifications_active, Color(0xFF569BFA)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  _buildMenuGrid(context),
+                ],
+              ),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  Widget buildNotificationItem(dynamic alert) {
-    // Check if 'image_url' is null and provide a fallback
-    String? imagePath = alert['image_path'];  // Fetch the image path from alert
-    String baseUrl = dotenv.get("BASE_URL"); // Get base URL from environment variables
-
-    // Construct the full image URL or fallback to a local asset
-    String correctedPath = imagePath!.replaceAll(RegExp(r'^\.\.'), '');
-    String imageUrl = imagePath != null ? '$baseUrl$correctedPath' : 'images/img_logo.png';
-
-    // Format the time ago string
-    String timeAgo = formatTimeAgo(alert['detection_time']);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
+  Widget _buildCard(String title, String subtitle, IconData iconData, Color bgColor) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor.withOpacity(0.15), // 전체 박스 배경색 설정
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
         children: [
-          // Use Image.network for server images and Image.asset for local fallback
-          imagePath != null
-              ? Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover)
-              : Image.asset(imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-          SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('흉기소지자감지', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              Text(timeAgo),
-            ],
+          // 아이콘 부분
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: bgColor, // 상단 부분에 같은 배경색 설정
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: Icon(iconData, size: 28, color: Colors.white),
+          ),
+          // 텍스트 부분
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Column(
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-
-  Widget buildCard(BuildContext context, int index) {
-    List<String> imagePaths = [
-      'images/card1.png',
-      'images/card2.png',
-      'images/card3.png',
-      'images/card4.png',
-      'images/card5.png',
-    ];
-
-    return Card(
-      color: Colors.white,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: SizedBox(
-        width: double.infinity,
-        height: 200,
-        child: Image.asset(imagePaths[index], fit: BoxFit.cover),
-      ),
-    );
-  }
 }
 
-String formatTimeAgo(String detectionTime) {
-  DateTime detectedTime = DateTime.parse(detectionTime);
-  Duration difference = DateTime.now().difference(detectedTime);
+// 메뉴 그리드 위젯
+Widget _buildMenuGrid(BuildContext context) {
+  // 각 아이템에 페이지를 연결
+  List<Map<String, dynamic>> menuItems = [
+    {"icon": Icons.campaign, "label": "공지사항", "color": Colors.red, "page": NoticePage()},
+    {"icon": Icons.person, "label": "내정보", "color": Colors.indigo, "page": MyInfoPage()},
+    {"icon": Icons.notifications, "label": "알림설정", "color": Colors.orange, "page": NotificationSettings()},
+    {"icon": Icons.article, "label": "내가작성한글", "color": Colors.teal, "page": MyPostPage()},
+    {"icon": Icons.question_answer, "label": "내가작성한댓글", "color": Colors.indigoAccent, "page": MyCommentPage()},
+    {"icon": Icons.support_agent, "label": "고객지원", "color": Colors.purple, "page": UserSupport()},
+  ];
 
-  if (difference.inDays > 0) {
-    return '${difference.inDays}일 전';
-  } else if (difference.inHours > 0) {
-    return '${difference.inHours}시간 전';
-  } else if (difference.inMinutes > 0) {
-    return '${difference.inMinutes}분 전';
-  } else {
-    return '방금 전';
-  }
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: NeverScrollableScrollPhysics(),
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 3,
+      childAspectRatio: 1.2,
+    ),
+    itemCount: menuItems.length,
+    itemBuilder: (context, index) {
+      return GestureDetector(
+        onTap: () {
+          // 페이지로 이동
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => menuItems[index]["page"]),
+          );
+        },
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                menuItems[index]['icon'],
+                size: 30,
+                color: menuItems[index]['color'], // 각 아이콘 색상 설정
+              ),
+            ),
+            SizedBox(height: 6),
+            Text(
+              menuItems[index]['label'],
+              style: TextStyle(fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }

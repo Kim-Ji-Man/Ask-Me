@@ -18,13 +18,13 @@ class Mypage extends StatefulWidget {
 }
 
 
+
+
+
 class LogoutService {
   Future<void> logoutUser(BuildContext context) async {
-    // SharedPreferences에서 토큰 삭제
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
-
-    // 로그인 페이지로 이동
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => Login()),
@@ -42,6 +42,7 @@ class _MypageState extends State<Mypage> {
     super.initState();
     _loadUserProfile();
   }
+
 
   Future<void> _loadUserProfile() async {
     final userInfo = await fetchUserInfo();
@@ -64,17 +65,11 @@ class _MypageState extends State<Mypage> {
     final payload = json.decode(
       utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
     );
-    print("JWT 페이로드 데이터: $payload");
     final userId = payload['userId'];
-    print("Userid: $userId");
     final response = await http.get(Uri.parse('$BaseUrl/mypage/info/$userId'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      print("Fetched user data: $data"); // 디버깅 용도
-      print("Nickname: ${data['nick']}, Username: ${data['username']},$userId");
-
-
       return {
         "nick": data['nick'],
         "username": data['username'],
@@ -92,15 +87,21 @@ class _MypageState extends State<Mypage> {
         elevation: 0,
         title: Text(
           '마이페이지',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
         ),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.black),
       ),
       body: ListView(
+        padding: EdgeInsets.all(16),
         children: [
           _buildProfileSection(),
-          _buildOptionsSection(context),
+          SizedBox(height: 20),
+          _buildQuickActions(context),
+          SizedBox(height: 20),
           _buildAdBanner(),
-          _buildListTiles(context),
+          SizedBox(height: 20),
+          _buildActivityTiles(context),
         ],
       ),
     );
@@ -108,18 +109,25 @@ class _MypageState extends State<Mypage> {
 
   Widget _buildProfileSection() {
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.grey[300],
+            child: Icon(Icons.person, size: 30, color: Colors.white),
+          ),
+          SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 nick,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
                 username,
@@ -128,18 +136,17 @@ class _MypageState extends State<Mypage> {
             ],
           ),
           Spacer(),
-          SizedBox(
-            width: 80,
-            child: ElevatedButton(
-              onPressed: () {
-                final logoutService = LogoutService();
-                logoutService.logoutUser(context);
-              },
-              child: Text('로그아웃'),
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.blue[500],
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          ElevatedButton(
+            onPressed: () {
+              final logoutService = LogoutService();
+              logoutService.logoutUser(context);
+            },
+            child: Text('로그아웃'),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.indigo[800],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
           ),
@@ -148,50 +155,53 @@ class _MypageState extends State<Mypage> {
     );
   }
 
-  Widget _buildOptionsSection(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 10),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildOptionItem(Icons.campaign, '공지사항', context, NoticePage()),
-          _buildOptionItem(Icons.person, '내 정보', context, MyInfoPage()),
-          _buildOptionItem(Icons.notifications, '알림설정', context, NotificationSettings()),
-        ],
-      ),
+  Widget _buildQuickActions(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildQuickActionItem(Icons.campaign, '공지사항', context, NoticePage()),
+        _buildQuickActionItem(Icons.person, '내 정보', context, MyInfoPage()),
+        _buildQuickActionItem(Icons.notifications, '알림설정', context, NotificationSettings()),
+      ],
     );
   }
 
-  Widget _buildOptionItem(IconData icon, String label, BuildContext context, Widget? destinationPage) {
+  Widget _buildQuickActionItem(IconData icon, String label, BuildContext context, Widget destinationPage) {
     return Column(
       children: [
         IconButton(
-          icon: Icon(icon, size: 35, color: Colors.black),
+          icon: Icon(icon, size: 32, color: Colors.indigo[800]),
           onPressed: () {
-            if (destinationPage != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => destinationPage),
-              );
-            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => destinationPage),
+            );
           },
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 8),
         Text(label, style: TextStyle(fontSize: 12)),
       ],
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey[800]),
+      ),
+    );
+  }
+
+
   Widget _buildAdBanner() {
     return Container(
-      margin: EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: 10),
       height: 150,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(12),
         image: DecorationImage(
           image: AssetImage('assets/banner.png'),
           fit: BoxFit.cover,
@@ -200,22 +210,25 @@ class _MypageState extends State<Mypage> {
     );
   }
 
-  Widget _buildListTiles(BuildContext context) {
+
+
+  Widget _buildActivityTiles(BuildContext context) {
     return Column(
       children: [
-        _buildListTile('내가 작성한 글', Icons.article, context, MyPostPage(
-        )),
-        _buildListTile('내가 작성한 댓글', Icons.chat_outlined, context, MyCommentPage(
-        )),
-        _buildListTile('고객 지원', Icons.headset_mic, context, UserSupport()),
+        _buildListTile('내가 작성한 글', Icons.article, context, MyPostPage()),
+        _buildListTile('내가 작성한 댓글', Icons.chat_outlined, context, MyCommentPage()),
+        _buildListTile('고객 지원', Icons.support_agent, context, UserSupport()),
       ],
     );
   }
 
+
   Widget _buildListTile(String title, IconData icon, BuildContext context, Widget destinationPage) {
     return ListTile(
-      leading: Icon(icon, color: Colors.black),
-      title: Text(title),
+      contentPadding: EdgeInsets.symmetric(horizontal: 20),
+      leading: Icon(icon, color: Colors.indigo[800]),
+      title: Text(title, style: TextStyle(fontSize: 16)),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
       onTap: () {
         Navigator.push(
           context,

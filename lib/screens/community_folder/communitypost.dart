@@ -153,7 +153,7 @@ class _CommunityPostState extends State<CommunityPost> {
               createPost(_titleController.text, _contentController.text);
             },
             child: Text(
-              '완료',
+              '등록',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 16,
@@ -201,14 +201,14 @@ class _CommunityPostState extends State<CommunityPost> {
                 IconButton(
                   onPressed: _pickImageFromCamera,
                   icon: Icon(Icons.photo_camera),
-                  color: Colors.black,
+                  color: Colors.indigo[800],
                   iconSize: 30,
                 ),
                 SizedBox(width: 10),
                 IconButton(
                   onPressed: _requestPermissionAndPickImage,
                   icon: Icon(Icons.photo),
-                  color: Colors.black,
+                  color: Colors.indigo[800],
                   iconSize: 30,
                 ),
               ],

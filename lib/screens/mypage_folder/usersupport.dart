@@ -93,7 +93,7 @@ class _UserSupportState extends State<UserSupport> {
             ElevatedButton(
               onPressed: _submitSupportRequest,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isButtonPressed ? Colors.blue[500] : Colors.blue, // 버튼 색상 변경
+                backgroundColor: isButtonPressed ? Colors.blue[500] : Colors.indigo[800], // 버튼 색상 변경
                 minimumSize: Size(double.infinity, 50),
               ),
               child: Text('제출하기', style: TextStyle(color: Colors.white),),

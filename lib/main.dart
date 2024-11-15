@@ -103,6 +103,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey, // GlobalKey 설정
       home: Initial(), // 초기 화면 설정
       theme: ThemeData(

@@ -21,9 +21,9 @@ class _SignUpState extends State<SignUp> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5), // 밝은 회색 배경으로 변경
+      backgroundColor: Colors.white, // 밝은 회색 배경으로 변경
       appBar: AppBar(
-        backgroundColor: Color(0xFFF5F5F5), // 남색 헤더
+        backgroundColor: Colors.white, // 남색 헤더
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),

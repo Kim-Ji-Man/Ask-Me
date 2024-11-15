@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:flutter_askme/models/post.dart';
-
+import 'dart:async';
 
 class Community extends StatefulWidget {
   const Community({super.key});
@@ -18,16 +18,40 @@ class Community extends StatefulWidget {
 }
 
 class _CommunityState extends State<Community> {
+  final PageController _pageController = PageController(initialPage: 1);
+  final int _totalPages = 5;
   List<Post> posts = [];
   String BaseUrl = dotenv.get("BASE_URL");
+  late Timer _timer;
 
   @override
   void initState() {
     super.initState();
-    fetchPosts(); // 앱 시작 시 게시글 가져오기
+    fetchPosts();
+    _startAutoPageView();
   }
 
-  // 토큰을 가져오는 함수
+  @override
+  void dispose() {
+    _timer.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoPageView() {
+    _timer = Timer.periodic(Duration(seconds: 3), (timer) {
+      int nextPage = _pageController.page!.toInt() + 1;
+      if (nextPage > _totalPages) {
+        nextPage = 1;
+      }
+      _pageController.animateToPage(
+        nextPage,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -35,14 +59,13 @@ class _CommunityState extends State<Community> {
     return token;
   }
 
-  // jwt_decode 패키지를 사용하여 토큰에서 userId 추출
   Future<int?> getUserIdFromToken() async {
     final token = await getToken();
     if (token == null) return null;
 
     try {
       Map<String, dynamic> payload = Jwt.parseJwt(token);
-      print("Decoded token payload: $payload"); // 페이로드 전체 출력
+      print("Decoded token payload: $payload");
 
       final userId = payload['userId'] ?? payload['user_id'];
       print("Extracted userId: $userId");
@@ -53,11 +76,9 @@ class _CommunityState extends State<Community> {
     }
   }
 
-
   Future<void> fetchPosts() async {
     final token = await getToken();
 
-    // 게시물 목록 가져오기
     final response = await http.get(
       Uri.parse('$BaseUrl/community/posts'),
       headers: {
@@ -76,33 +97,11 @@ class _CommunityState extends State<Community> {
         }).toList();
       });
 
-      // 각 게시물에 대해 좋아요 상태 확인
       for (int i = 0; i < posts.length; i++) {
         await _fetchLikeStatus(posts[i].id, i);
       }
     } else {
       throw Exception('Failed to load posts');
-    }
-  }
-
-  Future<void> createPost(Post post) async {
-    final response = await http.post(
-      Uri.parse('$BaseUrl/community/posts'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: json.encode({
-        'user_id': 1, // 적절한 user_id로 수정
-        'title': post.title,
-        'content': post.content,
-        'image': null, // 이미지 처리가 필요한 경우 추가
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      fetchPosts(); // 새 게시글 추가 후 목록 갱신
-    } else {
-      throw Exception('Failed to create post');
     }
   }
 
@@ -161,8 +160,8 @@ class _CommunityState extends State<Community> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       setState(() {
-        posts[index].likes = data['likeCount'];  // 게시물의 좋아요 수
-        posts[index].isLiked = data['isLiked'];  // 사용자의 좋아요 여부
+        posts[index].likes = data['likeCount'];
+        posts[index].isLiked = data['isLiked'];
       });
     } else {
       print('Failed to fetch like status');
@@ -174,22 +173,34 @@ class _CommunityState extends State<Community> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '커뮤니티',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false, // 뒤로가기 화살표 제거
+        title: Align(
+          alignment: Alignment.centerLeft, // 왼쪽 정렬
+          child: Text(
+            '커뮤니티',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0), // 좌우 20px, 상하 24px 여백 설정
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 4),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.25,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _totalPages + 2,
+                itemBuilder: (context, index) {
+                  if (index == 0) return buildCard(context, _totalPages - 1);
+                  if (index == _totalPages + 1) return buildCard(context, 0);
+                  return buildCard(context, index - 1);
+                },
+              ),
+            ),
+            SizedBox(height: 16),
             Expanded(
               child: ListView.builder(
                 itemCount: posts.length,
@@ -197,7 +208,6 @@ class _CommunityState extends State<Community> {
                   return GestureDetector(
                     onTap: () async {
                       final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}'));
-
                       if (response.statusCode == 200) {
                         final postDetail = Post.fromJson(json.decode(response.body));
                         final result = await Navigator.push(
@@ -207,89 +217,85 @@ class _CommunityState extends State<Community> {
                           ),
                         );
                         if (result == true) {
-                          fetchPosts(); // 수정 또는 좋아요 상태 변경 후 목록 갱신
+                          fetchPosts();
                         }
                       } else {
                         throw Exception('Failed to load post detail');
                       }
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            posts[index].title,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            posts[index].content,
-                            style: TextStyle(fontSize: 14, color: Colors.black87),
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Text(
-                                posts[index].location,
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                posts[index].time,
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      posts[index].isLiked ? Icons.favorite : Icons.favorite_border,
-                                      color: posts[index].isLiked ? Colors.red : Colors.grey,
-                                      size: 18,
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(0), // 직각 모양 설정
+                      ),
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      elevation: 0, // 쉐도우 제거
+                      color: Colors.blue[50],
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[200],
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    posts[index].nick,
+                                    style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              posts[index].title,
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              posts[index].content,
+                              style: TextStyle(fontSize: 14, color: Colors.black87),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  '${posts[index].time} · 조회 ${posts[index].views}',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        posts[index].isLiked ? Icons.favorite : Icons.favorite_border,
+                                        color: posts[index].isLiked ? Colors.red : Colors.grey,
+                                        size: 18,
+                                      ),
+                                      onPressed: () {
+                                        toggleLike(posts[index].id, posts[index].isLiked, index);
+                                      },
                                     ),
-                                    onPressed: () {
-                                      toggleLike(posts[index].id, posts[index].isLiked, index);
-                                    },
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    posts[index].likes.toString(),
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 20),
-                              Row(
-                                children: [
-                                  Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey[600]),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    posts[index].comments.toString(),
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(width: 20),
-                              Row(
-                                children: [
-                                  Icon(Icons.remove_red_eye_outlined, size: 14, color: Colors.grey[600]),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    posts[index].views.toString(),
-                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Divider(),
-                        ],
+                                    Text(
+                                      posts[index].likes.toString(),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey[600]),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      posts[index].comments.toString(),
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -306,12 +312,36 @@ class _CommunityState extends State<Community> {
             MaterialPageRoute(builder: (context) => CommunityPost()),
           );
         },
-        child: Icon(Icons.edit, size: 24),
-        backgroundColor: Colors.blue[600],
+        child: Icon(Icons.edit, size: 24, color: Colors.white),
+        backgroundColor: Colors.indigo[600],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(50),
         ),
       ),
     );
   }
+}
+
+Widget buildCard(BuildContext context, int index) {
+  List<String> imagePaths = [
+    'images/card1.png',
+    'images/card2.png',
+    'images/card3.png',
+    'images/card4.png',
+    'images/card5.png',
+  ];
+
+  return Card(
+    color: Colors.white,
+    elevation: 4,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+    child: SizedBox(
+      width: double.infinity,
+      height: 200,
+      child: Image.asset(
+        imagePaths[index],
+        fit: BoxFit.cover,
+      ),
+    ),
+  );
 }

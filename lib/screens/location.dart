@@ -94,7 +94,7 @@ class _LocationState extends State<Location> {
         customOverlayId: markerId,
         latLng: position,
         content:
-            '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
+        '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
             '<p style="color: white; font-size: 16px; font-weight: bold; margin: 0; text-align: center;">${facility['name']}</p>'
             '<p style="color: #f1c40f; margin: 5px 0; text-align: center; font-size: 14px;">${facility['type']}</p>'
             '<div style="border-top: 1px solid #f1c40f; margin-top: 5px;"></div>'
@@ -189,7 +189,7 @@ class _LocationState extends State<Location> {
               customOverlayId: markerId,
               latLng: position,
               content:
-                  '<div style="background-color: rgba(0,0,0,0.8); border-radius:10px;padding :10px;width :200px;">'
+              '<div style="background-color: rgba(0,0,0,0.8); border-radius:10px;padding :10px;width :200px;">'
                   '<p style="color:white;font-size :16px;font-weight:bold;margin :0;text-align:center;">흉기감지</p>'
                   '<p style="color:#f1c40f;margin :5px;text-align:center;font-size :14px;">${facility['store_name']}</p>'
                   '<div style="border-top :1px solid #f1c40f;margin-top :5px;"></div>'
@@ -205,7 +205,7 @@ class _LocationState extends State<Location> {
       if (filteredMarkers.isEmpty) {
         _showAlertDialog(context); // AlertDialog 호출
       }
-      else{
+      else {
         _showAlertDialog2(context);
       }
     }
@@ -244,7 +244,7 @@ class _LocationState extends State<Location> {
             customOverlayId: markerId,
             latLng: position,
             content:
-                '<div style="background-color :rgba(0 ,0 ,0 ,0.8);border-radius :.10 px;padding :.10 px;width :.200 px;">'
+            '<div style="background-color :rgba(0 ,0 ,0 ,0.8);border-radius :.10 px;padding :.10 px;width :.200 px;">'
                 '<p style ="color:white;font-size :.16 px;font-weight:bold;margin :.text-align:center;">${facility['name']} </p>'
                 '<p style ="color:#f1c40f ;margin :.5 px;text-align:center;font-size :.14 px;">${facility['type']} </ p>'
                 '<div style ="border-top :.1 pxsolid # f1c40f ;margin-top :.5 px;">'
@@ -314,22 +314,31 @@ class _LocationState extends State<Location> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        // 뒤로가기 화살표 제거
         title: Align(
-          alignment: Alignment.centerLeft,
+          alignment: Alignment.centerLeft, // 텍스트 왼쪽 정렬
           child: Text(
-            '지도',
+            '내 근처',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: false, // 앱바 타이틀 왼쪽 정렬
       ),
       body: Container(
         child: Stack(
           children: [
             Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height,
               child: KakaoMap(
                 onMapCreated: (KakaoMapController controller) {
                   mapController = controller;
@@ -341,15 +350,16 @@ class _LocationState extends State<Location> {
                 circles: circles,
                 customOverlays: customOverlays
                     .where((overlay) =>
-                        overlay.customOverlayId == selectedOverlayId)
+                overlay.customOverlayId == selectedOverlayId)
                     .toList(),
                 onMarkerTap: (markerId, latLng, zoomLevel) {
                   setState(() {
                     selectedOverlayId =
-                        (selectedOverlayId == markerId) ? '' : markerId;
+                    (selectedOverlayId == markerId) ? '' : markerId;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('마커 클릭됨:\n\n$latLng')));
+                      SnackBar(content: Text('마커 클릭됨:\n\n$latLng'))
+                  );
                 },
               ),
             ),
