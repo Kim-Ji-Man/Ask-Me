@@ -129,6 +129,23 @@ router.delete('/comments/:commentId', async (req, res) => {
 
 });
 
+router.put('/comments/edit/:commentId', async (req, res) => {
+  const { commentId } = req.params;
+  const { content } = req.body;
+
+  const sql = 'UPDATE Comments SET content = ? WHERE comment_id = ?';
+
+  try {
+    const results = await db.executeQuery(sql, [content, commentId]);
+    res.status(200).json({ message: 'Comment updated successfully', results });
+    console.log("댓글 수정 라우터");
+  } catch (err) {
+    console.error('Error updating comment:', err);
+    return res.status(500).send('Error updating comment');
+  }
+});
+
+
 /**
  * @swagger
  * tags:

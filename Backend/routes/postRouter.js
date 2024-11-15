@@ -112,11 +112,17 @@ ORDER BY Posts.created_at DESC;
 router.put("/posts/:id", async (req, res) => {
   const { id } = req.params;
   const { title, content, image } = req.body;
+
+  if (!title || !content) {
+    return res.status(400).json({ error: "Title and content are required." });
+  }
+
   try {
     const result = await db.executeQuery(
       "UPDATE Posts SET title = ?, content = ?, image = ? WHERE post_id = ?",
-      [title, content, image, id]
+      [title, content, image || null, id]
     );
+    
     if (result.affectedRows) {
       res.status(200).json({ message: "게시글이 수정되었습니다." });
     } else {
