@@ -11,11 +11,25 @@ import 'dart:io';
 import 'package:flutter_askme/models/post.dart';
 
 class Comment {
+  int id;  // 댓글 ID 추가
   String content;
   String time;
   String nickname;
+  int? likeCount;  // 좋아요 수
+  bool isLiked;   // 좋아요 여부
+  bool isReported; // 신고 여부
+  int? reportCount; // 신고 수 추가
 
-  Comment(this.content, this.time, this.nickname);
+  Comment({
+    required this.id,
+    required this.content,
+    required this.time,
+    required this.nickname,
+    this.likeCount, // 기본값 설정
+    this.isLiked = false, // 기본값 설정
+    this.isReported = false, // 기본값 설정
+    this.reportCount = 0, // 신고 수 기본값 설정
+  });
 }
 
 class PostDetail extends StatefulWidget {
@@ -32,30 +46,31 @@ class _PostDetailState extends State<PostDetail> {
   String BaseUrl = dotenv.get("BASE_URL");
   String? currentUserId;
   bool isLiked = false;
+  bool isReported = false;
   int likeCount = 0;
+  int reportCount = 0;
   String? nick;
 
   @override
   void initState() {
     super.initState();
-    isLiked = widget.post.isLiked;
-    likeCount = widget.post.likes;
-    fetchComments();
 
-    print("Passed currentUserId from MyPostPage: ${widget.currentUserId}");
-    print("Post Author userId: ${widget.post.userId}");
-    print("Post ID: ${widget.post.id}"); // post.id 값을 확인하는 print 문 추가
-    print("Post Title: ${widget.post.title}");
-    print("Post Content: ${widget.post.content}");
+    // currentUserId를 먼저 불러온 후 나머지 작업 수행
+    fetchCurrentUserId().then((_) {
+      if (currentUserId != null) {
+        fetchComments();
+        fetchLikeStatus();
+        fetchReportStatus();
 
-    // 조건에 따라 userId 또는 currentUserId로 nick을 가져오기
-    if (widget.post.userId.isEmpty) {
-      fetchNickByUserId(widget.currentUserId);
-    } else {
-      fetchNickByUserId(widget.post.userId);
-    }
-
-    fetchCurrentUserId();
+        if (widget.post.userId.isEmpty) {
+          fetchNickByUserId(currentUserId);
+        } else {
+          fetchNickByUserId(widget.post.userId);
+        }
+      } else {
+        print("Failed to load user ID");
+      }
+    });
   }
 
   final List<Comment> comments = [];
@@ -65,6 +80,12 @@ class _PostDetailState extends State<PostDetail> {
   Future<void> fetchNickByUserId(String? userId) async {
     if (userId == null) {
       print("User ID is null, cannot fetch nick.");
+      return;
+    }
+
+    final int parsedUserId = int.tryParse(userId) ?? -1;  // String을 int로 변환 시도
+    if (parsedUserId == -1) {
+      print("Invalid user ID format.");
       return;
     }
 
@@ -111,14 +132,219 @@ class _PostDetailState extends State<PostDetail> {
               ? DateFormat('yy.MM.dd HH:mm').format(DateTime.parse(comment['created_at']))
               : "시간 없음";
           return Comment(
-              comment['content'] ?? "내용 없음",
-              formattedTime,
-              comment['nick'] ?? "알 수 없는 사용자"
+            id: comment['comment_id'],
+            content: comment['content'] ?? "내용 없음",
+            time: formattedTime,
+            nickname: comment['nick'] ?? "알 수 없는 사용자",
+            likeCount: comment['likes_count'] ?? 0,
+            isLiked: comment['is_liked'] ?? false,
+            isReported: comment['is_reported'] ?? false, // 서버에서 받은 신고 상태
+            reportCount: comment['report_count'] ?? 0,   // 서버에서 받은 신고 수
           );
         }).toList());
       });
+
+      // 댓글을 불러온 후 좋아요 및 신고 상태를 가져옴
+      await fetchCommentLikeStatus();
     } else {
       print("Failed to load comments. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<void> fetchCommentLikeStatus() async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot fetch comment like status.");
+      return;
+    }
+
+    // 서버로부터 댓글의 좋아요 상태를 가져옴
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/comment-likes/stat'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      print("서버 응답: $data");
+
+      setState(() {
+        // 서버에서 받은 댓글 데이터 처리
+        if (data['comments'] is List) {
+          final List<dynamic> commentList = data['comments']; // 댓글 리스트
+
+          for (var commentData in commentList) {
+            // 각 댓글의 좋아요 상태 업데이트
+            final comment = comments.firstWhere((c) => c.id == commentData['comment_id']);
+            comment.isLiked = commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
+            comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
+          }
+        } else if (data['comments'] is Map) {
+          // 단일 객체일 경우 처리 (이 부분은 필요 없을 수도 있음)
+          final commentData = data['comments'];
+          final comment = comments.firstWhere((c) => c.id == commentData['comment_id']);
+          comment.isLiked = commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
+          comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
+        } else {
+          print('댓글 데이터 형식이 올바르지 않습니다.');
+        }
+      });
+
+    } else {
+      print('Failed to load comment like status. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<void> toggleCommentLike(int commentId) async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot toggle like.");
+      return;
+    }
+
+    // 댓글 좋아요 상태 토글 요청
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/comment-likes/toggle'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({
+        "user_id": currentUserId,
+        "comment_id": commentId,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+      print("$data 댓글 상태나오니????");
+
+      setState(() {
+        final comment = comments.firstWhere((c) => c.id == commentId);
+
+        // 서버에서 받은 isLiked 값으로 설정하고 기본값 false로 설정
+        comment.isLiked = data['isLiked'] ?? false;
+
+        // likeCount가 null이면 기본값을 설정한 후 증가/감소
+        if (comment.isLiked) {
+          comment.likeCount = (comment.likeCount ?? 0) + 1; // 좋아요 수 증가
+        } else {
+          comment.likeCount = (comment.likeCount ?? 0) - 1; // 좋아요 수 감소
+        }
+      });
+
+    } else {
+      print("Failed to toggle like. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<void> reportComment(int commentId, List<int> reasonIds) async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot report comment.");
+      return;
+    }
+
+    // Optimistically update UI before server response
+    setState(() {
+      final comment = comments.firstWhere((c) => c.id == commentId);
+      comment.isReported = true;
+      comment.reportCount = (comment.reportCount ?? 0) + 1; // Increment report count
+    });
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/comment-reports/comment'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({
+        "comment_id": commentId,
+        "user_id": currentUserId,
+        "reason_ids": reasonIds,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+
+      // Update UI with actual data from server
+      setState(() {
+        final comment = comments.firstWhere((c) => c.id == commentId);
+        if (data.containsKey('reportCount')) {
+          comment.reportCount = data['reportCount'];
+        }
+      });
+
+      print("Report successful!");
+    } else {
+      // Revert optimistic update if request fails
+      setState(() {
+        final comment = comments.firstWhere((c) => c.id == commentId);
+        comment.isReported = false;
+        comment.reportCount = (comment.reportCount ?? 1) - 1; // Revert report count
+      });
+      print("Failed to report comment. Status code: ${response.statusCode}");
+    }
+  }
+  Future<void> toggleCommentReport(int commentId) async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot toggle report.");
+      return;
+    }
+
+    // Optimistically toggle UI state before server response
+    setState(() {
+      final comment = comments.firstWhere((c) => c.id == commentId);
+
+      // Toggle isReported and adjust reportCount accordingly
+      if (comment.isReported == true) {
+        comment.isReported = false;
+        if (comment.reportCount != null && comment.reportCount! > 0) {
+          comment.reportCount = comment.reportCount! - 1; // Decrease report count
+        }
+      } else {
+        comment.isReported = true;
+        comment.reportCount = (comment.reportCount ?? 0) + 1; // Increase report count
+      }
+    });
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/comment-reports/status'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({
+        "comment_id": commentId,
+        "user_id": currentUserId,
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+
+      setState(() {
+        final comment = comments.firstWhere((c) => c.id == commentId);
+        // Update with actual server data
+        comment.isReported = data['isReported'] ?? false;
+
+        if (data['isReported']) {
+          if (comment.reportCount != null) {
+            comment.reportCount = data['reportCount'];
+          } else {
+            comment.reportCount = 1; // Default to 1 if no count exists
+          }
+        } else {
+          if (comment.reportCount != null && comment.reportCount! > 0) {
+            comment.reportCount = data['reportCount'];
+          } else {
+            comment.reportCount = 0; // Default to 0
+          }
+        }
+      });
+
+    } else if (response.statusCode == 403) {
+      print("Already reported this comment.");
+    } else {
+      print("Failed to toggle report. Status code: ${response.statusCode}");
     }
   }
 
@@ -203,43 +429,179 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
+  Future<void> fetchLikeStatus() async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot toggle like1.");
+      return;
+    }
+
+      final response = await http.post(
+        Uri.parse('$BaseUrl/community/likes/stat'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          isLiked = data['isLiked']; // 서버에서 받아온 좋아요 상태로 업데이트
+          likeCount = data['likeCount']; // 좋아요 개수 업데이트
+        });
+      } else {
+        print('Failed to load like status. Status code: ${response.statusCode}');
+      }
+
+  }
+
   Future<void> toggleLike() async {
     final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
 
-    if (isLiked) {
-      final response = await http.delete(
-        Uri.parse('$BaseUrl/community/likes'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({"post_id": widget.post.id}),
-      );
-      if (response.statusCode == 200) {
-        setState(() {
-          isLiked = false;
-          likeCount--;
-        });
-      } else {
-        print("Failed to remove like. Status code: ${response.statusCode}");
-      }
+    if (currentUserId == null) {
+      print("User ID is null. Cannot toggle like.");
+      return;
+    }
+
+    // Send request to toggle like status
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/likes/toggle'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = json.decode(response.body);
+
+      setState(() {
+        // Toggle the isLiked state based on response
+        isLiked = !isLiked; // Toggle like status
+        if (isLiked) {
+          likeCount++; // Increment like count if liked
+        } else {
+          likeCount--; // Decrement like count if unliked
+        }
+      });
+
+      print("Like status updated: isLiked=$isLiked, likeCount=$likeCount");
     } else {
-      final response = await http.post(
-        Uri.parse('$BaseUrl/community/likes'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({"post_id": widget.post.id}),
-      );
-      if (response.statusCode == 201) {
-        setState(() {
-          isLiked = true;
-          likeCount++;
-        });
-      } else {
-        print("Failed to add like. Status code: ${response.statusCode}");
-      }
+      print("Failed to toggle like. Status code: ${response.statusCode}");
+    }
+  }
+
+  Future<void> showReportDialog() async {
+    final List<String> reportOptions = ['광고/홍보', '기타', '도배', '욕설/비방', '음란성'];
+    List<bool> selectedOptions = List<bool>.filled(reportOptions.length, false); // 선택 여부를 저장하는 리스트
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("신고 사유를 선택해주세요"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 신고 옵션 리스트
+                  ...reportOptions.asMap().entries.map((entry) {
+                    int index = entry.key;
+                    String option = entry.value;
+
+                    return CheckboxListTile(
+                      title: Text(option),
+                      value: selectedOptions[index],
+                      onChanged: (bool? value) {
+                        setState(() {
+                          selectedOptions[index] = value ?? false; // 체크박스 상태 변경
+                        });
+                      },
+                    );
+                  }).toList(),
+                ],
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              child: Text("취소"),
+              onPressed: () {
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+            TextButton(
+              child: Text("확인"),
+              onPressed: () {
+                List<int> selectedReasonIds = [];
+                for (int i = 0; i < reportOptions.length; i++) {
+                  if (selectedOptions[i]) {
+                    selectedReasonIds.add(i + 1); // reason_id는 1부터 시작한다고 가정
+                  }
+                }
+
+                if (selectedReasonIds.isNotEmpty) {
+                  reportPost(selectedReasonIds); // 선택된 사유로 신고 요청 보내기
+                }
+
+                Navigator.of(context).pop(); // 다이얼로그 닫기
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> fetchReportStatus() async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+
+    if (currentUserId == null) {
+      print("User ID is null. Cannot fetch report status.");
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/reports/status'),
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        isReported = data['isReported']; // 서버에서 받아온 신고 여부로 업데이트
+        reportCount = data['reportCount']; // 서버에서 받아온 신고 횟수로 업데이트
+      });
+      print("Fetched report status: isReported=$isReported, reportCount=$reportCount");
+    } else {
+      print('Failed to load report status. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<void> reportPost(List<int> reasonIds) async {
+    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    if (currentUserId == null) {
+      print("User ID is null. Cannot report post.");
+      return;
+    }
+
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/reports'), // 서버의 신고 API 엔드포인트
+      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      body: json.encode({
+        "post_id": widget.post.id,
+        "user_id": currentUserId,
+        "reason_ids": reasonIds, // 선택된 신고 사유 리스트 전송
+      }),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      setState(() {
+        isReported = true; // 신고가 성공적으로 이루어지면 상태 변경
+        reportCount++; // 신고 횟수 증가
+      });
+      print("Report successful!");
+    } else {
+      print("Failed to report post. Status code: ${response.statusCode}");
     }
   }
 
@@ -255,6 +617,51 @@ class _PostDetailState extends State<PostDetail> {
       utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
     );
     return payload['userId'].toString();
+  }
+
+  Future<void> showCommentReportDialog(int commentId) async {
+    final List<String> reportOptions = ['광고/홍보', '기타', '도배', '욕설/비방', '음란성'];
+    List<bool> selectedOptions = List<bool>.filled(reportOptions.length, false);
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("신고 사유를 선택해주세요"),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: reportOptions.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  String option = entry.value;
+                  return CheckboxListTile(
+                    title: Text(option),
+                    value: selectedOptions[index],
+                    onChanged: (bool? value) {
+                      setState(() {
+                        selectedOptions[index] = value ?? false;
+                      });
+                    },
+                  );
+                }).toList(),
+              );
+            },
+          ),
+          actions: [
+            TextButton(child: Text("취소"), onPressed: () => Navigator.of(context).pop()),
+            TextButton(child: Text("확인"), onPressed: () {
+              List<int> selectedReasonIds = [];
+              for (int i = 0; i < reportOptions.length; i++) {
+                if (selectedOptions[i]) selectedReasonIds.add(i + 1);
+              }
+              if (selectedReasonIds.isNotEmpty) reportComment(commentId, selectedReasonIds);
+              Navigator.of(context).pop();
+            }),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> addComment(String content) async {
@@ -314,7 +721,9 @@ class _PostDetailState extends State<PostDetail> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isAuthor = currentUserId == widget.post.id;
+    final bool isAuthor = currentUserId == widget.post.userId.toString();
+    print("Current User ID: $currentUserId");
+    print("Post Author User ID: ${widget.post.userId}");
 
     String imageUrl = widget.post.image != null && widget.post.image!.isNotEmpty
         ? '$BaseUrl/${widget.post.image}'
@@ -394,14 +803,27 @@ class _PostDetailState extends State<PostDetail> {
             SizedBox(height: 16),
             Row(
               children: [
+                // 좋아요 버튼
                 IconButton(
                   icon: Icon(
                     isLiked ? Icons.favorite : Icons.favorite_border,
                     color: isLiked ? Colors.red : Colors.grey,
                   ),
-                  onPressed: toggleLike,
+                  onPressed: toggleLike, // 좋아요 상태 토글 함수
                 ),
-                Text('$likeCount'),
+                Text('$likeCount'), // 좋아요 개수 표시
+
+                SizedBox(width: 16), // 간격 추가
+
+                // 신고 버튼
+                IconButton(
+                  icon: Icon(
+                      isReported ? Icons.flag : Icons.flag_outlined,
+                      color: isReported? Colors.red : Colors.grey
+                  ),
+                  onPressed: showReportDialog, // 신고 다이얼로그 호출 함수
+                ),
+                Text('신고 ($reportCount)'),  // 신고 횟수 표시
               ],
             ),
             Divider(
@@ -414,24 +836,50 @@ class _PostDetailState extends State<PostDetail> {
               reverse: true,
               itemCount: comments.length,
               itemBuilder: (context, index) {
+                final comment = comments[index];
+
                 return ListTile(
                   leading: Text(
-                    comments[index].nickname,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    comment.nickname,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(comments[index].content),
-                      Text(
-                        comments[index].time,
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      Text(comment.content, style: TextStyle(fontSize: 13)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(comment.time, style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          Row(
+                            children: [
+                              IconButton(
+                                iconSize: 16,
+                                icon: Icon(
+                                  comment.isLiked ? Icons.favorite : Icons.favorite_border,
+                                  color: comment.isLiked ? Colors.red : Colors.grey,
+                                ),
+                                onPressed: () => toggleCommentLike(comment.id),
+                              ),
+                              Text('${comment.likeCount}', style: TextStyle(fontSize: 12)),
+                              IconButton(
+                                iconSize: 16,
+                                icon: Icon(
+                                  comment.isReported ? Icons.flag : Icons.flag_outlined,
+                                  color: comment.isReported ? Colors.red : Colors.grey,
+                                ),
+                                onPressed: () => showCommentReportDialog(comment.id),
+                              ),
+                              Text('${comment.reportCount}', style: TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 );
               },
-            ),
+            )
           ],
         ),
       ),
