@@ -63,6 +63,8 @@ class _HomepageState extends State<Homepage> {
   String? userRole;
   String? nick = "사용자"; // 기본 닉네임 설정
   String baseUrl = dotenv.get("BASE_URL");
+  int totalAlerts = 0;
+  int todayAlerts = 0;
 
   @override
   void initState() {
@@ -72,11 +74,13 @@ class _HomepageState extends State<Homepage> {
     _loadUserProfile(); // 사용자 프로필 정보 로드
   }
 
+
   Future<void> loadUserRole() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
     if (token == null) return;
 
+    // JWT 토큰에서 payload 추출
     final parts = token.split('.');
     if (parts.length != 3) throw Exception('Invalid token');
 
@@ -84,19 +88,32 @@ class _HomepageState extends State<Homepage> {
       utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
     );
     String userRole = payload['role'];
-    print("userRole: $userRole");
+
+    // 디버깅 용도로 URL 출력
+    print("Requesting URL: $baseUrl/Alim/app/Count/$userRole");
 
     // 서버에서 사용자 역할에 맞는 알림 데이터를 가져옴
-    final response = await http.get(Uri.parse('$baseUrl/Alim/app/Home/$userRole'));
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/Alim/app/Count/$userRole'));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      print("Fetched alim data: $data"); // 디버깅 용도
-      setState(() {
-        alerts = data;
-        // detection_time 기준으로 내림차순 정렬
-        alerts.sort((a, b) => DateTime.parse(b['detection_time']).compareTo(DateTime.parse(a['detection_time'])));
-      });
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print("Fetched alim data: $data"); // 디버깅 용도
+
+        setState(() {
+          totalAlerts = data['total_count']; // 전체 알림 수 저장
+          todayAlerts = data['today_count']; // 오늘의 알림 수 저장
+        });
+
+      } else if (response.statusCode == 404) {
+        print('No data found for the given role.');
+
+      } else {
+        print('Failed to fetch data. Status code: ${response.statusCode}');
+      }
+
+    } catch (e) {
+      print('Error fetching data: $e');
     }
   }
 
@@ -134,7 +151,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   List<Widget> _pages() => [
-    HomePageContent(alerts: alerts, nick: nick ?? "사용자"),
+    HomePageContent(alerts: alerts, nick: nick ?? "사용자", totalAlerts: totalAlerts, todayAlerts: todayAlerts),
     Alert(isSecurity: isSecurity), // 경비원 권한에 따라 알림 표시
     Location(),
     Community(),
@@ -145,6 +162,13 @@ class _HomepageState extends State<Homepage> {
     setState(() {
       _selectedIndex = index;
     });
+
+    // '홈' 버튼이 눌렸을 때 데이터를 새로 가져오기
+    if (index == 0) {
+      // 홈 버튼이 눌렸을 때 데이터 새로고침
+      loadUserRole();      // 사용자 역할에 따른 알림 데이터 다시 로드
+      _loadUserProfile();  // 사용자 프로필 정보 다시 로드
+    }
   }
 
   @override
@@ -179,8 +203,11 @@ class _HomepageState extends State<Homepage> {
 class HomePageContent extends StatelessWidget {
   final List<dynamic> alerts; // 서버에서 받아온 알림 데이터를 저장
   final String nick; // 닉네임 값
+  final int totalAlerts;
+  final int todayAlerts;
 
-  HomePageContent({required this.alerts, required this.nick});
+  HomePageContent({required this.alerts, required this.nick,    required this.totalAlerts,
+    required this.todayAlerts,});
 
   @override
   Widget build(BuildContext context) {
@@ -261,12 +288,12 @@ class HomePageContent extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.38,
-                        child: _buildCard('전체 알림수', '83', Icons.notifications_active, Color(0xFF569BFA)),
+                        child: _buildCard('전체 알림수', '$totalAlerts', Icons.notifications_active, Color(0xFF569BFA)),
                       ),
                       SizedBox(width: 20),
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.38,
-                        child: _buildCard('당일 알림수', '0', Icons.notifications_active, Color(0xFF569BFA)),
+                        child: _buildCard('당일 알림수', '$todayAlerts', Icons.notifications_active, Color(0xFF569BFA)),
                       ),
                     ],
                   ),
