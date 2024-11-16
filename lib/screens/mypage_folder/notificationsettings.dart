@@ -150,52 +150,6 @@ class _NotificationSettingsState extends State<NotificationSettings> {
                 inactiveTrackColor: Colors.grey[200],
               ),
             ),
-            Divider(),
-            ListTile(
-              title: Text('신규 댓글',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,),),
-              subtitle: Text('작성한 게시글에 댓글이 등록되면 알림으로 받을 수 있습니다.',
-                style: TextStyle(
-                  fontSize: 12,
-                ),),
-              trailing: Switch(
-                value: isNewCommentNotificationEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    isNewCommentNotificationEnabled = value;
-                  });
-                },
-                activeColor: Colors.white,
-                inactiveThumbColor: Colors.grey,
-                activeTrackColor:
-                isNewCommentNotificationEnabled ? Colors.blue[500] : Colors.grey[200],
-                inactiveTrackColor: Colors.grey[200],
-              ),
-            ),
-            Divider(),
-            ListTile(
-              title: Text('위치 정보 서비스 이용약관 동의',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,),),
-              subtitle: Text('지도 서비스 이용을 원하시면 위치 정보 서비스 이용약관에 동의해주세요.',
-                style: TextStyle(
-                  fontSize: 12,
-                ),),
-              trailing: Switch(
-                value: isLocationServiceEnabled,
-                onChanged: (value) {
-                  setState(() {
-                    isLocationServiceEnabled = value;
-                  });
-                },
-                activeColor: Colors.white,
-                inactiveThumbColor: Colors.grey,
-                activeTrackColor:
-                isLocationServiceEnabled ? Colors.blue[500] : Colors.grey[200],
-                inactiveTrackColor: Colors.grey[200],
-              ),
-            ),
           ],
         ),
       ),

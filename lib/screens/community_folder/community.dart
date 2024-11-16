@@ -185,126 +185,146 @@ class _CommunityState extends State<Community> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0), // 좌우 20px, 상하 24px 여백 설정
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
         child: Column(
           children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.25,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: _totalPages + 2,
-                itemBuilder: (context, index) {
-                  if (index == 0) return buildCard(context, _totalPages - 1);
-                  if (index == _totalPages + 1) return buildCard(context, 0);
-                  return buildCard(context, index - 1);
-                },
-              ),
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: posts.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () async {
-                      final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}'));
-                      if (response.statusCode == 200) {
-                        final postDetail = Post.fromJson(json.decode(response.body));
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PostDetail(post: postDetail),
-                          ),
-                        );
-                        if (result == true) {
-                          fetchPosts();
-                        }
-                      } else {
-                        throw Exception('Failed to load post detail');
-                      }
-                    },
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(0), // 직각 모양 설정
+        SizedBox(
+        height: MediaQuery.of(context).size.height * 0.25,
+        child: PageView.builder(
+          controller: _pageController,
+          itemCount: _totalPages + 2,
+          itemBuilder: (context, index) {
+            if (index == 0) return buildCard(context, _totalPages - 1);
+            if (index == _totalPages + 1) return buildCard(context, 0);
+            return buildCard(context, index - 1);
+          },
+        ),
+      ),
+      SizedBox(height: 16),
+      Expanded(
+        child: ListView.builder(
+          itemCount: posts.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () async {
+                final response = await http.get(Uri.parse('$BaseUrl/community/posts/${posts[index].id}'));
+                if (response.statusCode == 200) {
+                  final postDetail = Post.fromJson(json.decode(response.body));
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PostDetail(post: postDetail),
+                    ),
+                  );
+                  if (result == true) {
+                    fetchPosts();
+                  }
+                } else {
+                  throw Exception('Failed to load post detail');
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0), // 위/아래 여백
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.95, // PageView와 동일한 너비
+                  margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      elevation: 0, // 쉐도우 제거
-                      color: Colors.blue[50],
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    posts[index].nick,
-                                    style: TextStyle(fontSize: 12, color: Colors.black54),
-                                  ),
-                                ),
-                              ],
+                            CircleAvatar(
+                              radius: 18, // 프로필 크기
+                              backgroundColor: Colors.grey[300], // 배경색 회색
+                              child: Icon(Icons.person, color: Colors.white), // 프로필 아이콘
                             ),
-                            SizedBox(height: 8),
-                            Text(
-                              posts[index].title,
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              posts[index].content,
-                              style: TextStyle(fontSize: 14, color: Colors.black87),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${posts[index].time} · 조회 ${posts[index].views}',
-                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                  posts[index].nick,
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                                 ),
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(
-                                        posts[index].isLiked ? Icons.favorite : Icons.favorite_border,
-                                        color: posts[index].isLiked ? Colors.red : Colors.grey,
-                                        size: 18,
-                                      ),
-                                      onPressed: () {
-                                        toggleLike(posts[index].id, posts[index].isLiked, index);
-                                      },
-                                    ),
-                                    Text(
-                                      posts[index].likes.toString(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey[600]),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      posts[index].comments.toString(),
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                                    ),
-                                  ],
+                                Text(
+                                  posts[index].time,
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ),
+                        SizedBox(height: 24),
+                        Text(
+                          posts[index].title,
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          posts[index].content,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 14, color: Colors.black87),
+                        ),
+                        SizedBox(height: 16),
+                        Divider(color: Colors.grey[300],),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.favorite,
+                                  color: posts[index].isLiked ? Colors.red : Colors.grey,
+                                  size: 16,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  posts[index].likes.toString(),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                                SizedBox(width: 16),
+                                Icon(Icons.chat_bubble_outline, size: 16, color: Colors.grey),
+                                SizedBox(width: 4),
+                                Text(
+                                  posts[index].comments.toString(),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              '조회 ${posts[index].views}',
+                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
+],
+        ),
+      ),
+
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -335,16 +355,19 @@ Widget buildCard(BuildContext context, int index) {
     'images/card5.png',
   ];
 
-  return Card(
-    color: Colors.white,
-    elevation: 4,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-    child: SizedBox(
-      width: double.infinity,
-      height: 200,
-      child: Image.asset(
-        imagePaths[index],
-        fit: BoxFit.cover,
+  return Container(
+    width: MediaQuery.of(context).size.width * 0.95,
+    margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width * 0.05),
+    child: Card(
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: SizedBox(
+        height: 200,
+        child: Image.asset(
+          imagePaths[index],
+          fit: BoxFit.cover,
+        ),
       ),
     ),
   );

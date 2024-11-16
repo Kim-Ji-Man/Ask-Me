@@ -48,7 +48,9 @@ class _AlertState extends State<Alert> {
       print("Fetched alim data: $data"); // 디버깅 용도
       setState(() {
         alerts = data;
-        alerts.sort((a, b) => DateTime.parse(b['detection_time']).compareTo(DateTime.parse(a['detection_time'])));
+        alerts.sort((a, b) =>
+            DateTime.parse(b['detection_time']).compareTo(
+                DateTime.parse(a['detection_time'])));
       });
     }
   }
@@ -85,7 +87,8 @@ class _AlertState extends State<Alert> {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0), // 좌우 20px, 상하 24px 여백
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+        // 좌우 20px, 상하 24px 여백
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -110,8 +113,11 @@ class _AlertState extends State<Alert> {
     );
   }
 
-  Widget buildNotificationItem(String timeAgo, String? imagePath, String location, String detectionTime, int index) {
-    String imageUrl = imagePath != null ? '$baseUrl$imagePath' : 'images/img_logo.png';
+  Widget buildNotificationItem(String timeAgo, String? imagePath,
+      String location, String detectionTime, int index) {
+    String imageUrl = imagePath != null
+        ? '$baseUrl$imagePath'
+        : 'images/img_logo.png';
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
@@ -122,21 +128,44 @@ class _AlertState extends State<Alert> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AlertDetails(
-              imageUrl: widget.isSecurity ? imageUrl : 'images/img_logo.png',
-              location: location,
-              detectionTime: detectionTime,
-            ),
+            builder: (context) =>
+                AlertDetails(
+                  imageUrl: widget.isSecurity
+                      ? imageUrl
+                      : 'images/img_logo.png',
+                  location: location,
+                  detectionTime: detectionTime,
+                ),
           ),
         );
       },
       child: Container(
+        width: MediaQuery
+            .of(context)
+            .size
+            .width * 0.95,
+        // 화면 너비의 95%
+        margin: EdgeInsets.symmetric(
+          horizontal: MediaQuery
+              .of(context)
+              .size
+              .width * 0.025, // 좌우 여백
+          vertical: 4.0, // 위아래 여백
+        ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.blue[50], // 선택된 항목이면 화이트, 아니면 옅은 하늘색
-          borderRadius: BorderRadius.circular(12), // 둥근 네모 모양
+          color: isSelected ? Colors.white : Colors.blue[50],
+          // 선택된 항목이면 화이트, 아니면 옅은 하늘색
+          borderRadius: BorderRadius.circular(12),
+          // 둥근 네모 모양
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
         ),
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -162,7 +191,9 @@ class _AlertState extends State<Alert> {
                   SizedBox(height: 4),
                   Text(
                     '$location',
-                    style: TextStyle(fontSize: 15, color: Colors.indigo[800], fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 15,
+                        color: Colors.indigo[800],
+                        fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -231,6 +262,7 @@ class AlertDetails extends StatelessWidget {
             SizedBox(height: 30),
             Center(
               child: Container(
+                width: MediaQuery.of(context).size.width * 0.95,
                 height: 250,
                 decoration: BoxDecoration(
                   color: Colors.grey[200],

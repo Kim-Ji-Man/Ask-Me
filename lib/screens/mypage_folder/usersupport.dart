@@ -20,6 +20,7 @@ class _UserSupportState extends State<UserSupport> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text('메시지 발송 성공!',
             textAlign: TextAlign.center,),
           content: Text('최대한 신속하게 도와드릴게요.',
@@ -31,7 +32,7 @@ class _UserSupportState extends State<UserSupport> {
                 _saveToDatabase(); // DB에 정보 저장
                 Navigator.of(context).pushReplacementNamed('/mypage'); // mypage로 이동
               },
-              child: Text('확인'),
+              child: Text('확인', style: TextStyle(color: Colors.indigo),),
             ),
           ],
         );
@@ -93,7 +94,7 @@ class _UserSupportState extends State<UserSupport> {
             ElevatedButton(
               onPressed: _submitSupportRequest,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isButtonPressed ? Colors.blue[500] : Colors.indigo[800], // 버튼 색상 변경
+                backgroundColor: isButtonPressed ? Colors.indigo[400] : Colors.indigo[800], // 버튼 색상 변경
                 minimumSize: Size(double.infinity, 50),
               ),
               child: Text('제출하기', style: TextStyle(color: Colors.white),),
