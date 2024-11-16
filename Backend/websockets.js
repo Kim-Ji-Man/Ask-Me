@@ -99,7 +99,12 @@ function broadcastAlertFlutter(imageUrl, storeName, detectionTime, alertId) {
   );
 
   // 1. OneSignal 푸시 알림 전송
-  db.executeQuery('SELECT external_user_id ,user_id FROM Users')
+  db.executeQuery(`
+    SELECT u.external_user_id, u.user_id 
+    FROM Users u
+    JOIN Setting s ON u.user_id = s.user_id
+    WHERE s.push_alert = 1
+  `)
     .then(async (rows) => {
       const userIds = rows
         .map((row) => row.external_user_id)

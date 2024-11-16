@@ -103,8 +103,11 @@ const sendPushNotification = async (userIds, notificationData) => {
 const notifyUsers = async (imagePath, storeName, detectionTime, alertId) => {
   try {
       // 전체 사용자 조회
-      const rows = await db.executeQuery("SELECT user_id, external_user_id FROM Users WHERE role = 'guard';");
-
+      const rows = await db.executeQuery(`SELECT u.user_id, u.external_user_id 
+                                          FROM Users u
+                                          JOIN Setting s ON u.user_id = s.user_id
+                                          WHERE u.role = 'guard' AND s.push_alert = 1;`);
+      
       // external_user_id가 null인 사용자를 처리하기 위해 setExternalUserId 호출
       for (const row of rows) {
           if (!row.external_user_id) {

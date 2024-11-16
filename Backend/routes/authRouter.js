@@ -113,6 +113,21 @@ router.post('/register', async (req, res) => {
             
         });
 
+
+                // Setting 테이블에 email_alert=0, sms_alert=0, push_alert=1 값 삽입
+                const insertSettingQuery = `
+                INSERT INTO Setting (user_id, email_alert, sms_alert, push_alert, updated_at)
+                VALUES (?, 0, 0, 1, NOW())
+            `;
+            
+            db.executeQuery(insertSettingQuery, [userId], (err) => {
+                if (err) {
+                    console.error('Error inserting settings into Setting table:', err);
+                    return res.status(500).send('Error registering user and adding settings');
+                }
+                console.log('알림 설정 등록 성공');
+            });
+
         // WebSocket으로 회원가입 알림 전송
         sendMember(`회원 ${mem_name}님이 성공적으로 가입되었습니다.`);
     } catch (err) {

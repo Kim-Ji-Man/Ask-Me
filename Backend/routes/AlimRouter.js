@@ -53,6 +53,72 @@ setInterval(async () => {
   }
 }, 60000); // 5초마다 확인
 
+
+
+router.get('/app/Count/:role', async (req, res) => {
+  const { role } = req.params;
+
+  try {
+    let totalQuery;
+    let todayQuery;
+    let params = [];
+
+    // role이 'guard'인 경우 전체 카운트와 당일 카운트를 가져옴
+    if (role === 'guard') {
+      totalQuery = `
+        SELECT COUNT(*) AS total_count 
+        FROM Anomaly_Resolution;
+      `;
+      todayQuery = `
+        SELECT COUNT(*) AS today_count 
+        FROM Anomaly_Resolution 
+        WHERE DATE(CONVERT_TZ(NOW(), '+00:00', '+09:00')) = DATE(CONVERT_TZ(closed_at, '+00:00', '+09:00'));
+      `;
+    } 
+    // role이 'user'인 경우 anomaly_type이 '흉기'인 것만 카운트
+    else if (role === 'user') {
+      totalQuery = `
+        SELECT COUNT(*) AS total_count 
+        FROM Anomaly_Resolution 
+        WHERE anomaly_type = ?;
+      `;
+      todayQuery = `
+        SELECT COUNT(*) AS today_count 
+        FROM Anomaly_Resolution 
+        WHERE anomaly_type = ? AND DATE(CONVERT_TZ(NOW(), '+00:00', '+09:00')) = DATE(CONVERT_TZ(closed_at, '+00:00', '+09:00'));
+      `;
+      params.push('흉기'); // anomaly_type이 '흉기'인 것만 필터링
+    } 
+    // 그 외의 경우는 에러 처리
+    else {
+      return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    // 총 알림 수 쿼리 실행
+    const totalRows = await db.executeQuery(totalQuery, params);
+    console.log('Total Rows:', totalRows); // 디버깅용
+
+    // 오늘 알림 수 쿼리 실행
+    const todayRows = await db.executeQuery(todayQuery, params);
+    console.log('Today Rows:', todayRows); // 디버깅용
+
+    // 쿼리 결과가 배열로 반환되므로 첫 번째 요소에 접근해야 함
+    if (totalRows.length > 0 && todayRows.length > 0) {
+      res.json({
+        total_count: totalRows[0].total_count,
+        today_count: todayRows[0].today_count,
+      });
+    } else {
+      console.log('No data found for the given role.');
+      res.status(404).json({ error: "No data found" });
+    }
+
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // 모든 알림 가져오기
 router.get("/", async (req, res) => {
   const sql = `
