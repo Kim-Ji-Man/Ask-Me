@@ -37,8 +37,8 @@ router.get('/users', async (req, res) => {
   
   // 전체 알림 수 및 당일 알림 수 가져오기
   router.get('/notifications', async (req, res) => {
-    const totalNotificationsQuery = 'SELECT COUNT(*) AS total FROM Notification'; // 전체 알림 수를 가져오는 쿼리
-    const dailyNotificationsQuery = "SELECT COUNT(*) AS daily FROM Notification WHERE DATE(sent_at) = CURDATE()"; // 당일 알림 수를 가져오는 쿼리
+    const totalNotificationsQuery = 'SELECT COUNT(*) AS total FROM Anomaly_Resolution'; // 전체 알림 수를 가져오는 쿼리
+    const dailyNotificationsQuery = "SELECT COUNT(*) AS daily FROM Anomaly_Resolution WHERE DATE(closed_at) = CURDATE()"; // 당일 알림 수를 가져오는 쿼리
   
     try {
       // 쿼리 실행
@@ -46,8 +46,8 @@ router.get('/users', async (req, res) => {
       const [dailyNotifications] = await db.executeQuery(dailyNotificationsQuery);
   
       // 로그 추가: 쿼리 결과 출력
-      console.log('전체 알림 수:', totalNotifications);
-      console.log('당일 알림 수:', dailyNotifications);
+      console.log('전체 감지 수:', totalNotifications);
+      console.log('당일 감지 수:', dailyNotifications);
   
       // 결과가 존재하는지 확인하고 응답 전송
       res.json({
@@ -55,10 +55,10 @@ router.get('/users', async (req, res) => {
         dailyNotifications: dailyNotifications.daily || 0, // 결과가 없으면 기본값 0 반환 (옵셔널 체이닝 사용)
       });
   
-      console.log("알림 수를 성공적으로 가져왔습니다");
+      console.log("감지 수를 성공적으로 가져왔습니다");
     } catch (err) {
-      console.error('알림 수를 가져오는 중 오류 발생:', err);
-      return res.status(500).send('알림 수를 가져오는 중 오류 발생');
+      console.error('감지 수를 가져오는 중 오류 발생:', err);
+      return res.status(500).send('감지 수를 가져오는 중 오류 발생');
     }
   });
 

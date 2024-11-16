@@ -111,8 +111,8 @@ const MainMaster = () => {
           {[
             { label: '전체 가입자수', value: data.totalUsers },
             { label: '당일 가입자수', value: data.dailyUsers },
-            { label: '전체 알림수', value: data.totalNotifications },
-            { label: '당일 알림수', value: data.dailyNotifications },
+            { label: '전체 감지수', value: data.totalNotifications },
+            { label: '당일 감지수', value: data.dailyNotifications },
           ].map((item, index) => (
             <Col xs={12} sm={6} md={3} key={index} className="mb-4">
               <Card className="text-center shadow-sm">
