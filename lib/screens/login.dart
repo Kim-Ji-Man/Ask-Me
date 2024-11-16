@@ -9,6 +9,37 @@ import 'package:provider/provider.dart';
 import '../service/PushNotificationService.dart';
 import '../service/WebSocketProvider.dart'; // Provider 패키지 추가
 
+class ApprovalPendingPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('승인 대기 중'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock, size: 100, color: Colors.grey),
+            SizedBox(height: 20),
+            Text(
+              '관리자 승인 후 이용 가능합니다.',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 10),
+            Text(
+              '승인이 완료될 때까지 기다려주세요.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
 
 class Login extends StatefulWidget {
   @override
@@ -62,6 +93,17 @@ class _LoginState extends State<Login> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print("어떻게 나오니??? $data");
+      if (data['account_status'] == 'inactive') {
+        // account_status가 inactive일 경우 승인 대기 페이지로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ApprovalPendingPage()),
+        );
+        return; // 더 이상 진행하지 않음
+      }
+
+
       // 토큰 저장
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', data['token']);
