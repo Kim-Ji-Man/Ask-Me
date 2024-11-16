@@ -130,6 +130,7 @@ async function login(req, res) {
         const tokenPayload = {
             userId: user.user_id,  // userId 추가
             role: user.role,
+            account_status: user.account_status, 
         };
 
         if (user.role === 'admin' && user.store_id) {
@@ -142,6 +143,7 @@ async function login(req, res) {
             success: true, 
             userId: user.user_id,
             username: user.username,
+            account_status: user.account_status, 
             message: 'Login successful', 
             token 
         });
