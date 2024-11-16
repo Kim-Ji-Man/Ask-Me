@@ -310,7 +310,11 @@ class _CommunityState extends State<Community> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => CommunityPost()),
-          );
+          ).then((result) {
+            if (result == true) {
+              fetchPosts(); // 게시글 작성 후 돌아왔을 때 목록 갱신
+            }
+          });
         },
         child: Icon(Icons.edit, size: 24, color: Colors.white),
         backgroundColor: Colors.indigo[600],

@@ -82,21 +82,21 @@ class _PostDetailState extends State<PostDetail> {
   final List<Comment> comments = [];
   final TextEditingController commentController = TextEditingController();
 
-
   Future<void> fetchNickByUserId(String? userId) async {
     if (userId == null) {
       print("User ID is null, cannot fetch nick.");
       return;
     }
 
-    final int parsedUserId = int.tryParse(userId) ?? -1;  // String을 int로 변환 시도
+    final int parsedUserId = int.tryParse(userId) ?? -1; // String을 int로 변환 시도
     if (parsedUserId == -1) {
       print("Invalid user ID format.");
       return;
     }
 
     final url = Uri.parse('$BaseUrl/community/posts');
-    final response = await http.get(url, headers: {'Content-Type': 'application/json'});
+    final response =
+        await http.get(url, headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -143,7 +143,8 @@ class _PostDetailState extends State<PostDetail> {
         comments.clear();
         comments.addAll(jsonData.map((comment) {
           String formattedTime = comment['created_at'] != null
-              ? DateFormat('yy.MM.dd HH:mm').format(DateTime.parse(comment['created_at']))
+              ? DateFormat('yy.MM.dd HH:mm')
+                  .format(DateTime.parse(comment['created_at']))
               : "시간 없음";
 
           return Comment(
@@ -165,7 +166,8 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Future<void> fetchCommentLikeStatus() async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot fetch comment like status.");
@@ -175,7 +177,10 @@ class _PostDetailState extends State<PostDetail> {
     // 서버로부터 댓글의 좋아요 상태를 가져옴
     final response = await http.post(
       Uri.parse('$BaseUrl/community/comment-likes/stat'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
     );
 
@@ -190,28 +195,33 @@ class _PostDetailState extends State<PostDetail> {
 
           for (var commentData in commentList) {
             // 각 댓글의 좋아요 상태 업데이트
-            final comment = comments.firstWhere((c) => c.id == commentData['comment_id']);
-            comment.isLiked = commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
+            final comment =
+                comments.firstWhere((c) => c.id == commentData['comment_id']);
+            comment.isLiked =
+                commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
             comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
           }
         } else if (data['comments'] is Map) {
           // 단일 객체일 경우 처리 (이 부분은 필요 없을 수도 있음)
           final commentData = data['comments'];
-          final comment = comments.firstWhere((c) => c.id == commentData['comment_id']);
-          comment.isLiked = commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
+          final comment =
+              comments.firstWhere((c) => c.id == commentData['comment_id']);
+          comment.isLiked =
+              commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
           comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
         } else {
           print('댓글 데이터 형식이 올바르지 않습니다.');
         }
       });
-
     } else {
-      print('Failed to load comment like status. Status code: ${response.statusCode}');
+      print(
+          'Failed to load comment like status. Status code: ${response.statusCode}');
     }
   }
 
   Future<void> toggleCommentLike(int commentId) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot toggle like.");
@@ -221,7 +231,10 @@ class _PostDetailState extends State<PostDetail> {
     // 댓글 좋아요 상태 토글 요청
     final response = await http.post(
       Uri.parse('$BaseUrl/community/comment-likes/toggle'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({
         "user_id": currentUserId,
         "comment_id": commentId,
@@ -245,14 +258,14 @@ class _PostDetailState extends State<PostDetail> {
           comment.likeCount = (comment.likeCount ?? 0) - 1; // 좋아요 수 감소
         }
       });
-
     } else {
       print("Failed to toggle like. Status code: ${response.statusCode}");
     }
   }
 
   Future<void> fetchCommentReportStatus(int commentId) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot fetch report status.");
@@ -261,7 +274,10 @@ class _PostDetailState extends State<PostDetail> {
 
     final response = await http.post(
       Uri.parse('$BaseUrl/community/comment-reports/status'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({"comment_id": commentId, "user_id": currentUserId}),
     );
 
@@ -273,15 +289,17 @@ class _PostDetailState extends State<PostDetail> {
         comment.isReported = data['isReported']; // 서버에서 받아온 신고 여부로 업데이트
         comment.reportCount = data['reportCount']; // 서버에서 받아온 신고 횟수로 업데이트
       });
-      print("Fetched report status for comment $commentId: isReported=${data['isReported']}, reportCount=${data['reportCount']}");
+      print(
+          "Fetched report status for comment $commentId: isReported=${data['isReported']}, reportCount=${data['reportCount']}");
     } else {
-      print('Failed to load report status for comment $commentId. Status code: ${response.statusCode}');
+      print(
+          'Failed to load report status for comment $commentId. Status code: ${response.statusCode}');
     }
   }
 
-
   Future<void> reportComment(int commentId, List<int> reasonIds) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot report comment.");
@@ -298,12 +316,16 @@ class _PostDetailState extends State<PostDetail> {
     // Optimistically update UI before server response
     setState(() {
       comment.isReported = true;
-      comment.reportCount = (comment.reportCount ?? 0) + 1; // Increment report count
+      comment.reportCount =
+          (comment.reportCount ?? 0) + 1; // Increment report count
     });
 
     final response = await http.post(
       Uri.parse('$BaseUrl/community/comment-reports/comment'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({
         "comment_id": commentId,
         "user_id": currentUserId,
@@ -321,21 +343,25 @@ class _PostDetailState extends State<PostDetail> {
       // Revert optimistic update if request fails due to duplicate reporting
       setState(() {
         comment.isReported = false;
-        comment.reportCount = (comment.reportCount ?? 1) - 1; // Revert report count
+        comment.reportCount =
+            (comment.reportCount ?? 1) - 1; // Revert report count
       });
       print("You have already reported this comment.");
     } else {
       // Revert optimistic update if request fails for other reasons
       setState(() {
         comment.isReported = false;
-        comment.reportCount = (comment.reportCount ?? 1) - 1; // Revert report count
+        comment.reportCount =
+            (comment.reportCount ?? 1) - 1; // Revert report count
       });
       print("Failed to report comment. Status code: ${response.statusCode}");
     }
   }
 
-  Future<void> editPost(String newTitle, String newContent, String? newImage) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+  Future<void> editPost(
+      String newTitle, String newContent, String? newImage) async {
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     final response = await http.put(
       Uri.parse('$BaseUrl/community/posts/${widget.post.id}'),
@@ -374,7 +400,8 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Future<void> deletePost() async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     final response = await http.delete(
       Uri.parse('$BaseUrl/community/posts/${widget.post.id}'),
@@ -416,32 +443,36 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Future<void> fetchLikeStatus() async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot toggle like1.");
       return;
     }
 
-      final response = await http.post(
-        Uri.parse('$BaseUrl/community/likes/stat'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-        body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        setState(() {
-          isLiked = data['isLiked']; // 서버에서 받아온 좋아요 상태로 업데이트
-          likeCount = data['likeCount']; // 좋아요 개수 업데이트
-        });
-      } else {
-        print('Failed to load like status. Status code: ${response.statusCode}');
-      }
-
+    final response = await http.post(
+      Uri.parse('$BaseUrl/community/likes/stat'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
+      body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        isLiked = data['isLiked']; // 서버에서 받아온 좋아요 상태로 업데이트
+        likeCount = data['likeCount']; // 좋아요 개수 업데이트
+      });
+    } else {
+      print('Failed to load like status. Status code: ${response.statusCode}');
+    }
   }
 
   Future<void> toggleLike() async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot toggle like.");
@@ -451,7 +482,10 @@ class _PostDetailState extends State<PostDetail> {
     // Send request to toggle like status
     final response = await http.post(
       Uri.parse('$BaseUrl/community/likes/toggle'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
     );
 
@@ -476,7 +510,8 @@ class _PostDetailState extends State<PostDetail> {
 
   Future<void> showReportDialog() async {
     final List<String> reportOptions = ['광고/홍보', '기타', '도배', '욕설/비방', '음란성'];
-    List<bool> selectedOptions = List<bool>.filled(reportOptions.length, false); // 선택 여부를 저장하는 리스트
+    List<bool> selectedOptions =
+        List<bool>.filled(reportOptions.length, false); // 선택 여부를 저장하는 리스트
 
     await showDialog(
       context: context,
@@ -538,7 +573,8 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Future<void> fetchReportStatus() async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     if (currentUserId == null) {
       print("User ID is null. Cannot fetch report status.");
@@ -547,7 +583,10 @@ class _PostDetailState extends State<PostDetail> {
 
     final response = await http.post(
       Uri.parse('$BaseUrl/community/reports/status'),
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({"post_id": widget.post.id, "user_id": currentUserId}),
     );
 
@@ -557,14 +596,17 @@ class _PostDetailState extends State<PostDetail> {
         isReported = data['isReported']; // 서버에서 받아온 신고 여부로 업데이트
         reportCount = data['reportCount']; // 서버에서 받아온 신고 횟수로 업데이트
       });
-      print("Fetched report status: isReported=$isReported, reportCount=$reportCount");
+      print(
+          "Fetched report status: isReported=$isReported, reportCount=$reportCount");
     } else {
-      print('Failed to load report status. Status code: ${response.statusCode}');
+      print(
+          'Failed to load report status. Status code: ${response.statusCode}');
     }
   }
 
   Future<void> reportPost(List<int> reasonIds) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
     if (currentUserId == null) {
       print("User ID is null. Cannot report post.");
       return;
@@ -572,7 +614,10 @@ class _PostDetailState extends State<PostDetail> {
 
     final response = await http.post(
       Uri.parse('$BaseUrl/community/reports'), // 서버의 신고 API 엔드포인트
-      headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token'
+      },
       body: json.encode({
         "post_id": widget.post.id,
         "user_id": currentUserId,
@@ -643,15 +688,20 @@ class _PostDetailState extends State<PostDetail> {
             },
           ),
           actions: [
-            TextButton(child: Text("취소"), onPressed: () => Navigator.of(context).pop()),
-            TextButton(child: Text("확인"), onPressed: () {
-              List<int> selectedReasonIds = [];
-              for (int i = 0; i < reportOptions.length; i++) {
-                if (selectedOptions[i]) selectedReasonIds.add(i + 1);
-              }
-              if (selectedReasonIds.isNotEmpty) reportComment(commentId, selectedReasonIds);
-              Navigator.of(context).pop();
-            }),
+            TextButton(
+                child: Text("취소"),
+                onPressed: () => Navigator.of(context).pop()),
+            TextButton(
+                child: Text("확인"),
+                onPressed: () {
+                  List<int> selectedReasonIds = [];
+                  for (int i = 0; i < reportOptions.length; i++) {
+                    if (selectedOptions[i]) selectedReasonIds.add(i + 1);
+                  }
+                  if (selectedReasonIds.isNotEmpty)
+                    reportComment(commentId, selectedReasonIds);
+                  Navigator.of(context).pop();
+                }),
           ],
         );
       },
@@ -671,7 +721,8 @@ class _PostDetailState extends State<PostDetail> {
       "content": content,
     };
 
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     final response = await http.post(
       Uri.parse('$BaseUrl/community/comments'),
@@ -690,8 +741,10 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
-  Future<String?> showEditDialog(BuildContext context, String currentContent) async {
-    final TextEditingController _controller = TextEditingController(text: currentContent);
+  Future<String?> showEditDialog(
+      BuildContext context, String currentContent) async {
+    final TextEditingController _controller =
+        TextEditingController(text: currentContent);
 
     return await showDialog<String>(
       context: context,
@@ -722,7 +775,8 @@ class _PostDetailState extends State<PostDetail> {
   }
 
   Future<void> editComment(int commentId, String newContent) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     final commentData = {
       "content": newContent,
@@ -744,6 +798,7 @@ class _PostDetailState extends State<PostDetail> {
       print("Failed to edit comment. Status code: ${response.statusCode}");
     }
   }
+
   // 댓글 저장 함수 (수정 완료)
   void saveEditedComment(int commentId) {
     setState(() {
@@ -757,7 +812,8 @@ class _PostDetailState extends State<PostDetail> {
 
 // 댓글 삭제 함수
   Future<void> deleteComment(int commentId) async {
-    final token = await SharedPreferences.getInstance().then((prefs) => prefs.getString('token'));
+    final token = await SharedPreferences.getInstance()
+        .then((prefs) => prefs.getString('token'));
 
     final response = await http.delete(
       Uri.parse('$BaseUrl/community/comments/$commentId'),
@@ -774,7 +830,6 @@ class _PostDetailState extends State<PostDetail> {
       print("Failed to delete comment. Status code: ${response.statusCode}");
     }
   }
-
 
   Future<String?> uploadImage(File imageFile) async {
     final url = Uri.parse('$BaseUrl/community/posts');
@@ -815,7 +870,7 @@ class _PostDetailState extends State<PostDetail> {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context,true),
         ),
         actions: [
           if (isAuthor)
@@ -823,6 +878,7 @@ class _PostDetailState extends State<PostDetail> {
               icon: Icon(Icons.more_vert),
               onSelected: (value) async {
                 if (value == 'edit') {
+                  // 게시글 수정 화면으로 이동
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -833,8 +889,13 @@ class _PostDetailState extends State<PostDetail> {
                       ),
                     ),
                   );
+
+                  // 수정 후 돌아왔을 때 해당 게시글만 업데이트
                   if (result is Map<String, String>) {
-                    await editPost(result['title']!, result['content']!, result['image']);
+                    setState(() {
+                      widget.post.title = result['title']!;
+                      widget.post.content = result['content']!;
+                    });
                   }
                 } else if (value == 'delete') {
                   await deletePost();
@@ -857,7 +918,8 @@ class _PostDetailState extends State<PostDetail> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.post.nick, style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(widget.post.nick,
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     Text(widget.post.time),
                   ],
                 ),
@@ -897,130 +959,150 @@ class _PostDetailState extends State<PostDetail> {
 
                 // 신고 버튼
                 IconButton(
-                  icon: Icon(
-                      isReported ? Icons.flag : Icons.flag_outlined,
-                      color: isReported? Colors.red : Colors.grey
-                  ),
+                  icon: Icon(isReported ? Icons.flag : Icons.flag_outlined,
+                      color: isReported ? Colors.red : Colors.grey),
                   onPressed: showReportDialog, // 신고 다이얼로그 호출 함수
                 ),
-                Text('신고 ($reportCount)'),  // 신고 횟수 표시
+                Text('신고 ($reportCount)'), // 신고 횟수 표시
               ],
             ),
             Divider(
               thickness: 3.0,
               color: Colors.grey[300],
             ),
-    ListView.builder(
-    shrinkWrap: true,
-    physics: NeverScrollableScrollPhysics(),
-    reverse: true,
-    itemCount: comments.length,
-    itemBuilder: (context, index) {
-    final comment = comments[index];
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              reverse: true,
+              itemCount: comments.length,
+              itemBuilder: (context, index) {
+                final comment = comments[index];
 
-    // 댓글 작성자 확인 (현재 로그인한 사용자와 댓글 작성자 비교)
-    final bool isCommentAuthor = currentUserId == comment.userId.toString();
-    print("Current User ID: ${currentUserId}, Comment User ID: ${comment.userId}");
+                // 댓글 작성자 확인 (현재 로그인한 사용자와 댓글 작성자 비교)
+                final bool isCommentAuthor =
+                    currentUserId == comment.userId.toString();
+                print(
+                    "Current User ID: ${currentUserId}, Comment User ID: ${comment.userId}");
 
-    return ListTile(
-    leading: Text(
-    comment.nickname,
-    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-    ),
-    title: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-    Text(comment.content, style: TextStyle(fontSize: 13)),
-    Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-    Text(comment.time, style: TextStyle(fontSize: 10, color: Colors.grey)),
-    Row(
-    children: [
-    IconButton(
-    iconSize: 20, // 아이콘 크기를 키움
-    icon: Icon(
-    comment.isLiked ? Icons.favorite : Icons.favorite_border,
-    color: comment.isLiked ? Colors.red : Colors.grey,
-    ),
-    onPressed: () => toggleCommentLike(comment.id),
-    ),
-    Text('${comment.likeCount}', style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
+                return ListTile(
+                  leading: Text(
+                    comment.nickname,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(comment.content, style: TextStyle(fontSize: 13)),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(comment.time,
+                              style:
+                                  TextStyle(fontSize: 10, color: Colors.grey)),
+                          Row(
+                            children: [
+                              IconButton(
+                                iconSize: 20, // 아이콘 크기를 키움
+                                icon: Icon(
+                                  comment.isLiked
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color: comment.isLiked
+                                      ? Colors.red
+                                      : Colors.grey,
+                                ),
+                                onPressed: () => toggleCommentLike(comment.id),
+                              ),
+                              Text('${comment.likeCount}',
+                                  style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
 
-    IconButton(
-    iconSize: 20, // 아이콘 크기를 키움
-    icon: Icon(
-    comment.isReported ? Icons.flag : Icons.flag_outlined,
-    color: comment.isReported ? Colors.red : Colors.grey,
-    ),
-    onPressed: () => showCommentReportDialog(comment.id),
-    ),
-    Text('${comment.reportCount}', style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
+                              IconButton(
+                                iconSize: 20, // 아이콘 크기를 키움
+                                icon: Icon(
+                                  comment.isReported
+                                      ? Icons.flag
+                                      : Icons.flag_outlined,
+                                  color: comment.isReported
+                                      ? Colors.red
+                                      : Colors.grey,
+                                ),
+                                onPressed: () =>
+                                    showCommentReportDialog(comment.id),
+                              ),
+                              Text('${comment.reportCount}',
+                                  style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
 
-    // 댓글 작성자인 경우에만 PopupMenuButton 표시
-    if (isCommentAuthor)
-    Padding(
-    padding: const EdgeInsets.only(left: 8.0), // 약간의 여백 추가
-    child: PopupMenuButton<String>(
-    onSelected: (value) async {
-    if (value == 'edit') {
-    // 수정 버튼 클릭 시 동작
-    String? newContent = await showEditDialog(context, comment.content);
-    if (newContent != null && newContent.isNotEmpty) {
-    await editComment(comment.id, newContent); // 수정 실행
-    }
-    } else if (value == 'delete') {
-    // 삭제 버튼 클릭 시 동작
-    bool confirmDelete = await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-    return AlertDialog(
-    title: Text("댓글 삭제"),
-    content:
-    Text("정말 이 댓글을 삭제하시겠습니까?"),
-    actions: [
-    TextButton(
-    child:
-    Text("취소"),
-    onPressed:
-    () => Navigator.of(context).pop(false)),
-    TextButton(
-    child:
-    Text("삭제"),
-    onPressed:
-    () => Navigator.of(context).pop(true)),
-    ],
-    );
-    },
-    );
-    if (confirmDelete) {
-    await deleteComment(comment.id); // 삭제 실행
-    }
-    }
-    },
-    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-    const PopupMenuItem<String>(
-    value: 'edit',
-    child: Text('수정'),
-    ),
-    const PopupMenuItem<String>(
-    value: 'delete',
-    child: Text('삭제'),
-    ),
-    ],
-    iconSize: 24, // PopupMenuButton 아이콘 크기를 키움
-    icon: Icon(Icons.more_vert), // 더 큰 아이콘 사용
-    ),
-    ),
-    ],
-    ),
-    ],
-    ),
-    ],
-    ),
-    );
-    },
-    ),
+                              // 댓글 작성자인 경우에만 PopupMenuButton 표시
+                              if (isCommentAuthor)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 8.0),
+                                  // 약간의 여백 추가
+                                  child: PopupMenuButton<String>(
+                                    onSelected: (value) async {
+                                      if (value == 'edit') {
+                                        // 수정 버튼 클릭 시 동작
+                                        String? newContent =
+                                            await showEditDialog(
+                                                context, comment.content);
+                                        if (newContent != null &&
+                                            newContent.isNotEmpty) {
+                                          await editComment(
+                                              comment.id, newContent); // 수정 실행
+                                        }
+                                      } else if (value == 'delete') {
+                                        // 삭제 버튼 클릭 시 동작
+                                        bool confirmDelete = await showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return AlertDialog(
+                                              title: Text("댓글 삭제"),
+                                              content:
+                                                  Text("정말 이 댓글을 삭제하시겠습니까?"),
+                                              actions: [
+                                                TextButton(
+                                                    child: Text("취소"),
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(false)),
+                                                TextButton(
+                                                    child: Text("삭제"),
+                                                    onPressed: () =>
+                                                        Navigator.of(context)
+                                                            .pop(true)),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (confirmDelete) {
+                                          await deleteComment(
+                                              comment.id); // 삭제 실행
+                                        }
+                                      }
+                                    },
+                                    itemBuilder: (BuildContext context) =>
+                                        <PopupMenuEntry<String>>[
+                                      const PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: Text('수정'),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Text('삭제'),
+                                      ),
+                                    ],
+                                    iconSize: 24, // PopupMenuButton 아이콘 크기를 키움
+                                    icon: Icon(Icons.more_vert), // 더 큰 아이콘 사용
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -1040,7 +1122,8 @@ class _PostDetailState extends State<PostDetail> {
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 ),
               ),
             ),

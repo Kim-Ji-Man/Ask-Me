@@ -124,7 +124,7 @@ class _CommunityPostState extends State<CommunityPost> {
 
     if (response.statusCode == 201) {
       print("게시글이 성공적으로 생성되었습니다.");
-      Navigator.pop(context); // 게시글 생성 후 이전 화면으로 이동
+      Navigator.pop(context,true); // 게시글 생성 후 이전 화면으로 이동
     } else {
       print('게시글 생성 실패. 상태 코드: ${response.statusCode}');
     }

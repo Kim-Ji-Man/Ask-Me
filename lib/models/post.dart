@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 class Post {
   final String id;
   final String userId; // 게시글 작성자의 user_id
-  final String title;
-  final String content;
+  String title;
+  String content;
   final String location;
   final String time;
   String nick;
