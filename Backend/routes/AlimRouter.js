@@ -406,31 +406,64 @@ router.get("/app/:userRole", async (req, res) => {
   }
 });
 
-router.get("/app/Home/:userRole", async (req, res) => {
-  const { userRole } = req.params;
+router.get("/app/:userRole/:userId", async (req, res) => {
+  const { userRole, userId } = req.params;
+  console.log("들어오니??? 알림내역");
+  console.log(userRole,userId,"들어오니??? 알림내역");
+
 
   try {
+    let queryResult;
+
     if (userRole === "guard") {
-      // 'guard' 역할에 대한 쿼리: 최신순으로 4개만 가져옴
-      const queryResult = await db.executeQuery(`
-                SELECT detection_time, image_path, device_id
-                FROM Alert_Log
-                ORDER BY detection_time DESC
-                LIMIT 4
-            `);
-      console.log("queryResult:", queryResult);
+      console.log(userRole,"gu");
+      
+      // guard 역할: anomaly_type 조건 없이 모든 항목을 가져옴
+      queryResult = await db.executeQuery(`
+        SELECT id AS anomaly_resolution_id, device_id, anomaly_type,alert_id
+        FROM Anomaly_Resolution
+      `);
+    } else if (userRole === "user") {
+      console.log(userRole,"user");
 
-      const alertLogs = Array.isArray(queryResult) ? queryResult : [];
-      console.log("Alert Logs:", alertLogs);
+      // user 역할: anomaly_type이 '흉기'인 항목만 가져옴
+      queryResult = await db.executeQuery(`
+        SELECT id AS anomaly_resolution_id, device_id, anomaly_type,alert_id
+        FROM Anomaly_Resolution
+        WHERE anomaly_type = '흉기'
+      `);
+      console.log(queryResult);
+      
+    } else {
+      return res.status(403).json({ message: "권한이 없습니다." });
+    }
 
-      const result = await Promise.all(
-        alertLogs.map(async (log) => {
+    const alertLogs = Array.isArray(queryResult) ? queryResult : [];
+    console.log(alertLogs,"2");
+    
+    const result = await Promise.all(
+      alertLogs.map(async (log) => {
+        // Alert_Log 테이블에서 alert_id를 이용해 detection_time과 image_path를 가져옴
+        const alertLogData = await db.executeQuery(
+          `
+            SELECT detection_time, image_path
+            FROM Alert_Log
+            WHERE alert_id = ?
+          `,
+          [log.alert_id] // Anomaly_Resolution의 id가 Alert_Log의 alert_id에 해당함
+        );
+        console.log(alertLogData,"3");
+        
+        if (alertLogData.length > 0) {
+          const logDetails = alertLogData[0];
+
+          // Detection_Device와 Stores 테이블에서 store_id와 address를 가져옴
           const deviceData = await db.executeQuery(
             `
-                        SELECT store_id
-                        FROM Detection_Device
-                        WHERE device_id = ?
-                    `,
+              SELECT store_id
+              FROM Detection_Device
+              WHERE device_id = ?
+            `,
             [log.device_id]
           );
 
@@ -439,88 +472,77 @@ router.get("/app/Home/:userRole", async (req, res) => {
 
             const storeData = await db.executeQuery(
               `
-                            SELECT address
-                            FROM Stores
-                            WHERE store_id = ?
-                        `,
+                SELECT address
+                FROM Stores
+                WHERE store_id = ?
+              `,
               [storeId]
             );
 
-            return {
-              detection_time: log.detection_time,
-              image_path: log.image_path || "Default/Path/For/No/Image.jpg",
-              address: storeData.length > 0 ? storeData[0].address : null,
-            };
-          }
-          return null;
-        })
-      );
-
-      res.json(result.filter((data) => data !== null));
-    } else if (userRole === "user") {
-      // 'user' 역할에 대한 쿼리: 최신순으로 4개만 가져옴
-      const anomalyResults = await db.executeQuery(`
-                SELECT alert_id
-                FROM Anomaly_Resolution
-                WHERE anomaly_type = '흉기'
-                ORDER BY alert_id DESC
-                LIMIT 4
-            `);
-      console.log("Anomaly Results:", anomalyResults);
-
-      const alertIds = anomalyResults.map((anomaly) => anomaly.alert_id);
-
-      const alertLogs = await Promise.all(
-        alertIds.map(async (alertId) => {
-          const logData = await db.executeQuery(
-            `
-                        SELECT detection_time, image_path, device_id
-                        FROM Alert_Log
-                        WHERE alert_id = ?
-                    `,
-            [alertId]
-          );
-
-          if (logData.length > 0) {
-            const log = logData[0];
-            const deviceData = await db.executeQuery(
+            // Check if the user has read this anomaly resolution alert
+            const readStatusResult = await db.executeQuery(
               `
-                            SELECT store_id
-                            FROM Detection_Device
-                            WHERE device_id = ?
-                        `,
-              [log.device_id]
+                SELECT COUNT(*) AS count
+                FROM AlertReadStatus
+                WHERE user_id = ? AND anomaly_resolution_id = ?
+              `,
+              [userId, log.anomaly_resolution_id]
             );
 
-            if (deviceData.length > 0) {
-              const storeId = deviceData[0].store_id;
+            const isRead = readStatusResult[0].count > 0 ? '읽음' : '안읽음';
+            console.log(logDetails.detection_time,logDetails.image_path,log.anomaly_resolution_id,"안나오니???");
+            
+            return {
+              detection_time: logDetails.detection_time,
+              image_path: logDetails.image_path || "Default/Path/For/No/Image.jpg",
+              address: storeData.length > 0 ? storeData[0].address : null,
+              anomaly_type: log.anomaly_type,
+              readStatus: isRead,
+              anomaly_resolution_id: log.anomaly_resolution_id,
 
-              const storeData = await db.executeQuery(
-                `
-                                SELECT address
-                                FROM Stores
-                                WHERE store_id = ?
-                            `,
-                [storeId]
-              );
-
-              return {
-                detection_time: log.detection_time,
-                image_path: log.image_path || "Default/Path/For/No/Image.jpg",
-                address: storeData.length > 0 ? storeData[0].address : null,
-              };
-            }
+            };
           }
-          return null;
-        })
-      );
+        }
+        return null;
+      })
+    );
 
-      res.json(alertLogs.filter((data) => data !== null));
-    } else {
-      return res.status(403).json({ message: "권한이 없습니다." });
-    }
+    res.json(result.filter((data) => data !== null));
   } catch (error) {
     console.error("데이터 조회 중 오류 발생:", error);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+
+router.post('/mark-as-read', async (req, res) => {
+  const { user_id, anomaly_resolution_id } = req.body;
+
+  try {
+    // 먼저 해당 유저가 이미 이 알림을 읽었는지 확인
+    const existingRecord = await db.executeQuery(
+      `
+      SELECT COUNT(*) AS count 
+      FROM AlertReadStatus 
+      WHERE user_id = ? AND anomaly_resolution_id = ?
+      `,
+      [user_id, anomaly_resolution_id]
+    );
+
+    if (existingRecord[0].count === 0) {
+      // 아직 읽지 않은 경우에만 새로운 레코드 추가
+      await db.executeQuery(
+        `
+        INSERT INTO AlertReadStatus (user_id, anomaly_resolution_id, Read_Status, Read_Time)
+        VALUES (?, ?, '읽음', NOW())
+        `,
+        [user_id, anomaly_resolution_id]
+      );
+    }
+
+    res.status(200).json({ message: "알림이 읽음으로 표시되었습니다." });
+  } catch (error) {
+    console.error("알림 읽음 처리 중 오류 발생:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
