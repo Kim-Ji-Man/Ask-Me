@@ -115,9 +115,9 @@ class _AlertState extends State<Alert> {
 
   Widget buildNotificationItem(String timeAgo, String? imagePath,
       String location, String detectionTime, int index) {
-    String imageUrl = imagePath != null
-        ? '$baseUrl$imagePath'
-        : 'images/img_logo.png';
+
+    String correctedPath = imagePath!.replaceAll(RegExp(r'^\.\.'), '');
+    String imageUrl = imagePath != null ? '$baseUrl$correctedPath' : 'images/img_logo.png';
     bool isSelected = selectedIndex == index;
 
     return GestureDetector(
