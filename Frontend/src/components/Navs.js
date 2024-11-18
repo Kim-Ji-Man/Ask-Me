@@ -72,7 +72,7 @@ const fetchAlerts = async (isNewNotification = false) => {
           let apiUrl = '/Alim/alertlist';
       
           if (memberGrade === 0) { // master
-              apiUrl = '/Member';
+              apiUrl = '/Alim/MasterAlims';
           } else if (memberGrade === 1) { // admin
               apiUrl = '/Alim/alertlist';
           }
@@ -129,7 +129,13 @@ useEffect(() => {
 
   // 시간 계산 함수
   const timeSince = (date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    // UTC 시간을 KST로 변환 (9시간 더하기)
+    const kstDate = new Date(new Date(date).getTime() + 9 * 60 * 60 * 1000);
+  
+    // 현재 시간과의 차이를 초 단위로 계산
+    const seconds = Math.floor((new Date() - kstDate) / 1000);
+  
+    // 경과 시간에 대한 구간 설정
     const intervals = [
       { label: "년", seconds: 31536000 },
       { label: "개월", seconds: 2592000 },
@@ -138,13 +144,15 @@ useEffect(() => {
       { label: "분", seconds: 60 },
       { label: "초", seconds: 1 },
     ];
-
+  
+    // 각 구간에 맞는 경과 시간 계산
     for (let i = 0; i < intervals.length; i++) {
       const interval = Math.floor(seconds / intervals[i].seconds);
       if (interval >= 1) {
         return `${interval} ${intervals[i].label} 전`;
       }
     }
+    
     return "방금 전";
   };
 
@@ -370,30 +378,34 @@ const jwtToken = localStorage.getItem("jwtToken");
 
   {/* memberGrade가 0일 경우 (마스터) */}
   {memberGrade === 0 && (
-    <>
-      <FaBell size={24} style={{ color: hasNewAlert ? 'red' : 'lightgrey' }} />
-      {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
-        <span className="badge"></span>
-      )}
-      
-      {isAlertOpen && (
-        <div className="alert-dropdown">
-          <div className="alert-header">
-            <strong>알림</strong>
-          </div>
-          <ul>
-            {alerts.slice(0, 5).map((alert) => (
+  <>
+    <FaBell size={24} style={{ color: hasNewAlert ? 'red' : 'lightgrey' }} />
+    {!isAlertOpen && alerts.length > 0 && hasNewAlert && (
+      <span className="badge"></span>
+    )}
+    
+    {isAlertOpen && (
+      <div className="alert-dropdown">
+        <div className="alert-header">
+          <strong>알림</strong>
+        </div>
+        <ul>
+          {alerts
+            .slice() // 원본 배열을 변경하지 않기 위해 복사본 생성
+            .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // created_at 기준 내림차순 정렬 (최신 알림이 먼저)
+            .slice(0, 5) // 상위 5개의 알림만 표시
+            .map((alert) => (
               <li key={`${alert.alert_id}-${alert.username}`}>
-                  <span className="message"> {`${alert.mem_name}님이 ${getRoleInKorean(alert.role)}로 회원가입하였습니다.`}</span>
+                <span className="message">{`${alert.master_alert_content}`}</span>
                 <br />
-                <small className="timestamp">{timeSince(alert.created_at)}</small>
+                <small className="timestamp">{timeSince(alert.created_at)}</small> {/* 경과 시간 표시 */}
               </li>
             ))}
-          </ul>
-        </div>
-      )}
-    </>
-  )}
+        </ul>
+      </div>
+    )}
+  </>
+)}
 </div>
               {/* <FaCog
                 size={24}

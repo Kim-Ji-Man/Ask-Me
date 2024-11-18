@@ -19,6 +19,8 @@ const AlimMaster = () => {
     axios.get('/Alim/MasterAlims')
       .then(response => {
         setAlertsData(response.data);
+        console.log(response.data);
+        
       })
       .catch(error => {
         console.error('알림 데이터를 불러오는 중 오류 발생:', error);
@@ -65,7 +67,7 @@ const AlimMaster = () => {
                     hour: '2-digit',
                     minute: '2-digit',
                   }),
-                  title: alert.status === '가입' ? alert.master_alert_content : alert.post_title,
+                  title:alert.master_alert_content,
                   status: alert.status,
                 }))}
                 columns={[

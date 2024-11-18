@@ -72,7 +72,7 @@ router.get('/app/Count/:role', async (req, res) => {
       todayQuery = `
         SELECT COUNT(*) AS today_count 
         FROM Anomaly_Resolution 
-        WHERE DATE(CONVERT_TZ(NOW(), '+00:00', '+09:00')) = DATE(CONVERT_TZ(closed_at, '+00:00', '+09:00'));
+        WHERE DATE(closed_at) = CURDATE();
       `;
     } 
     // role이 'user'인 경우 anomaly_type이 '흉기'인 것만 카운트
@@ -85,7 +85,7 @@ router.get('/app/Count/:role', async (req, res) => {
       todayQuery = `
         SELECT COUNT(*) AS today_count 
         FROM Anomaly_Resolution 
-        WHERE anomaly_type = ? AND DATE(CONVERT_TZ(NOW(), '+00:00', '+09:00')) = DATE(CONVERT_TZ(closed_at, '+00:00', '+09:00'));
+        WHERE anomaly_type = ? AND  DATE(closed_at) = CURDATE();
       `;
       params.push('흉기'); // anomaly_type이 '흉기'인 것만 필터링
     } 
@@ -134,7 +134,7 @@ router.get("/", async (req, res) => {
         n.sent_at, 
         n.message, 
         n.image, 
-        n.status
+        n.status,
     FROM 
         Notification n
     JOIN 
@@ -544,21 +544,16 @@ router.get("/MasterAlims", async (req, res) => {
 
     // '신고' 상태의 알림 데이터 조회
     const reportAlerts = await db.executeQuery(`
-       SELECT 
+        SELECT 
             ma.master_alert_id, 
             ma.master_alert_content, 
             ma.created_at, 
             ma.status, 
-            p.title AS post_title, 
-            u_reported.username AS reported_user_name, 
-            u_alert.username AS alert_user_name  
+            u.username AS alert_user_name
         FROM MasterAlerts ma
-            JOIN Reports r ON ma.user_id = r.user_id  
-            JOIN Posts p ON r.post_id = p.post_id  
-            JOIN Users u_reported ON p.user_id = u_reported.user_id  
-            JOIN Users u_alert ON ma.user_id = u_alert.user_id  
+        JOIN Users u ON ma.user_id = u.user_id
         WHERE ma.status = '신고';
-        `);
+                `);
 
     console.log("Report Alerts:", reportAlerts); // 디버깅용 로그
 

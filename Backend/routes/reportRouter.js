@@ -2,15 +2,36 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../models/db');
+const { sendMember } = require('../websockets'); // WebSocket 알림 전송 함수 임포트
+
 
 // 게시글 신고 생성
 // 게시글 신고 추가
 router.post("/reports", async (req, res) => {
     const { post_id, user_id, reason_ids } = req.body; // reason_ids는 배열로 받음
     const created_at = new Date(); // 현재 시간
+    console.log(post_id, user_id, reason_ids, "데이터 형태");
 
     try {
-        // 여러 개의 reason_id 처리
+        // Step 1: post_id로 게시글 작성자의 user_id 가져오기
+        const postQuery = "SELECT user_id FROM Posts WHERE post_id = ?";
+        const postResult = await db.executeQuery(postQuery, [post_id]);
+        const postAuthorId = postResult[0]?.user_id;
+
+        if (!postAuthorId) {
+            return res.status(404).json({ error: "게시글을 찾을 수 없습니다." });
+        }
+
+        // Step 2: user_id로 Users 테이블에서 username 가져오기
+        const userQuery = "SELECT username FROM Users WHERE user_id = ?";
+        const userResult = await db.executeQuery(userQuery, [postAuthorId]);
+        const username = userResult[0]?.username;
+
+        if (!username) {
+            return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+        }
+
+        // Step 3: 여러 개의 신고 사유 처리 및 Reports 테이블에 삽입
         for (const reason_id of reason_ids) {
             await db.executeQuery(
                 "INSERT INTO Reports (post_id, user_id, reason_id, created_at) VALUES (?, ?, ?, ?)",
@@ -18,6 +39,28 @@ router.post("/reports", async (req, res) => {
             );
         }
 
+        // Step 4: reason_ids에 해당하는 신고 사유(reason) 가져오기
+        let reasonsList = [];
+        for (const reason_id of reason_ids) {
+            const reasonQuery = "SELECT reason FROM ReportReasons WHERE reason_id = ?";
+            const reasonResult = await db.executeQuery(reasonQuery, [reason_id]);
+            if (reasonResult.length > 0) {
+                reasonsList.push(reasonResult[0].reason);
+            }
+        }
+        sendMember(`신고가 성공적으로 되었습니다.`);
+
+        // Step 5: 알림 메시지 생성
+        const alertContent = `${username}님이 게시글에 대해 ${reasonsList.join(", ")} 사유로 신고당했습니다.`;
+
+        // Step 6: MasterAlerts 테이블에 알림 데이터 삽입
+        const insertAlertQuery = `
+            INSERT INTO MasterAlerts (master_alert_content, created_at, status, user_id) 
+            VALUES (?, NOW(), '신고', ?)
+        `;
+        await db.executeQuery(insertAlertQuery, [alertContent, user_id]);
+
+        // 성공 응답 전송
         res.status(201).json({ message: "신고가 접수되었습니다." });
     } catch (err) {
         console.error("Error details:", err); // 에러 로그 출력
