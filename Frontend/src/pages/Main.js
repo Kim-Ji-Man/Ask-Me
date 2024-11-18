@@ -121,7 +121,7 @@ const Main = () => {
           </Col>
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: "500px" }}>
-              <h6 style={{ fontSize: "24px" }}>알림결과 및 조치</h6>
+              <h6 style={{ fontSize: "24px" }}>알림결과</h6>
               <PieChart />
             </div>
           </Col>

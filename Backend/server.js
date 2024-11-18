@@ -141,6 +141,7 @@ app.post("/alert", async (req, res) => {
   if (detected) {
     console.log('흉기 감지! 클라이언트에 알림을 전송합니다.');
     broadcastAlert(message); // WebSocket으로 알림 전송
+    sendNotification("흉기감지");
 
     // 이메일 및 SMS 알림 전송
     await sendTest(); // 새로운 알림 기능 실행

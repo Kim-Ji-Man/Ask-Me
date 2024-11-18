@@ -32,6 +32,43 @@ router.get('/users', async (req, res) => {
         return res.status(500).send('사용자 수를 가져오는 중 오류 발생');
     }
 });
+
+// 월별 흉기 감지 및 오감지 데이터 조회 API
+router.get('/one/Month', async (req, res) => {
+  const query = `
+    SELECT 
+      months.month AS month,
+      COALESCE(SUM(CASE WHEN anomaly_type = '흉기' THEN 1 ELSE 0 END), 0) AS weapon_count,
+      COALESCE(SUM(CASE WHEN anomaly_type != '흉기' THEN 1 ELSE 0 END), 0) AS no_weapon_count
+    FROM (
+      SELECT 1 AS month UNION ALL
+      SELECT 2 UNION ALL
+      SELECT 3 UNION ALL
+      SELECT 4 UNION ALL
+      SELECT 5 UNION ALL
+      SELECT 6 UNION ALL
+      SELECT 7 UNION ALL
+      SELECT 8 UNION ALL
+      SELECT 9 UNION ALL
+      SELECT 10 UNION ALL
+      SELECT 11 UNION ALL
+      SELECT 12
+    ) AS months
+    LEFT JOIN Anomaly_Resolution ar ON months.month = MONTH(ar.closed_at)
+    AND ar.closed_at IS NOT NULL
+    GROUP BY months.month
+    ORDER BY months.month;
+  `;
+
+  try {
+    const results = await db.executeQuery(query);
+    console.log(results, "결과");
+    res.json(results);
+  } catch (err) {
+    console.error('쿼리 실행 오류:', err);
+    res.status(500).json({ error: '데이터 조회 실패' });
+  }
+});
   
   
   

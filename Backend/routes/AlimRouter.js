@@ -54,6 +54,24 @@ setInterval(async () => {
 }, 60000); // 5초마다 확인
 
 
+router.get('/admin/anomaly-counts', async (req, res) => {
+  const query = `
+    SELECT anomaly_type, COUNT(*) AS count
+    FROM Anomaly_Resolution
+    GROUP BY anomaly_type;
+  `;
+  
+  try {
+    // db.executeQuery가 Promise를 반환한다고 가정
+    const results = await db.executeQuery(query);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 
 router.get('/app/Count/:role', async (req, res) => {
   const { role } = req.params;
@@ -499,7 +517,7 @@ router.get("/app/:userRole/:userId", async (req, res) => {
             );
 
             const isRead = readStatusResult[0].count > 0 ? '읽음' : '안읽음';
-            console.log(logDetails.detection_time,logDetails.image_path,log.anomaly_resolution_id,"안나오니???");
+            console.log(logDetails.detection_time,logDetails.image_path,log.anomaly_resolution_id,isRead,"안나오니???");
             
             return {
               detection_time: logDetails.detection_time,
@@ -526,6 +544,8 @@ router.get("/app/:userRole/:userId", async (req, res) => {
 
 router.post('/mark-as-read', async (req, res) => {
   const { user_id, anomaly_resolution_id } = req.body;
+  console.log(user_id,anomaly_resolution_id,"나오니 body");
+  
 
   try {
     // 먼저 해당 유저가 이미 이 알림을 읽었는지 확인
