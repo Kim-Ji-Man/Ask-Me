@@ -21,6 +21,7 @@ class _AlertState extends State<Alert> {
   List<dynamic> alerts = []; // 알림 데이터를 저장할 리스트
   int? selectedIndex; // 선택된 항목 인덱스
 
+
   @override
   void initState() {
     super.initState();
@@ -47,7 +48,7 @@ class _AlertState extends State<Alert> {
     print("userId: $userId");
 
 
-    final response = await http.get(Uri.parse('$baseUrl/Alim/app/$userRole'));
+    final response = await http.get(Uri.parse('$baseUrl/Alim/app/$userRole/$userId'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -131,7 +132,7 @@ class _AlertState extends State<Alert> {
                     alert['image_path'],
                     alert['address'] ?? '주소 정보 없음',
                     alert['detection_time'],
-                    alert['readStatus'],
+                    alert['readStatus'] ?? '읽지않음',
                     alert['anomaly_resolution_id'].toString(),
                     index,
                   );
@@ -145,7 +146,7 @@ class _AlertState extends State<Alert> {
   }
 
   Widget buildNotificationItem(String timeAgo, String? imagePath,
-      String location, String detectionTime,String readStatus,String anomaly_resolution_id, int index) {
+      String location, String detectionTime,String readStatus,String anomaly_resolution_id,  int index) {
     String imageUrl = imagePath != null
         ? '$baseUrl$imagePath'
         : 'images/img_logo.png';
