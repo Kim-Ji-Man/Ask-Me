@@ -16,9 +16,11 @@ class Alert extends StatefulWidget {
 
 class _AlertState extends State<Alert> {
   String? userRole;
+  String? userId;
   String baseUrl = dotenv.get("BASE_URL");
   List<dynamic> alerts = []; // 알림 데이터를 저장할 리스트
   int? selectedIndex; // 선택된 항목 인덱스
+
 
   @override
   void initState() {
@@ -39,9 +41,15 @@ class _AlertState extends State<Alert> {
     );
     print("JWT 페이로드 데이터: $payload");
     userRole = payload['role'];
-    print("userRole: $userRole");
+    userId = payload['userId'].toString();
 
-    final response = await http.get(Uri.parse('$baseUrl/Alim/app/$userRole'));
+
+    print("userRole: $userRole");
+    print("userId: $userId");
+
+
+
+    final response = await http.get(Uri.parse('$baseUrl/Alim/app/$userRole/$userId'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -52,6 +60,29 @@ class _AlertState extends State<Alert> {
             DateTime.parse(b['detection_time']).compareTo(
                 DateTime.parse(a['detection_time'])));
       });
+    }
+  }
+
+  void markAsRead(String userId, String anomaly_resolution_id) async {
+    final url = Uri.parse('$baseUrl/Alim/mark-as-read');
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'user_id': userId,
+          'anomaly_resolution_id': anomaly_resolution_id,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('알림이 읽음으로 표시되었습니다.');
+      } else {
+        print('알림 읽음 처리 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('알림 읽음 처리 중 오류 발생: $e');
     }
   }
 
@@ -102,6 +133,8 @@ class _AlertState extends State<Alert> {
                     alert['image_path'],
                     alert['address'] ?? '주소 정보 없음',
                     alert['detection_time'],
+                    alert['readStatus'],
+                    alert['anomaly_resolution_id'].toString(),
                     index,
                   );
                 },
@@ -114,7 +147,7 @@ class _AlertState extends State<Alert> {
   }
 
   Widget buildNotificationItem(String timeAgo, String? imagePath,
-      String location, String detectionTime, int index) {
+      String location, String detectionTime,String readStatus,String anomaly_resolution_id, int index) {
     String imageUrl = imagePath != null
         ? '$baseUrl$imagePath'
         : 'images/img_logo.png';
@@ -125,19 +158,26 @@ class _AlertState extends State<Alert> {
         setState(() {
           selectedIndex = index; // 선택된 항목을 갱신하여 배경색 변경
         });
+
+        if (userId != null && anomaly_resolution_id != null) {
+          markAsRead(userId!, anomaly_resolution_id);
+        } else {
+          print('userId 또는 anomalyResolutionId가 null입니다.');
+        }
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                AlertDetails(
-                  imageUrl: widget.isSecurity
-                      ? imageUrl
-                      : 'images/img_logo.png',
-                  location: location,
-                  detectionTime: detectionTime,
-                ),
+            builder: (context) => AlertDetails(
+              imageUrl: widget.isSecurity ? imageUrl : 'images/img_logo.png',
+              location: location,
+              detectionTime: detectionTime,
+            ),
           ),
-        );
+        ).then((_) {
+          // 뒤로 가기 후 리스트를 다시 로드
+          loadUserRole(); // 알림 데이터를 다시 불러옴
+        });
       },
       child: Container(
         width: MediaQuery
@@ -204,6 +244,15 @@ class _AlertState extends State<Alert> {
                   Text(
                     timeAgo,
                     style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  SizedBox(height: 4), // 간격 추가
+                  // readStatus 추가 부분
+                  Text(
+                    '읽음 상태 : $readStatus', // 읽음 상태 표시
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: readStatus == '읽음' ? Colors.green : Colors.redAccent, // 읽음이면 초록색
+                    ),
                   ),
                 ],
               ),

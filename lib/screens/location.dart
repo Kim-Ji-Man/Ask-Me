@@ -244,12 +244,12 @@ class _LocationState extends State<Location> {
             customOverlayId: markerId,
             latLng: position,
             content:
-            '<div style="background-color :rgba(0 ,0 ,0 ,0.8);border-radius :.10 px;padding :.10 px;width :.200 px;">'
-                '<p style ="color:white;font-size :.16 px;font-weight:bold;margin :.text-align:center;">${facility['name']} </p>'
-                '<p style ="color:#f1c40f ;margin :.5 px;text-align:center;font-size :.14 px;">${facility['type']} </ p>'
-                '<div style ="border-top :.1 pxsolid # f1c40f ;margin-top :.5 px;">'
-                '</div>'
-                '<p style ="color:white;font-size :12 px;margin-top :.5 px;text-align:center;">주소:${facility['address']} </p>'
+            '<div style="background-color: rgba(0, 0, 0, 0.8); border-radius: 10px; padding: 10px; width: 200px;">'
+                '<p style="color: white; font-size: 16px; font-weight: bold; margin: 0; text-align: center;">${facility['name']}</p>'
+                '<p style="color: #f1c40f; margin: 5px 0; text-align: center; font-size: 14px;">${facility['type']}</p>'
+                '<div style="border-top: 1px solid #f1c40f; margin-top: 5px;"></div>'
+                '<p style="color: white; font-size: 12px; margin: 5px 0; text-align: center;">주소 : ${facility['address']}</p>'
+                '<p style="color: white; font-size: 12px; margin: 5px 0; text-align: center;">전화번호 : ${facility['phone_number']}</p>'
                 '</div>',
             yAnchor: 1.4,
             zIndex: 5));
@@ -345,6 +345,7 @@ class _LocationState extends State<Location> {
                   if (currentLocation != null) {
                     mapController.panTo(currentLocation!);
                   }
+                  mapController.setLevel(7);
                 },
                 markers: markers.toList(),
                 circles: circles,

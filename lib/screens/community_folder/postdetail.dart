@@ -96,7 +96,7 @@ class _PostDetailState extends State<PostDetail> {
 
     final url = Uri.parse('$BaseUrl/community/posts');
     final response =
-        await http.get(url, headers: {'Content-Type': 'application/json'});
+    await http.get(url, headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -144,7 +144,7 @@ class _PostDetailState extends State<PostDetail> {
         comments.addAll(jsonData.map((comment) {
           String formattedTime = comment['created_at'] != null
               ? DateFormat('yy.MM.dd HH:mm')
-                  .format(DateTime.parse(comment['created_at']))
+              .format(DateTime.parse(comment['created_at']))
               : "시간 없음";
 
           return Comment(
@@ -196,7 +196,7 @@ class _PostDetailState extends State<PostDetail> {
           for (var commentData in commentList) {
             // 각 댓글의 좋아요 상태 업데이트
             final comment =
-                comments.firstWhere((c) => c.id == commentData['comment_id']);
+            comments.firstWhere((c) => c.id == commentData['comment_id']);
             comment.isLiked =
                 commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
             comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
@@ -205,7 +205,7 @@ class _PostDetailState extends State<PostDetail> {
           // 단일 객체일 경우 처리 (이 부분은 필요 없을 수도 있음)
           final commentData = data['comments'];
           final comment =
-              comments.firstWhere((c) => c.id == commentData['comment_id']);
+          comments.firstWhere((c) => c.id == commentData['comment_id']);
           comment.isLiked =
               commentData['isLiked'] == 1; // 서버에서 받은 값이 0 또는 1일 수 있으므로 변환
           comment.likeCount = commentData['likes_count'] ?? 0; // 좋아요 개수 업데이트
@@ -511,7 +511,7 @@ class _PostDetailState extends State<PostDetail> {
   Future<void> showReportDialog() async {
     final List<String> reportOptions = ['광고/홍보', '기타', '도배', '욕설/비방', '음란성'];
     List<bool> selectedOptions =
-        List<bool>.filled(reportOptions.length, false); // 선택 여부를 저장하는 리스트
+    List<bool>.filled(reportOptions.length, false); // 선택 여부를 저장하는 리스트
 
     await showDialog(
       context: context,
@@ -744,7 +744,7 @@ class _PostDetailState extends State<PostDetail> {
   Future<String?> showEditDialog(
       BuildContext context, String currentContent) async {
     final TextEditingController _controller =
-        TextEditingController(text: currentContent);
+    TextEditingController(text: currentContent);
 
     return await showDialog<String>(
       context: context,
@@ -998,7 +998,7 @@ class _PostDetailState extends State<PostDetail> {
                         children: [
                           Text(comment.time,
                               style:
-                                  TextStyle(fontSize: 10, color: Colors.grey)),
+                              TextStyle(fontSize: 10, color: Colors.grey)),
                           Row(
                             children: [
                               IconButton(
@@ -1042,8 +1042,8 @@ class _PostDetailState extends State<PostDetail> {
                                       if (value == 'edit') {
                                         // 수정 버튼 클릭 시 동작
                                         String? newContent =
-                                            await showEditDialog(
-                                                context, comment.content);
+                                        await showEditDialog(
+                                            context, comment.content);
                                         if (newContent != null &&
                                             newContent.isNotEmpty) {
                                           await editComment(
@@ -1057,7 +1057,7 @@ class _PostDetailState extends State<PostDetail> {
                                             return AlertDialog(
                                               title: Text("댓글 삭제"),
                                               content:
-                                                  Text("정말 이 댓글을 삭제하시겠습니까?"),
+                                              Text("정말 이 댓글을 삭제하시겠습니까?"),
                                               actions: [
                                                 TextButton(
                                                     child: Text("취소"),
@@ -1080,7 +1080,7 @@ class _PostDetailState extends State<PostDetail> {
                                       }
                                     },
                                     itemBuilder: (BuildContext context) =>
-                                        <PopupMenuEntry<String>>[
+                                    <PopupMenuEntry<String>>[
                                       const PopupMenuItem<String>(
                                         value: 'edit',
                                         child: Text('수정'),
@@ -1123,7 +1123,7 @@ class _PostDetailState extends State<PostDetail> {
                     borderSide: BorderSide.none,
                   ),
                   contentPadding:
-                      EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                 ),
               ),
             ),
