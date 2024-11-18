@@ -121,16 +121,17 @@ CctvWebSocket();
   }, []);
   
   const sortedAlertData = alertData.sort((a, b) => {
+    // '흉기의심'이 가장 우선 순위
     if (a.anomaly_type === "흉기의심" && b.anomaly_type !== "흉기의심") {
       return -1;
     }
     if (a.anomaly_type !== "흉기의심" && b.anomaly_type === "흉기의심") {
       return 1;
     }
-    return 0;
-  });
   
-  
+    // 동일한 anomaly_type일 경우 최신순으로 정렬
+    return new Date(b.detection_time) - new Date(a.detection_time);
+  });    
 
   return (
     <div className="main-content mt-5">

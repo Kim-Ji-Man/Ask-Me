@@ -83,6 +83,10 @@ async function getStoreInfo(connection, deviceId) {
 
 async function sendTest() {
     try {
+        console.log('3초 대기 중...');
+        await new Promise(resolve => setTimeout(resolve, 3000)); // 비동기 대기
+        console.log('딜레이 완료, sendTest 실행 시작');
+
         // 데이터베이스 연결
         const connection = await db.getConnection();
         console.log('success');
