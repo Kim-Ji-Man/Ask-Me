@@ -121,14 +121,36 @@ CctvWebSocket();
   }, []);
   
   const sortedAlertData = alertData.sort((a, b) => {
+    // '흉기의심'이 가장 우선 순위
     if (a.anomaly_type === "흉기의심" && b.anomaly_type !== "흉기의심") {
       return -1;
     }
     if (a.anomaly_type !== "흉기의심" && b.anomaly_type === "흉기의심") {
       return 1;
     }
+  
+    // '흉기의심'끼리 비교할 경우 최신순으로 정렬
+    if (a.anomaly_type === "흉기의심" && b.anomaly_type === "흉기의심") {
+      return new Date(b.detection_time) - new Date(a.detection_time);
+    }
+  
+    // '흉기'가 두 번째 우선 순위
+    if (a.anomaly_type === "흉기" && b.anomaly_type !== "흉기") {
+      return -1;
+    }
+    if (a.anomaly_type !== "흉기" && b.anomaly_type === "흉기") {
+      return 1;
+    }
+  
+    // '흉기'끼리 비교할 경우 최신순으로 정렬
+    if (a.anomaly_type === "흉기" && b.anomaly_type === "흉기") {
+      return new Date(b.detection_time) - new Date(a.detection_time);
+    }
+  
+    // 기타 항목들은 순서 유지
     return 0;
-  });
+  });  
+  
   
   
 
