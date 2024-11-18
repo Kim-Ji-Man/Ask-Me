@@ -131,7 +131,7 @@ const Alim = () => {
                         })}
                       </div>
                       <img
-                        src={`https://localhost:5000${alim.image}`}
+                        src={`https://localhost:5000${alim.image_path.replace(/^(\.\.)/, '')}`}
                         onClick={() => handleShow(alim)}
                         className="media-content"
                         alt="알림 이미지"
@@ -150,7 +150,7 @@ const Alim = () => {
             <Row>
               <Col xs={12} className="video-section position-relative">
                 <video
-                  src="/videos/test.mp4"
+                  src={`https://localhost:5000${selectedAlim?.video_path.replace(/^(\.\.)/, '')}`}
                   controls
                   muted
                   autoPlay
@@ -163,13 +163,13 @@ const Alim = () => {
                   <Col xs={6}>
                     <div className="image-container">
                       <img
-                        src={`https://localhost:5000${selectedAlim?.image}`}
+                        src={`https://localhost:5000${selectedAlim?.image_path.replace(/^(\.\.)/, '')}`}
                         alt="알림 이미지"
                       />
                       <div className="download-section">
                         <Button
                           className="download-btn"
-                          onClick={() => handleDownload(selectedAlim?.image)}
+                          onClick={() => handleDownload(selectedAlim?.image_path.replace(/^(\.\.)/, ''))}
                           variant="light"
                         >
                           <BsDownload size={24} />

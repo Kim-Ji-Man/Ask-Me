@@ -122,29 +122,38 @@ router.get('/app/Count/:role', async (req, res) => {
 // 모든 알림 가져오기
 router.get("/", async (req, res) => {
   const sql = `
-    SELECT 
-        n.noti_id, 
-        n.user_id, 
-        n.alert_id, 
-        d.device_id, 
-        d.device_name, 
-        d.device_type, 
-        d.location, 
-        n.noti_method, 
-        n.sent_at, 
-        n.message, 
-        n.image, 
-        n.status,
-    FROM 
-        Notification n
-    JOIN 
-        Alert_Log a ON n.alert_id = a.alert_id
-    JOIN 
-        Detection_Device d ON a.device_id = d.device_id
-    ORDER BY 
-        n.sent_at DESC;
+  SELECT 
+    n.noti_id, 
+    n.user_id, 
+    n.alert_id, 
+    d.device_id, 
+    d.device_name, 
+    d.device_type, 
+    d.location, 
+    n.noti_method, 
+    n.sent_at, 
+    n.message, 
+    n.image, 
+    n.status,
+    a.image_path,
+    a.video_path
+FROM 
+    (
+        SELECT 
+            n.*, 
+            ROW_NUMBER() OVER (PARTITION BY n.alert_id ORDER BY n.sent_at DESC, n.noti_id DESC) AS row_num
+        FROM 
+            Notification n
+    ) AS n
+JOIN 
+    Alert_Log a ON n.alert_id = a.alert_id
+JOIN 
+    Detection_Device d ON a.device_id = d.device_id
+WHERE 
+    n.row_num = 1
+ORDER BY 
+    n.sent_at DESC;
     `;
-
   try {
     const results = await db.executeQuery(sql);
     res.send(results);

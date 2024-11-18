@@ -21,9 +21,12 @@ from db import get_db_connection, get_db_cursor
 from pydantic import BaseModel
 import requests
 import aiohttp
+from fastapi.staticfiles import StaticFiles
 
 # FastAPI 애플리케이션 생성
 app = FastAPI()
+app.mount("/uploads", StaticFiles(directory="../uploads"), name="uploads")
+app.mount("/videos", StaticFiles(directory="../uploads/videos"), name="videos")
 
 # CORS 설정
 origins = ["https://localhost:3000", "https://localhost:5000"]
@@ -69,10 +72,11 @@ def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, sa
     if record_video:
         # 파일 이름 생성
         base_filename = "video"
-        extension = ".avi"
+        extension = ".mp4"
         video_filename = generate_unique_filename(save_directory_vid, base_filename, extension)
 
-        fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+        # MP4 코덱 설정
+        fourcc = cv2.VideoWriter_fourcc(*'avc1')  # 'avc1'은 H.264 코덱의 FourCC
         out = cv2.VideoWriter(video_filename, fourcc, 30.0, (640, 480))
         print(f"Video recording started: {video_filename}")
 
@@ -163,7 +167,7 @@ async def detect_weapon(data: DetectionData):
 
     # 새로운 파일 이름 생성 (단 한번만 호출)
     image_filename = generate_unique_filename(save_directory_img, "captured", ".jpg")
-    video_filename = generate_unique_filename(save_directory_vid, "video", ".avi")
+    video_filename = generate_unique_filename(save_directory_vid, "video", ".mp4")
 
     async def save_to_database():
         """데이터베이스에 알림 정보 저장"""
@@ -316,4 +320,4 @@ def shutdown_event():
 if __name__ == '__main__':
     # threading.Thread(target=stream_to_server1, args=(0,)).start()  # 카메라 0으로 첫 번째 서버에 스트리밍
     # threading.Thread(target=stream_to_server2, args=(0,)).start()  # 카메라 0으로 두 번째 서버에 스트리밍
-    uvicorn.run(app, host='127.0.0.1', port=8000)
+    uvicorn.run(app, host='127.0.0.1', port=8000, ssl = False)
