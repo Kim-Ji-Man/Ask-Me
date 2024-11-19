@@ -147,12 +147,13 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 60, // 컨테이너 높이를 조정하여 탭의 크기를 키움
+              height: 60, // 컨테이너 높이
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(30), // 둥근 테두리
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Expanded(
                     child: GestureDetector(
@@ -162,8 +163,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                         });
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        alignment: Alignment.center,
+                        alignment: Alignment.center, // 버튼 텍스트를 정확히 가운데 정렬
                         decoration: BoxDecoration(
                           color: isIdSelected ? Colors.white : Colors.grey[300],
                           borderRadius: BorderRadius.circular(30),
@@ -171,12 +171,15 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                               ? Border.all(color: Color(0xFF0F148D), width: 1)
                               : null,
                         ),
-                        child: Text(
-                          '아이디 찾기',
-                          style: TextStyle(
-                            color: isIdSelected ? Color(0xFF0F148D) : Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10), // 동일한 패딩 추가
+                          child: Text(
+                            '아이디 찾기',
+                            style: TextStyle(
+                              color: isIdSelected ? Color(0xFF0F148D) : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
                       ),
@@ -190,8 +193,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                         });
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        alignment: Alignment.center,
+                        alignment: Alignment.center, // 버튼 텍스트를 정확히 가운데 정렬
                         decoration: BoxDecoration(
                           color: !isIdSelected ? Colors.white : Colors.grey[300],
                           borderRadius: BorderRadius.circular(30),
@@ -199,12 +201,16 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                               ? Border.all(color: Color(0xFF0F148D), width: 1)
                               : null,
                         ),
-                        child: Text(
-                          '비밀번호 재설정',
-                          style: TextStyle(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10), // 동일한 패딩 추가
+                          child: Text(
+                            '비밀번호 재설정',
+                            style: TextStyle(
                               color: !isIdSelected ? Color(0xFF0F148D) : Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16),
+                              fontSize: 16,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -215,34 +221,35 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
             SizedBox(height: 20),
             if (isIdSelected) ...[
               // 아이디 찾기 선택 시 나타나는 필드
-              Text(
-                '이름 *',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 5),
               TextFormField(
                 controller: nameController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: '이름을 입력하세요.',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  labelText: '이름 *', // labelText로 제목 추가
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '이름을 입력하세요'; // 유효성 검사 메시지
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
-              Text(
-                '휴대전화번호 *',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 5),
               TextFormField(
                 controller: phoneController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: '회원가입시 입력한 휴대폰 번호를 입력하세요.',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  labelText: '휴대전화번호 *', // labelText로 제목 추가
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '휴대전화번호를 입력하세요';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 270),
+              SizedBox(height: 20),
+              Spacer(),
               ElevatedButton(
                 onPressed: () {
                   // 아이디 찾기 로직 실행
@@ -252,7 +259,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                   '아이디 찾기',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18, // 텍스트의 스타일은 여기서 설정
+                    fontSize: 18,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
@@ -262,45 +269,45 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
               ),
             ] else ...[
               // 비밀번호 찾기 선택 시 나타나는 필드
-              Text(
-                '아이디 *',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 5),
               TextFormField(
                 controller: idController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: '아이디를 입력하세요.',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  labelText: '아이디 *', // labelText로 제목 추가
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '아이디를 입력하세요';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
-              Text(
-                '휴대전화번호 *',
-                style: TextStyle(fontSize: 16),
-              ),
-              SizedBox(height: 5),
               TextFormField(
                 controller: phoneController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: '회원가입시 입력한 휴대폰 번호를 입력하세요.',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  labelText: '휴대전화번호 *', // labelText로 제목 추가
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return '휴대전화번호를 입력하세요';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 20),
               Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  // 비밀번호 재설정 로직 추가 필요
+                  // 비밀번호 재설정 로직 실행
                   resetPassword();
                 },
                 child: Text(
                   '비밀번호 재설정',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18, // 텍스트의 스타일은 여기서 설정
+                    fontSize: 18,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(

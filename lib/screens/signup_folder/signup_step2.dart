@@ -121,7 +121,7 @@ class _SignUpStep2State extends State<SignUpStep2> {
                     return null;
                   },
                 ),
-                SizedBox(height: 24,),
+                SizedBox(height: 20),
                 Container(
                   width: double.infinity,
                   height: 60,
@@ -134,13 +134,13 @@ class _SignUpStep2State extends State<SignUpStep2> {
                         // SignUpData에 데이터를 저장
                         final signUpData =
                             Provider.of<SignUpData>(context, listen: false);
-        
+
                         // 인스턴스 메서드 호출
                         signUpData.setStep2(
                           _idController.text, // 아이디 저장
                           _passwordController.text, // 비밀번호 저장
                         );
-        
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
