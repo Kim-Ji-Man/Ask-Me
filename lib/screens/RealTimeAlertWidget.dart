@@ -31,7 +31,9 @@ class _RealTimeAlertWidgetState extends State<RealTimeAlertWidget> {
 
             // .env 파일에서 baseUrl 가져오기
             String baseUrl = dotenv.get("BASE_URL");
-            final imageUrl = '$baseUrl${messageData['imageUrl']}';
+            String imageUrls = messageData['imageUrl'];
+            String cleanedImageUrl = imageUrls.replaceAll('..', '');
+            final imageUrl = '$baseUrl$cleanedImageUrl';
             print("새로운 메시지 수신: $lastMessage"); // 디버깅용 메시지 출력
 
             // AlertDialog로 메시지를 표시
