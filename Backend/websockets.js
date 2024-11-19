@@ -165,7 +165,7 @@ function broadcastAlertFlutter(imageUrl, storeName, detectionTime, alertId) {
 
   // 2. WebSocket으로 실시간 알림 전송
   const message = {
-    type: "alert",
+    type: "websocket_alert",
     imageUrl: imageUrl,
     storeName: storeName,
     detectionTime: detectionTime,
