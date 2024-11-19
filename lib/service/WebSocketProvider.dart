@@ -49,7 +49,7 @@ class WebSocketProvider with ChangeNotifier {
             return;
           }
 
-          if (decodedMessage['type'] == 'alert') {
+          if (decodedMessage['type'] == 'websocket_alert') {
             messages.add(jsonEncode(decodedMessage));
             print("디코딩된 메시지 추가됨: ${messages.last}"); // 디코딩된 메시지 출력
           }
