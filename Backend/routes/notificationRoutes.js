@@ -1,10 +1,74 @@
 require('dotenv').config({ path: '../.env' });
 const db = require('../config/dbConfig');
 const path = require('path');
+const axios = require('axios');
 
 const nodemailer = require('nodemailer');
 const twilio = require('twilio');
 const client = new twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// external_user_id 조회 함수
+async function getExternalUserId(connection, userId) {
+    const query = 'SELECT external_user_id FROM Users WHERE user_id = ?';
+    const [rows] = await connection.execute(query, [userId]);
+
+    if (rows.length > 0) {
+        return rows[0].external_user_id; // external_user_id 반환
+    }
+    return null; // 해당 userId에 대한 external_user_id가 없을 경우
+}
+
+// OneSignal 푸쉬 알림 발송 함수
+async function sendPushNotification(userId, title, message, imageUrl = null, androidOptions = {}, additionalData = {}) {
+    const appId = process.env.ONESIGNAL_APP_ID;
+    const apiKey = process.env.ONESIGNAL_API_KEY;
+
+    // 데이터베이스 연결
+    const connection = await db.getConnection();
+
+    try {
+        // external_user_id 조회
+        const externalUserId = await getExternalUserId(connection, userId);
+
+        if (!externalUserId) {
+            console.error(`external_user_id를 찾을 수 없습니다. userId: ${userId}`);
+            return; // external_user_id가 없으면 함수 종료
+        }
+
+        // OneSignal payload 구성
+        const payload = {
+            app_id: appId,
+            include_external_user_ids: [externalUserId], // external_user_id 사용
+            headings: { en: title },
+            contents: { en: message },
+            data: additionalData,
+            android_sound: "default",
+            ios_sound: "default",
+            small_icon: androidOptions.small_icon,
+            large_icon: androidOptions.large_icon, 
+            android_accent_color: androidOptions.android_accent_color,
+        };
+
+        if (imageUrl) {
+            payload.big_picture = imageUrl; // Android 이미지 알림
+            payload.ios_attachments = { id1: imageUrl }; // iOS 이미지 알림
+        }
+
+        // OneSignal API 호출
+        const response = await axios.post('https://onesignal.com/api/v1/notifications', payload, {
+            headers: {
+                Authorization: `Basic ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        console.log('푸쉬 알림 성공:', response.data);
+    } catch (error) {
+        console.error('푸쉬 알림 실패:', error.response?.data || error.message);
+    } finally {
+        connection.release(); // 데이터베이스 연결 해제
+    }
+}
 
 // SMS 발송 함수
 async function sendSms(phoneNumber, message) {
@@ -173,6 +237,43 @@ async function sendTest() {
                 console.error(`Error sending SMS to ${user.phone_number}:`, error.message);
                 await logNotification(connection, userId, alertId, 'sms', message, 'failure');
             }
+
+            for (const user of users) {
+                const userId = user.user_id;
+            
+                // 푸시 알림 설정 확인
+                const [settings] = await connection.execute('SELECT push_alert FROM Setting WHERE user_id = ?', [userId]);
+                if (settings.length === 0 || !settings[0].push_alert) {
+                    console.log(`Push alerts 비활성화된 사용자:`, user);
+                    continue; // 푸시 알림이 비활성화된 경우 건너뛰기
+                }
+            
+                // OneSignal 알림 발송
+                try {
+                    const pushTitle = "흉기 탐지 알림";
+                    const pushMessage = `${location || '알 수 없음'}에서 흉기 탐지 알림입니다. ${storeMessage}`;
+
+                    // OneSignal에서 Android 전용 설정 추가
+                    const androidOptions = {
+                        small_icon: "ic_notification", // 리소스 아이콘 이름, 확장자 제외
+                        android_accent_color: "08298A", // 16진수 색상 코드
+                        large_icon: `https://postfiles.pstatic.net/MjAyNDExMTRfMTc2/MDAxNzMxNTQ3MzE2NTg4.T_IrKzpT4UHQPETMkmUs2EMVCWiYTAyshlIFOOO2LW0g.w7cgaa5Y_G7XGyiMasaR0UXq9wOzzX3rk3MjtjdjoJ4g.PNG/KakaoTalk_20241114_094837945_02.png?type=w580`,
+                    };
+                    const additionalData = { alertId, screen: "Alert" };
+                    await sendPushNotification(userId, pushTitle, pushMessage, null, androidOptions, additionalData);
+                    
+            
+                    // 푸쉬 알림 성공 기록
+                    await logNotification(connection, userId, alertId, 'push', pushMessage, 'success', imagePath);
+                } catch (error) {
+                    console.error(`Error sending push notification to ${userId}:`, error.message);
+            
+                    // 푸쉬 알림 실패 기록
+                    await logNotification(connection, userId, alertId, 'push', pushMessage, 'failure', imagePath);
+                }
+            }
+            
+            
         }
 
     } catch (error) {
