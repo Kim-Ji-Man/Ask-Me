@@ -286,7 +286,7 @@ class HomePageContent extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(height: MediaQuery.of(context).size.width * 0.13),
+                  SizedBox(height: MediaQuery.of(context).size.width * 0.11),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -313,7 +313,7 @@ class HomePageContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.025),
                   _buildMenuGrid(context),
                 ],
               ),

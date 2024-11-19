@@ -907,7 +907,8 @@ class _PostDetailState extends State<PostDetail> {
                   await deletePost();
                 }
               },
-              itemBuilder: (context) => [
+              itemBuilder: (context) =>
+              [
                 PopupMenuItem(
                   value: 'edit',
                   child: Text('수정'),
@@ -921,6 +922,7 @@ class _PostDetailState extends State<PostDetail> {
             ),
         ],
       ),
+      resizeToAvoidBottomInset: true,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -1106,10 +1108,13 @@ class _PostDetailState extends State<PostDetail> {
                                 IconButton(
                                   iconSize: 14,
                                   icon: Icon(
-                                    comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: comment.isLiked ? Colors.red : Colors.grey,
+                                    comment.isLiked ? Icons.favorite : Icons
+                                        .favorite_border,
+                                    color: comment.isLiked ? Colors.red : Colors
+                                        .grey,
                                   ),
-                                  onPressed: () => toggleCommentLike(comment.id),
+                                  onPressed: () =>
+                                      toggleCommentLike(comment.id),
                                   padding: EdgeInsets.zero,
                                   constraints: BoxConstraints(),
                                 ),
@@ -1121,12 +1126,17 @@ class _PostDetailState extends State<PostDetail> {
                                 Row(
                                   children: [
                                     IconButton(
-                                      iconSize: 14, // 아이콘 크기
+                                      iconSize: 14,
+                                      // 아이콘 크기
                                       icon: Icon(
-                                        comment.isReported ? Icons.flag : Icons.flag_outlined,
-                                        color: comment.isReported ? Colors.red : Colors.grey,
+                                        comment.isReported ? Icons.flag : Icons
+                                            .flag_outlined,
+                                        color: comment.isReported
+                                            ? Colors.red
+                                            : Colors.grey,
                                       ),
-                                      onPressed: () => showCommentReportDialog(comment.id),
+                                      onPressed: () =>
+                                          showCommentReportDialog(comment.id),
                                       padding: EdgeInsets.zero,
                                       constraints: BoxConstraints(),
                                     ),
@@ -1152,7 +1162,9 @@ class _PostDetailState extends State<PostDetail> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: MediaQuery
+            .of(context)
+            .viewInsets, // 키보드 높이만큼 여백 추가
         child: Row(
           children: [
             Expanded(
