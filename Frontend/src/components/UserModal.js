@@ -68,7 +68,7 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
   
         // 로그인한 사용자의 비밀번호와 비교하는 API 호출
         axios.post(
-          'http://localhost:5000/Member/VerifyPassword',
+          '/Member/VerifyPassword',
           {
               password: inputPassword, // 비밀번호
               token: token,             // 토큰 추가

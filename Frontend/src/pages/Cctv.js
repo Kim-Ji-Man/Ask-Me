@@ -19,7 +19,7 @@ const CCTV = () => {
 CctvWebSocket();
 
   const cctvAddresses = [
-    "https://localhost:8000/video_feed1",
+    "https://localhost:8000/video_feed3",
     "https://localhost:8000/video_feed2",
     "https://localhost:8000/video_feed1",
     "https://localhost:8000/video_feed2",
@@ -172,8 +172,8 @@ CctvWebSocket();
             <div className="filter-buttons">
             <Button
   style={{
-    backgroundColor: filterType === "today" ? "#4681f4" : "transparent", // Blue when clicked, Red when not
-    color: "black",
+    backgroundColor: filterType === "today" ? "#1F316F" : "transparent", // Blue when clicked, Red when not
+    color:  filterType === "today" ? "white" : "black",
   }}
   onClick={() => handleFilterChange("today")}
 >
@@ -181,8 +181,8 @@ CctvWebSocket();
 </Button>
 <Button
   style={{
-    backgroundColor: filterType === "all" ? "#4681f4" : "transparent", // Blue when clicked, Red when not
-    color: "black",
+    backgroundColor: filterType === "all" ? "#1F316F" : "transparent", // Blue when clicked, Red when not
+    color:  filterType === "all" ? "white" : "black",
   }}
   onClick={() => handleFilterChange("all")}
 >
@@ -274,7 +274,7 @@ CctvWebSocket();
             <Button variant="secondary" onClick={() => setModalShow(false)}>
               닫기
             </Button>
-            <Button variant="primary" onClick={handleSaveChanges}>
+            <Button variant="primary" className="t2btnsf" onClick={handleSaveChanges}>
               저장
             </Button>
           </Modal.Footer>

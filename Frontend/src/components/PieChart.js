@@ -29,8 +29,8 @@ const PieChart = () => {
             {
               data: counts,
               // 흉기의심을 주황색(#FFA500)으로 추가했지만 이제는 제외됨
-              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], 
-              hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+              backgroundColor: ['#FF8C9E', '#F6EACB', '#B9E5E8'], 
+              hoverBackgroundColor: ['#FF8C9E', '#F6EACB', '#B9E5E8'],
             },
           ],
         });

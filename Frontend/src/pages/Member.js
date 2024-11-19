@@ -259,6 +259,14 @@ const Member = () => {
                           >
                             {row.values.member_stauts === 'active' ? '정상' : '정지'}
                           </Button>
+                        </InputGroup>
+                      ),
+                    },
+                    {
+                      accessor: 'user_id',
+                      Header: '편집',
+                      Cell: ({ row }) => (
+                        <InputGroup className='justify-content-center'>
                           <FaRegEdit
                             style={{ width: "30px", height: "40px", marginLeft: '10px', color: 'lightgreen' }}
                             onClick={() => editClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달

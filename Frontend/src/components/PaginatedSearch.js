@@ -112,7 +112,7 @@ function PaginatedSearch({ columns, data }) {
               variant={pageIndex === number ? "primary" : "light"}
               size="sm"
               style={{
-                backgroundColor: pageIndex === number ? "black" : "lightgrey",
+                backgroundColor: pageIndex === number ? " #1F316F" : "lightgrey",
                 color: pageIndex === number? "white" : "white",
               }}
             >

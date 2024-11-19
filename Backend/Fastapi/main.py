@@ -14,7 +14,7 @@ import queue
 import time
 from concurrent.futures import ThreadPoolExecutor
 import io
-import datetime
+from datetime import datetime
 from collections import defaultdict
 import os
 from db import get_db_connection, get_db_cursor
@@ -22,6 +22,8 @@ from pydantic import BaseModel
 import requests
 import aiohttp
 from fastapi.staticfiles import StaticFiles
+import logging
+
 
 # FastAPI 애플리케이션 생성
 app = FastAPI()
@@ -38,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # WebSocket 연결 관리
 class ConnectionManager:
     def __init__(self):
@@ -132,6 +135,72 @@ def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, sa
     cap.release()
     if record_video:
         out.release()
+        
+def save_counts_every_10_seconds(device_id):
+    while True:
+        in_count = stats.in_count  # 현재 입장 인원 수 가져오기
+        out_count = stats.out_count  # 현재 퇴장 인원 수 가져오기
+        
+        # 데이터베이스에 저장 호출 (db.py에서 정의된 함수 사용)
+        try:
+            save_person_count_to_db(device_id, in_count, out_count)
+            logging.info(f"DB에 저장 완료: IN={in_count}, OUT={out_count}")
+        
+        except Exception as e:
+            logging.error(f"DB 저장 중 오류 발생: {e}")
+        
+        time.sleep(10)  # 10초 대기 (테스트용)
+
+# FastAPI 서버 시작 시 스레드로 주기적으로 카운트 저장 작업 시작
+@app.on_event("startup")
+async def startup_event():
+    device_id = 1  # CCTV 장치 ID 설정 (예: 정문 CCTV)
+    
+    # 별도의 스레드로 주기적으로 카운트 저장 작업 시작 (5분마다)
+    threading.Thread(target=save_counts_every_10_seconds, args=(device_id,), daemon=True).start()
+
+def save_person_count_to_db(device_id, in_count, out_count):
+    """데이터베이스에 입장/퇴장 인원 수 저장"""
+    try:
+        # 데이터베이스 연결
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # SQL 쿼리 작성 (pedetection_time을 올바르게 사용)
+        sql = """
+            INSERT INTO CCTV_Person (device_id, pedetection_time, people_count_in, people_count_out)
+            VALUES (%s, %s, %s, %s)
+        """
+        
+        # 현재 시간 기록
+        pedetection_time = datetime.now()
+
+        # 디버깅용 로그 출력 (실제 쿼리와 값 확인)
+        logging.info(f"Executing SQL: {sql}")
+        logging.info(f"With values: device_id={device_id}, pedetection_time={pedetection_time}, in_count={in_count}, out_count={out_count}")
+
+        # 쿼리 실행 및 커밋
+        cursor.execute(sql, (device_id, pedetection_time, in_count, out_count))
+        connection.commit()
+
+        logging.info(f"DB 저장 완료: device_id={device_id}, IN={in_count}, OUT={out_count}")
+
+    except Exception as db_error:
+        # 오류 발생 시 롤백 및 오류 로그 출력
+        if connection:
+            connection.rollback()
+        logging.error(f"DB 저장 중 오류 발생: {db_error}")
+    
+    finally:
+        # 리소스 해제 및 로그 출력
+        if cursor:
+            cursor.close()
+            logging.info("DB 커서 닫힘")
+        if connection:
+            connection.close()
+            logging.info("DB 연결 닫힘")
+
+
 
 # 비디오 스트리밍 라우트에서 녹화 기능 비활성화
 @app.get('/video_feed1')
@@ -272,7 +341,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # 카메라 프론트에 연결
 @app.get('/capture_image')
 async def capture_image():
-    camera_id = 1
+    camera_id = 0
     cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
         return JSONResponse(status_code=500, content={"error": "Cannot access camera"})

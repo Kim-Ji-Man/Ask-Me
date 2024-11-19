@@ -197,8 +197,18 @@ textarea:focus {
 .t2btnsa{
     border: none; /* 테두리 제거 */
     max-width: 140px;
-    background-color: black;
+    background-color: #1F316F;
     border-radius: 45px;
+    --bs-btn-hover-bg : #1F316F;
+    --bs-btn-active-bg : #1F316F;
+}
+
+.t2btnsf{
+  border: none; /* 테두리 제거 */
+  max-width: 140px;
+  background-color: #1F316F;
+  --bs-btn-hover-bg : #1F316F;
+  --bs-btn-active-bg : #1F316F;
 }
 
 .filter-buttons {

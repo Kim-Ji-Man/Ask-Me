@@ -3,6 +3,7 @@
     border: none;
     padding: 10px;
     cursor: pointer;
+    border-radius: 8px;
   }
   
   .chart_buttons2 {
@@ -10,12 +11,14 @@
     border: none;
     padding: 10px;
     cursor: pointer;
+    border-radius: 8px;
   }
   
   .chart_buttons_selected {
-    background-color: #4CAF50;
+    background-color: #1F316F;
     color: white;
     border: none;
     padding: 10px;
     cursor: pointer;
+    border-radius: 8px;
   }

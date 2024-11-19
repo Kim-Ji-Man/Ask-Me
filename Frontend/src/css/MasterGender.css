@@ -14,14 +14,14 @@
   
   .chart_button_selected {
     padding: 10px 20px;
-    background-color: #4caf50;
-    border: 1px solid #4caf50;
+    background-color: #1F316F;
+    border: 1px solid #1F316F;
     border-radius: 5px;
     color: white;
     cursor: pointer;
   }
   
   .chart_button_selected:hover {
-    background-color: #45a049;
+    background-color: #1F316F;
   }
   

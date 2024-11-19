@@ -33,6 +33,82 @@ router.get('/users', async (req, res) => {
     }
 });
 
+router.get('/people/:month', async (req, res) => {
+  const month = req.params.month;
+  console.log(month,"123");
+  
+
+  const query = `
+    SELECT 
+      HOUR(pedetection_time) AS hour,
+      SUM(people_count_in) AS total_in,
+      SUM(people_count_out) AS total_out
+    FROM CCTV_Person
+    WHERE MONTH(pedetection_time) = ?
+    GROUP BY HOUR(pedetection_time)
+    ORDER BY HOUR(pedetection_time);
+  `;
+
+  try {
+    const rows = await db.executeQuery(query, [month]);
+    console.log([rows],"사람2");
+
+    // 항상 배열로 반환되도록 처리
+    if (!Array.isArray(rows)) {
+      res.json([rows]); // 단일 객체인 경우 배열로 감쌉니다.
+      console.log(rows,"사람");
+
+    } else {
+      res.json(rows);
+      console.log(rows,"사람1");
+
+    }
+  } catch (err) {
+    console.error('데이터 조회 실패:', err);
+    res.status(500).send('서버 오류');
+  }
+});
+
+router.get('/weapons/:month', async (req, res) => {
+  const month = req.params.month;
+
+  const query = `
+    SELECT 
+      HOUR(Alert_Log.detection_time) AS hour,
+      COUNT(*) AS weapon_count
+    FROM Anomaly_Resolution
+    JOIN Alert_Log ON Anomaly_Resolution.alert_id = Alert_Log.alert_id
+    WHERE Anomaly_Resolution.anomaly_type = '흉기'
+      AND MONTH(Alert_Log.detection_time) = ?
+    GROUP BY HOUR(Alert_Log.detection_time)
+    ORDER BY HOUR(Alert_Log.detection_time);
+  `;
+
+  try {
+    const rows = await db.executeQuery(query, [month]);
+    
+    console.log(rows, "흉기3"); // 쿼리 결과 출력
+
+    // 항상 배열로 반환되도록 처리
+    if (!Array.isArray(rows)) {
+      res.json([rows]); // 단일 객체인 경우 배열로 감쌉니다.
+      console.log(rows, "흉기");
+      
+    } else {
+      res.json(rows);
+      console.log(rows, "흉기2");
+    }
+
+
+  } catch (err) {
+    console.error('데이터 조회 실패:', err);
+    res.status(500).send('서버 오류');
+  }
+});
+
+
+
+
 // 월별 흉기 감지 및 오감지 데이터 조회 API
 router.get('/one/Month', async (req, res) => {
   const query = `

@@ -272,12 +272,14 @@ const jwtToken = localStorage.getItem("jwtToken");
                 대시보드
               </Nav.Link>
             )}
+              {memberGrade !== 0 && (
             <Nav.Link
               onClick={() => navigateTo("/CCTV")}
               style={activeMenu === "/CCTV" ? activeStyle : defaultStyle}
             >
               CCTV
             </Nav.Link>
+                )}
             {isLoggedIn && memberGrade === 0 && (
               <>
                 <Nav.Link

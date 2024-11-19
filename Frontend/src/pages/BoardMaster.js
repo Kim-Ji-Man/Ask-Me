@@ -140,14 +140,14 @@ const BoardMaster = () => {
                   {
                     accessor: "title",
                     Header: "제목",
-                    width: "20%",
+                    width: "40%",
                     Cell: ({ row }) => (
                       <span onClick={() => handlePostClick(row.original.post_id)}>
                         {row.values.title}
                       </span>
                     ),
                   },
-                  { accessor: "created_at", Header: "날짜" },
+                  { accessor: "created_at", Header: "날짜", width: "20%", },
                   { accessor: "user_id", Header: "작성자" },
                   { accessor: "comment_count", Header: "댓글 수" },
                   { accessor: "heart", Header: "좋아요" },

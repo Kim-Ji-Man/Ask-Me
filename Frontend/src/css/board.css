@@ -24,7 +24,7 @@
 
 /* 헤더 스타일링 */
 .header1 {
-  background-color: black; /* 부트스트랩 기본 색상 */
+  background-color: #1F316F; /* 부트스트랩 기본 색상 */
   color: white;
   font-weight: bold;
 }
@@ -49,7 +49,7 @@
 
 .search-button {
   padding: 0.5rem 1rem;
-  background-color: black; /* 부트스트랩 기본 색상 */
+  background-color: #1F316F; /* 부트스트랩 기본 색상 */
   color: white;
   font-weight: bold;
   border: none;
@@ -57,7 +57,7 @@
 }
 
 .search-button:hover {
-  background-color: black; /* 버튼 호버 시 색상 변경 */
+  background-color:  #1F316F; /* 버튼 호버 시 색상 변경 */
 }
 
 
@@ -77,20 +77,20 @@
 
 /* 페이지네이션 활성 버튼 스타일 */
 .pagination-container .btn-group .btn.active {
-  background-color: black; /* 활성 버튼 색상 */
+  background-color:  #1F316F; /* 활성 버튼 색상 */
   color: white;
 }
 
 /* 페이지네이션 버튼 기본 스타일 */
 .pagination-container .btn-group .btn {
   color: white; /* 기본 버튼 텍스트 색상 */
-  background-color: black; /* 배경 투명 */ 
+  background-color:  #1F316F; /* 배경 투명 */ 
  
 }
 
 /* 페이지네이션 버튼 호버 스타일 */
 .pagination-container .btn-group .btn:hover {
-  background-color:black; /* 호버 시 배경 색상 */
+  background-color: #1F316F; /* 호버 시 배경 색상 */
   color: white; /* 호버 시 텍스트 색상 */
 }
 
