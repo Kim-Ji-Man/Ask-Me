@@ -133,7 +133,7 @@ class _SignUpStep1State extends State<SignUpStep1> {
         centerTitle: true,
         title: Text("회원가입"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios_new),
           onPressed: () {
             Navigator.pop(context);
           },

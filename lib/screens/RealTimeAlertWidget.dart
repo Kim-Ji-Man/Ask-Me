@@ -41,6 +41,7 @@ class _RealTimeAlertWidgetState extends State<RealTimeAlertWidget> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
+                  backgroundColor: Colors.white,
                   title: Text('실시간 알림'),
                   content: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -48,19 +49,27 @@ class _RealTimeAlertWidgetState extends State<RealTimeAlertWidget> {
                       Image.network(imageUrl), // 서버에서 이미지 가져오기
                       SizedBox(height: 10),
                       Text(
-                        '가게명: ${messageData['storeName']}',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ), // 가게명 표시
+                        '📍 발생 위치',
+                        style: TextStyle(fontSize: 16),
+                      ),
                       SizedBox(height: 5),
+                      Text('${messageData['storeName']}',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                      SizedBox(height: 24),
                       Text(
-                        '감지 시간: ${formatDateTime(messageData['detectionTime'])}',
+                        '⏰ 감지 일시',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      SizedBox(height: 5),
+                      Text('${formatDateTime(messageData['detectionTime'])}',
                         style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ), // 감지 시간 표시
+                      ),
+                      SizedBox(height: 10),
                     ],
                   ),
                   actions: [
                     TextButton(
-                      child: Text('확인'),
+                      child: Text('확인', style: TextStyle(color: Colors.indigo),),
                       onPressed: () {
                         Navigator.of(context).pop(); // 다이얼로그 닫기
                       },

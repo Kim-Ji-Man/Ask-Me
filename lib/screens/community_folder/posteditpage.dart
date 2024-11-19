@@ -61,7 +61,13 @@ class _PostEditPageState extends State<PostEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new),
+          onPressed: () => Navigator.pop(context, true),
+        ),
         title: Text('게시글 수정'),
       ),
       body: Padding(
@@ -73,7 +79,7 @@ class _PostEditPageState extends State<PostEditPage> {
               controller: titleController,
               decoration: InputDecoration(labelText: '제목'),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 24),
             TextField(
               controller: contentController,
               decoration: InputDecoration(labelText: '내용'),
@@ -82,6 +88,10 @@ class _PostEditPageState extends State<PostEditPage> {
             SizedBox(height: 16),
             ElevatedButton(
               onPressed: updatePost,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
+              ),
               child: Text('수정 완료'),
             ),
           ],

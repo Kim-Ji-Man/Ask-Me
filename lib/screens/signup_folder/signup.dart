@@ -26,7 +26,7 @@ class _SignUpState extends State<SignUp> {
         backgroundColor: Colors.white, // 남색 헤더
         foregroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios_new),
           color: Colors.black,
           onPressed: () {
             Navigator.pop(context); // 이전 화면으로 돌아가기

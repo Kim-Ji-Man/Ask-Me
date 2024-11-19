@@ -318,8 +318,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
               child: Text('수정 완료'),
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
-                backgroundColor: Colors.blue[500],
-                foregroundColor: Colors.black,
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
               ),
             ),
             SizedBox(height: 20),

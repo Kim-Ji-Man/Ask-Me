@@ -191,7 +191,8 @@ class _AlertState extends State<Alert> {
           vertical: 4.0, // 위아래 여백
         ),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.blue[50],
+          // color: isSelected ? Colors.white : Colors.blue[50],
+          color: readStatus == '읽음' ? Colors.white : Colors.blue[50],
           // 선택된 항목이면 화이트, 아니면 옅은 하늘색
           borderRadius: BorderRadius.circular(12),
           // 둥근 네모 모양
@@ -222,16 +223,30 @@ class _AlertState extends State<Alert> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '흉기소지자 감지',
-                    style: TextStyle(fontSize: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, // 양쪽 끝으로 정렬
+                    children: [
+                      Text(
+                        '흉기소지자 감지',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        '$readStatus', // 읽음 상태 표시
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: readStatus == '읽음' ? Colors.green : Colors.redAccent, // 읽음이면 초록색
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 4),
                   Text(
                     '$location',
-                    style: TextStyle(fontSize: 15,
-                        color: Colors.indigo[800],
-                        fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.indigo[800],
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   SizedBox(height: 4),
                   Text(
@@ -244,14 +259,6 @@ class _AlertState extends State<Alert> {
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   SizedBox(height: 4), // 간격 추가
-                  // readStatus 추가 부분
-                  Text(
-                    '읽음 상태 : $readStatus', // 읽음 상태 표시
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: readStatus == '읽음' ? Colors.green : Colors.redAccent, // 읽음이면 초록색
-                    ),
-                  ),
                 ],
               ),
             ),

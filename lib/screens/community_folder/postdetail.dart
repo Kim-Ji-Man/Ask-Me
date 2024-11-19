@@ -215,7 +215,8 @@ class _PostDetailState extends State<PostDetail> {
       });
     } else {
       print(
-          'Failed to load comment like status. Status code: ${response.statusCode}');
+          'Failed to load comment like status. Status code: ${response
+              .statusCode}');
     }
   }
 
@@ -293,7 +294,8 @@ class _PostDetailState extends State<PostDetail> {
           "Fetched report status for comment $commentId: isReported=${data['isReported']}, reportCount=${data['reportCount']}");
     } else {
       print(
-          'Failed to load report status for comment $commentId. Status code: ${response.statusCode}');
+          'Failed to load report status for comment $commentId. Status code: ${response
+              .statusCode}');
     }
   }
 
@@ -358,8 +360,8 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
-  Future<void> editPost(
-      String newTitle, String newContent, String? newImage) async {
+  Future<void> editPost(String newTitle, String newContent,
+      String? newImage) async {
     final token = await SharedPreferences.getInstance()
         .then((prefs) => prefs.getString('token'));
 
@@ -517,6 +519,7 @@ class _PostDetailState extends State<PostDetail> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text("신고 사유를 선택해주세요"),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
@@ -524,7 +527,10 @@ class _PostDetailState extends State<PostDetail> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // 신고 옵션 리스트
-                  ...reportOptions.asMap().entries.map((entry) {
+                  ...reportOptions
+                      .asMap()
+                      .entries
+                      .map((entry) {
                     int index = entry.key;
                     String option = entry.value;
 
@@ -544,13 +550,13 @@ class _PostDetailState extends State<PostDetail> {
           ),
           actions: [
             TextButton(
-              child: Text("취소"),
+              child: Text("취소", style: TextStyle(color: Colors.indigo),),
               onPressed: () {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
               },
             ),
             TextButton(
-              child: Text("확인"),
+              child: Text("확인", style: TextStyle(color: Colors.indigo),),
               onPressed: () {
                 List<int> selectedReasonIds = [];
                 for (int i = 0; i < reportOptions.length; i++) {
@@ -666,12 +672,16 @@ class _PostDetailState extends State<PostDetail> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text("신고 사유를 선택해주세요"),
           content: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
-                children: reportOptions.asMap().entries.map((entry) {
+                children: reportOptions
+                    .asMap()
+                    .entries
+                    .map((entry) {
                   int index = entry.key;
                   String option = entry.value;
                   return CheckboxListTile(
@@ -689,10 +699,10 @@ class _PostDetailState extends State<PostDetail> {
           ),
           actions: [
             TextButton(
-                child: Text("취소"),
+                child: Text("취소", style: TextStyle(color: Colors.indigo),),
                 onPressed: () => Navigator.of(context).pop()),
             TextButton(
-                child: Text("확인"),
+                child: Text("확인", style: TextStyle(color: Colors.indigo),),
                 onPressed: () {
                   List<int> selectedReasonIds = [];
                   for (int i = 0; i < reportOptions.length; i++) {
@@ -741,8 +751,8 @@ class _PostDetailState extends State<PostDetail> {
     }
   }
 
-  Future<String?> showEditDialog(
-      BuildContext context, String currentContent) async {
+  Future<String?> showEditDialog(BuildContext context,
+      String currentContent) async {
     final TextEditingController _controller =
     TextEditingController(text: currentContent);
 
@@ -750,6 +760,7 @@ class _PostDetailState extends State<PostDetail> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           title: Text('댓글 수정'),
           content: TextField(
             controller: _controller,
@@ -757,13 +768,13 @@ class _PostDetailState extends State<PostDetail> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('취소'),
+              child: Text('취소', style: TextStyle(color: Colors.indigo),),
               onPressed: () {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
               },
             ),
             TextButton(
-              child: Text('저장'),
+              child: Text('저장', style: TextStyle(color: Colors.indigo),),
               onPressed: () {
                 Navigator.of(context).pop(_controller.text); // 입력된 내용 반환
               },
@@ -857,9 +868,6 @@ class _PostDetailState extends State<PostDetail> {
   @override
   Widget build(BuildContext context) {
     final bool isAuthor = currentUserId == widget.post.userId.toString();
-    print("Current User ID: $currentUserId");
-    print("Post Author User ID: ${widget.post.userId}");
-
     String imageUrl = widget.post.image != null && widget.post.image!.isNotEmpty
         ? '$BaseUrl/${widget.post.image}'
         : 'images/img_logo.png';
@@ -870,7 +878,7 @@ class _PostDetailState extends State<PostDetail> {
         backgroundColor: Colors.white,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new),
-          onPressed: () => Navigator.pop(context,true),
+          onPressed: () => Navigator.pop(context, true),
         ),
         actions: [
           if (isAuthor)
@@ -878,19 +886,17 @@ class _PostDetailState extends State<PostDetail> {
               icon: Icon(Icons.more_vert),
               onSelected: (value) async {
                 if (value == 'edit') {
-                  // 게시글 수정 화면으로 이동
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PostEditPage(
-                        postId: widget.post.id,
-                        initialTitle: widget.post.title,
-                        initialContent: widget.post.content,
-                      ),
+                      builder: (context) =>
+                          PostEditPage(
+                            postId: widget.post.id,
+                            initialTitle: widget.post.title,
+                            initialContent: widget.post.content,
+                          ),
                     ),
                   );
-
-                  // 수정 후 돌아왔을 때 해당 게시글만 업데이트
                   if (result is Map<String, String>) {
                     setState(() {
                       widget.post.title = result['title']!;
@@ -902,9 +908,16 @@ class _PostDetailState extends State<PostDetail> {
                 }
               },
               itemBuilder: (context) => [
-                PopupMenuItem(value: 'edit', child: Text('수정')),
-                PopupMenuItem(value: 'delete', child: Text('삭제')),
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Text('수정'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('삭제'),
+                ),
               ],
+              color: Colors.white,
             ),
         ],
       ),
@@ -913,193 +926,225 @@ class _PostDetailState extends State<PostDetail> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              widget.post.title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 16),
             Row(
               children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: Colors.grey[300],
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
+                SizedBox(width: 8),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(widget.post.nick,
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text(widget.post.time),
+                    Text(widget.post.nick),
+                    Text(
+                      widget.post.time,
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                Spacer(),
+                Row(
+                  children: [
+                    Icon(Icons.visibility, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                        "${widget.post.views}", style: TextStyle(fontSize: 12)),
+                    SizedBox(width: 8),
+                    Icon(Icons.favorite, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                        "${widget.post.likes}", style: TextStyle(fontSize: 12)),
                   ],
                 ),
               ],
             ),
-            SizedBox(height: 30),
-            Text(
-              widget.post.title,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            SizedBox(height: 24),
+            Text(widget.post.content, style: TextStyle(fontSize: 16)),
             SizedBox(height: 20),
-            Text(widget.post.content),
-            SizedBox(height: 30),
             if (widget.post.image != null && widget.post.image!.isNotEmpty)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  imageUrl,
-                  width: double.infinity,
-                  fit: BoxFit.contain,
+              Container(
+                width: double.infinity,
+                height: 200,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(imageUrl),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // 좋아요 버튼
-                IconButton(
-                  icon: Icon(
-                    isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: isLiked ? Colors.red : Colors.grey,
-                  ),
-                  onPressed: toggleLike, // 좋아요 상태 토글 함수
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: toggleLike,
+                    ),
+                    Text('$likeCount'),
+                  ],
                 ),
-                Text('$likeCount'), // 좋아요 개수 표시
-
-                SizedBox(width: 16), // 간격 추가
-
                 // 신고 버튼
-                IconButton(
-                  icon: Icon(isReported ? Icons.flag : Icons.flag_outlined,
-                      color: isReported ? Colors.red : Colors.grey),
-                  onPressed: showReportDialog, // 신고 다이얼로그 호출 함수
-                ),
-                Text('신고 ($reportCount)'), // 신고 횟수 표시
-              ],
-            ),
-            Divider(
-              thickness: 3.0,
-              color: Colors.grey[300],
-            ),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              reverse: true,
-              itemCount: comments.length,
-              itemBuilder: (context, index) {
-                final comment = comments[index];
-
-                // 댓글 작성자 확인 (현재 로그인한 사용자와 댓글 작성자 비교)
-                final bool isCommentAuthor =
-                    currentUserId == comment.userId.toString();
-                print(
-                    "Current User ID: ${currentUserId}, Comment User ID: ${comment.userId}");
-
-                return ListTile(
-                  leading: Text(
-                    comment.nickname,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(comment.content, style: TextStyle(fontSize: 13)),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Row(
+                  children: [
+                    GestureDetector(
+                      onTap: showReportDialog, // 텍스트 클릭 시 showReportDialog 실행
+                      child: Row(
                         children: [
-                          Text(comment.time,
-                              style:
-                              TextStyle(fontSize: 10, color: Colors.grey)),
-                          Row(
-                            children: [
-                              IconButton(
-                                iconSize: 20, // 아이콘 크기를 키움
-                                icon: Icon(
-                                  comment.isLiked
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: comment.isLiked
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                                onPressed: () => toggleCommentLike(comment.id),
-                              ),
-                              Text('${comment.likeCount}',
-                                  style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
-
-                              IconButton(
-                                iconSize: 20, // 아이콘 크기를 키움
-                                icon: Icon(
-                                  comment.isReported
-                                      ? Icons.flag
-                                      : Icons.flag_outlined,
-                                  color: comment.isReported
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
-                                onPressed: () =>
-                                    showCommentReportDialog(comment.id),
-                              ),
-                              Text('${comment.reportCount}',
-                                  style: TextStyle(fontSize: 14)), // 텍스트 크기 조정
-
-                              // 댓글 작성자인 경우에만 PopupMenuButton 표시
-                              if (isCommentAuthor)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 8.0),
-                                  // 약간의 여백 추가
-                                  child: PopupMenuButton<String>(
-                                    onSelected: (value) async {
-                                      if (value == 'edit') {
-                                        // 수정 버튼 클릭 시 동작
-                                        String? newContent =
-                                        await showEditDialog(
-                                            context, comment.content);
-                                        if (newContent != null &&
-                                            newContent.isNotEmpty) {
-                                          await editComment(
-                                              comment.id, newContent); // 수정 실행
-                                        }
-                                      } else if (value == 'delete') {
-                                        // 삭제 버튼 클릭 시 동작
-                                        bool confirmDelete = await showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: Text("댓글 삭제"),
-                                              content:
-                                              Text("정말 이 댓글을 삭제하시겠습니까?"),
-                                              actions: [
-                                                TextButton(
-                                                    child: Text("취소"),
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(false)),
-                                                TextButton(
-                                                    child: Text("삭제"),
-                                                    onPressed: () =>
-                                                        Navigator.of(context)
-                                                            .pop(true)),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                        if (confirmDelete) {
-                                          await deleteComment(
-                                              comment.id); // 삭제 실행
-                                        }
-                                      }
-                                    },
-                                    itemBuilder: (BuildContext context) =>
-                                    <PopupMenuEntry<String>>[
-                                      const PopupMenuItem<String>(
-                                        value: 'edit',
-                                        child: Text('수정'),
-                                      ),
-                                      const PopupMenuItem<String>(
-                                        value: 'delete',
-                                        child: Text('삭제'),
-                                      ),
-                                    ],
-                                    iconSize: 24, // PopupMenuButton 아이콘 크기를 키움
-                                    icon: Icon(Icons.more_vert), // 더 큰 아이콘 사용
-                                  ),
-                                ),
-                            ],
+                          Icon(
+                            isReported ? Icons.flag : Icons.flag_outlined,
+                            color: isReported ? Colors.red : Colors.grey,
+                            size: 16, // 아이콘 크기 조정
+                          ),
+                          SizedBox(width: 4), // 아이콘과 텍스트 간 간격 최소화
+                          Text(
+                            '신고 ($reportCount)',
+                            style: TextStyle(fontSize: 14), // 텍스트 스타일
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Divider(thickness: 2, color: Colors.grey[300]),
+            Text(
+              "댓글 (${comments.length})",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: comments.length,
+              itemBuilder: (context, index) {
+                final comment = comments[index];
+                final bool isCommentAuthor =
+                    currentUserId == comment.userId.toString();
+                return Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.grey[300],
+                        child: Icon(Icons.person, color: Colors.white),
+                      ),
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                comment.nickname,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              Spacer(),
+                              if (isCommentAuthor)
+                                PopupMenuButton<String>(
+                                  icon: Icon(Icons.more_horiz),
+                                  onSelected: (value) async {
+                                    if (value == 'edit') {
+                                      String? newContent = await showEditDialog(
+                                        context,
+                                        comment.content,
+                                      );
+                                      if (newContent != null &&
+                                          newContent.isNotEmpty) {
+                                        await editComment(
+                                            comment.id, newContent);
+                                      }
+                                    } else if (value == 'delete') {
+                                      await deleteComment(comment.id);
+                                    }
+                                  },
+                                  itemBuilder: (context) =>
+                                  [
+                                    PopupMenuItem(
+                                        value: 'edit', child: Text('수정')),
+                                    PopupMenuItem(
+                                        value: 'delete', child: Text('삭제')),
+                                  ],
+                                  color: Colors.white,
+                                )
+                              else
+                                SizedBox(width: 40),
+                            ],
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            comment.content,
+                            style: TextStyle(fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 2.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              comment.time,
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  iconSize: 14,
+                                  icon: Icon(
+                                    comment.isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: comment.isLiked ? Colors.red : Colors.grey,
+                                  ),
+                                  onPressed: () => toggleCommentLike(comment.id),
+                                  padding: EdgeInsets.zero,
+                                  constraints: BoxConstraints(),
+                                ),
+                                SizedBox(width: 2),
+                                Text('${comment.likeCount}',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                // 신고 버튼
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      iconSize: 14, // 아이콘 크기
+                                      icon: Icon(
+                                        comment.isReported ? Icons.flag : Icons.flag_outlined,
+                                        color: comment.isReported ? Colors.red : Colors.grey,
+                                      ),
+                                      onPressed: () => showCommentReportDialog(comment.id),
+                                      padding: EdgeInsets.zero,
+                                      constraints: BoxConstraints(),
+                                    ),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      '${comment.reportCount}',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Divider(color: Colors.grey[300]),
+                  ],
                 );
               },
             ),
@@ -1115,7 +1160,6 @@ class _PostDetailState extends State<PostDetail> {
                 controller: commentController,
                 decoration: InputDecoration(
                   hintText: '댓글을 입력해주세요',
-                  hintStyle: TextStyle(color: Colors.grey[400]),
                   filled: true,
                   fillColor: Colors.grey[100],
                   border: OutlineInputBorder(
@@ -1128,7 +1172,7 @@ class _PostDetailState extends State<PostDetail> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.send, color: Colors.blue),
+              icon: Icon(Icons.send, color: Colors.indigo),
               onPressed: () {
                 if (commentController.text.isNotEmpty) {
                   addComment(commentController.text);

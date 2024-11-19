@@ -239,28 +239,32 @@ class HomePageContent extends StatelessWidget {
         ),
         // 상단 색상 배경 아래에 프로필 영역 추가
         Container(
-          width: MediaQuery.of(context).size.width,
+          width: double.infinity,
           padding: EdgeInsets.fromLTRB(20, 0, 20, 30),
           color: Colors.indigo[800], // 배경색을 상단과 맞춤
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 24,
+                radius: MediaQuery.of(context).size.width * 0.08, // 화면 너비에 따라 동적 크기
                 backgroundColor: Colors.grey[300],
                 child: Icon(Icons.person, color: Colors.white),
               ),
-              SizedBox(width: 16),
+              SizedBox(width: MediaQuery.of(context).size.width * 0.04), // 여백 반응형
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '$nick 님,',
-                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width * 0.05,
+                        fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '안녕하세요',
-                    style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white,
+                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                        fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -288,16 +292,28 @@ class HomePageContent extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.38,
-                        child: _buildCard('전체 알림수', '$totalAlerts', Icons.notifications_active, Color(0xFF569BFA)),
+                        child: _buildCard(
+                          context,
+                          '전체 알림수',
+                          '$totalAlerts',
+                          Icons.notifications_active,
+                          Color(0xFF569BFA),
+                      ),
                       ),
                       SizedBox(width: 20),
                       SizedBox(
                         width: MediaQuery.of(context).size.width * 0.38,
-                        child: _buildCard('당일 알림수', '$todayAlerts', Icons.notifications_active, Color(0xFF569BFA)),
+                        child: _buildCard(
+                          context,
+                          '당일 알림수',
+                          '$todayAlerts',
+                          Icons.notifications_active,
+                          Color(0xFF569BFA),
+                        ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 15),
                   _buildMenuGrid(context),
                 ],
               ),
@@ -308,7 +324,7 @@ class HomePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(String title, String subtitle, IconData iconData, Color bgColor) {
+  Widget _buildCard(BuildContext context, title, String subtitle, IconData iconData, Color bgColor) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
@@ -317,10 +333,9 @@ class HomePageContent extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // 아이콘 부분
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03),
             decoration: BoxDecoration(
               color: bgColor, // 상단 부분에 같은 배경색 설정
               borderRadius: BorderRadius.only(
@@ -328,27 +343,32 @@ class HomePageContent extends StatelessWidget {
                 topRight: Radius.circular(12),
               ),
             ),
-            child: Icon(iconData, size: 28, color: Colors.white),
+            child: Icon(iconData, size: MediaQuery.of(context).size.width * 0.05,
+                color: Colors.white),
           ),
           // 텍스트 부분
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            padding: EdgeInsets.symmetric(
+              vertical: MediaQuery.of(context).size.height * 0.01, // 런타임 계산
+              horizontal: MediaQuery.of(context).size.width * 0.02,
+            ),
             child: Column(
               children: [
                 Text(
                   title,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: MediaQuery.of(context).size.width * 0.035,
                     color: Colors.grey[800],
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.005),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontSize: 22,
+                    fontSize: MediaQuery.of(context).size.width * 0.06,
                     fontWeight: FontWeight.bold,
                     color: Colors.indigo,
+                    fontFamily: 'CustomFont',
                   ),
                 ),
               ],
@@ -392,22 +412,22 @@ Widget _buildMenuGrid(BuildContext context) {
         child: Column(
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: MediaQuery.of(context).size.width * 0.15,
+              height: MediaQuery.of(context).size.width * 0.15,
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
                 menuItems[index]['icon'],
-                size: 30,
+                size: MediaQuery.of(context).size.width * 0.06,
                 color: menuItems[index]['color'], // 각 아이콘 색상 설정
               ),
             ),
-            SizedBox(height: 6),
+            SizedBox(height: MediaQuery.of(context).size.width * 0.02),
             Text(
               menuItems[index]['label'],
-              style: TextStyle(fontSize: 12),
+              style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
               textAlign: TextAlign.center,
             ),
           ],

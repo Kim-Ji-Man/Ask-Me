@@ -32,6 +32,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('아이디 찾기 성공'),
             content: Text('회원님의 아이디는 $userId 입니다.'),
             actions: [
@@ -39,7 +40,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('확인'),
+                child: Text('확인', style: TextStyle(color: Colors.indigo)),
               ),
             ],
           ),
@@ -48,6 +49,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('아이디 찾기 실패'),
             content: Text('입력하신 정보로 회원님을 찾을 수 없습니다.'),
             actions: [
@@ -55,7 +57,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('확인'),
+                child: Text('확인', style: TextStyle(color: Colors.indigo)),
               ),
             ],
           ),
@@ -86,6 +88,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('비밀번호 재설정 성공'),
             content: Text('임시 비밀번호는 $tempPassword 입니다. 비밀번호를 변경해 주세요.'),
             actions: [
@@ -93,7 +96,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('확인'),
+                child: Text('확인', style: TextStyle(color: Colors.indigo)),
               ),
             ],
           ),
@@ -102,6 +105,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
+            backgroundColor: Colors.white,
             title: Text('비밀번호 재설정 실패'),
             content: Text('입력하신 정보가 일치하지 않습니다. 다시 시도해 주세요.'),
             actions: [
@@ -109,7 +113,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('확인'),
+                child: Text('확인', style: TextStyle(color: Colors.indigo)),
               ),
             ],
           ),
@@ -128,7 +132,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back_ios_new),
           onPressed: () {
             Navigator.pop(context);
           },

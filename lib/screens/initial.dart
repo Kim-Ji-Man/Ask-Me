@@ -107,7 +107,7 @@ class _InitialScreenState extends State<InitialScreen> {
                           text: '로그인',
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.black,
+                            color: Colors.indigo,
                           ),
                         ),
                       ],

@@ -73,6 +73,12 @@ class _SignUpStep2State extends State<SignUpStep2> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text(
           "회원가입",
           style: TextStyle(
