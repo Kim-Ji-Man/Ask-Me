@@ -313,7 +313,7 @@ class HomePageContent extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.015),
                   _buildMenuGrid(context),
                 ],
               ),

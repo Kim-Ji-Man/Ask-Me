@@ -243,11 +243,11 @@ class _MyInfoPageState extends State<MyInfoPage> {
                 Navigator.of(context).pop();
                 _deleteAccount();
               },
-              child: Text('확인'),
+              child: Text('확인', style: TextStyle(color: Colors.indigo)),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('취소'),
+              child: Text('취소', style: TextStyle(color: Colors.indigo)),
             ),
           ],
         );
