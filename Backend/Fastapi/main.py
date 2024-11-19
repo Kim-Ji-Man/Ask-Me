@@ -191,7 +191,7 @@ async def detect_weapon(data: DetectionData):
                 VALUES (%s, %s, %s)
             """
             cursor.execute(insert_anomaly_query, (
-                data.device_id, '흉기의심', alert_id))
+                data.device_id, '흉기탐지', alert_id))
                 
             connection.commit()
 

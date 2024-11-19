@@ -91,7 +91,7 @@ CctvWebSocket();
       if (!selectedAlert) return;
     
       // Validation: Ensure a valid anomaly type is selected
-      if (anomalyType === "흉기의심") {
+      if (anomalyType === "흉기탐지") {
         Swal.fire("저장 실패", "이상 행동을 선택하세요.", "warning");
         return;
       }
@@ -122,10 +122,10 @@ CctvWebSocket();
   
   const sortedAlertData = alertData.sort((a, b) => {
     // '흉기의심'이 가장 우선 순위
-    if (a.anomaly_type === "흉기의심" && b.anomaly_type !== "흉기의심") {
+    if (a.anomaly_type === "흉기탐지" && b.anomaly_type !== "흉기탐지") {
       return -1;
     }
-    if (a.anomaly_type !== "흉기의심" && b.anomaly_type === "흉기의심") {
+    if (a.anomaly_type !== "흉기탐지" && b.anomaly_type === "흉기탐지") {
       return 1;
     }
   
@@ -207,7 +207,7 @@ CctvWebSocket();
                                 ? "red"
                                 : alert.anomaly_type === "오류"
                                 ? "orange"
-                                : alert.anomaly_type === "기타"
+                                : alert.anomaly_type === "흉기의심"
                                 ? "black"
                                 : "gray",
                             color: "white",
@@ -247,10 +247,10 @@ CctvWebSocket();
                     <tr>
                       <th>이상 행동</th>
                       <Form.Select aria-label="Default select example" value={anomalyType} onChange={handleAnomalyTypeChange} style={{width:'100%'}}>
-                          <option value="흉기의심">종류 선택</option> {/* 기본 옵션 */}
+                          <option value="흉기탐지">종류 선택</option> {/* 기본 옵션 */}
                           <option value="흉기">흉기</option> {/* 흉기 옵션 */}
                           <option value="오류">오류</option> {/* 오류 옵션 */}
-                          <option value="기타">기타</option> {/* 기타 옵션 */}
+                          <option value="흉기의심">흉기의심</option> {/* 기타 옵션 */}
                         </Form.Select>
                     </tr>
                     <tr>

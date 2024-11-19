@@ -132,7 +132,7 @@ const notifyUsers = async (imagePath, storeName, detectionTime, alertId) => {
           await db.executeQuery(
               `INSERT INTO Notification (user_id, alert_id, noti_method, sent_at, message, image, status)
                VALUES (?, ?, 'push', NOW(), ?, ?, 'pending');`,
-              [row.user_id, alertId, `${detectionTime}에 흉기의심 감지`, fullImageUrl]
+              [row.user_id, alertId, `${detectionTime}에 흉기탐지`, fullImageUrl]
           );
       }
 

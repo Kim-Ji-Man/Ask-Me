@@ -16,17 +16,21 @@ const PieChart = () => {
     axios.get('/Alim/admin/anomaly-counts')
       .then(response => {
         const data = response.data;
-        const labels = data.map(item => item.anomaly_type);
-        const counts = data.map(item => item.count);
+
+        // "흉기탐지"를 제외한 데이터 필터링
+        const filteredData = data.filter(item => item.anomaly_type !== '흉기탐지');
+
+        const labels = filteredData.map(item => item.anomaly_type);
+        const counts = filteredData.map(item => item.count);
 
         setChartData({
           labels: labels,
           datasets: [
             {
               data: counts,
-              // 흉기의심을 주황색(#FFA500)으로 추가
-              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FFA500'], 
-              hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#FFA500'],
+              // 흉기의심을 주황색(#FFA500)으로 추가했지만 이제는 제외됨
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'], 
+              hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
             },
           ],
         });
