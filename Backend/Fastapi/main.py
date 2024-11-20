@@ -214,12 +214,12 @@ async def video_feed2(record: bool = False):
 # 카운트 
 @app.get('/video_feed3')
 async def video_feed3():
-    return StreamingResponse(counter_frames(0), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(counter_frames(2), media_type='multipart/x-mixed-replace; boundary=frame')
 
 # 히트맵
 @app.get('/video_feed4')
 async def video_feed4():
-    return StreamingResponse(heatmaps_frames(1), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(heatmaps_frames(3), media_type='multipart/x-mixed-replace; boundary=frame')
 
 class DetectionData(BaseModel):
     detected: bool

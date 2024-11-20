@@ -22,8 +22,8 @@ CctvWebSocket();
   const cctvAddresses = [
     "https://localhost:8000/video_feed1",
     "https://localhost:8000/video_feed2",
-    "https://localhost:8000/video_feed1",
-    "https://localhost:8000/video_feed2",
+    "https://localhost:8000/video_feed3",
+    "https://localhost:8000/video_feed4",
   ];
 
   const videoUrl = cctvAddresses[0];

@@ -140,7 +140,7 @@ router.get('/app/Count/:role', async (req, res) => {
 // 모든 알림 가져오기
 router.get("/", async (req, res) => {
   const sql = `
-  SELECT 
+SELECT 
     n.noti_id, 
     n.user_id, 
     n.alert_id, 
@@ -154,7 +154,8 @@ router.get("/", async (req, res) => {
     n.image, 
     n.status,
     a.image_path,
-    a.video_path
+    a.video_path,
+    ar.anomaly_type
 FROM 
     (
         SELECT 
@@ -167,8 +168,11 @@ JOIN
     Alert_Log a ON n.alert_id = a.alert_id
 JOIN 
     Detection_Device d ON a.device_id = d.device_id
+LEFT JOIN  
+    Anomaly_Resolution ar ON n.alert_id = ar.alert_id
 WHERE 
     n.row_num = 1
+    AND (ar.anomaly_type IS NULL OR ar.anomaly_type != '흉기탐지')
 ORDER BY 
     n.sent_at DESC;
     `;

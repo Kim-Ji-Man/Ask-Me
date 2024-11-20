@@ -178,23 +178,26 @@ const Alim = () => {
                     </div>
                   </Col>
                   <Col xs={6} className="details">
-                    <p><strong>관측내용:</strong> {selectedAlim?.message}</p>
-                    <p><strong>CCTV:</strong> {selectedAlim?.device_name}</p>
-                    <p><strong>관측시간:</strong> {new Date(selectedAlim?.sent_at).toLocaleString('ko-KR')}</p>
-                    <p><strong>상태:</strong>
-                      <Button
-                        style={{
-                          backgroundColor: selectedAlim?.status === 'success' ? '#BAF2E5' : '#FFC5C5',
-                          color: selectedAlim?.status === 'success' ? '#008767' : 'red',
-                          border: selectedAlim?.status === 'success' ? '#16C098' : '#FFC5C5',
-                          marginLeft:'15px'
-                        }}
-
-                      >
-                        {selectedAlim?.status === 'success' ? "정상" : "오류"}
-                      </Button>
-                    </p>
-                  </Col>
+  <p><strong>관측내용:</strong> {selectedAlim?.message}</p>
+  <p><strong>CCTV:</strong> {selectedAlim?.device_name}</p>
+  <p><strong>관측시간:</strong> {new Date(selectedAlim?.sent_at).toLocaleString('ko-KR')}</p>
+  <p><strong>상태:</strong>
+    <Button
+      style={{
+        backgroundColor: selectedAlim?.anomaly_type === '흉기' 
+          ? 'red'  // Red background for 흉기
+          : 'lightgreen', // Default color for non-흉기 cases
+        color: 'black', // White text for better visibility on red background
+        border: 'none', // Optional: remove or customize the border
+        marginLeft: '15px'
+      }}
+    >
+      {selectedAlim?.anomaly_type === '흉기'
+        ? "위협행동"  // Show "위협행동" for 흉기
+        : "정상"}
+    </Button>
+  </p>
+</Col>
                 </Row>
               </Col>
             </Row>
