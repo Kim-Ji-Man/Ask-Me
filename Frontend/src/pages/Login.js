@@ -46,6 +46,7 @@ const Login = () => {
         localStorage.setItem('userId', res.data.userId); 
         localStorage.setItem('username', res.data.username); 
         localStorage.setItem('jwtToken', res.data.token);
+        localStorage.setItem('role', res.data.role); 
 
         Swal.fire({
           icon: 'success',
@@ -53,8 +54,12 @@ const Login = () => {
           text: `${username}님 반갑습니다!`,
           confirmButtonText: '확인'
         });
-
-        navigate("/CCTV");
+        
+        if (res.data.role === 'master') {
+          navigate("/MainMaster"); // 관리자 페이지로 이동
+        } else {
+          navigate("/cctv"); // 일반 사용자 페이지로 이동
+        } 
       } else {
         throw new Error('로그인 실패');
       }

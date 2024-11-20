@@ -250,10 +250,10 @@ const Member = () => {
                       Header: '상태',
                       Cell: ({ row }) => (
                         <InputGroup className='justify-content-center'>
-                          <Button
+                                  <Button
                             style={{
-                              backgroundColor: row.values.member_stauts === 'active' ? '#BAF2E5' : '#FFC5C5',
-                              color: row.values.member_stauts === 'active' ? '#008767' : 'red',
+                              backgroundColor: row.values.member_stauts === 'active' ? '#D1E9F6' : '#FFC6C6',
+                              color: row.values.member_stauts === 'active' ? '#1F316F' : '#921A40',
                               border: row.values.member_stauts === 'active' ? '#16C098' : '#FFC5C5',
                             }}
                           >
@@ -262,18 +262,16 @@ const Member = () => {
                         </InputGroup>
                       ),
                     },
-                    {
-                      accessor: 'user_id',
-                      Header: '편집',
+                    { accessor: 'user_id', Header: '편집',
                       Cell: ({ row }) => (
                         <InputGroup className='justify-content-center'>
                           <FaRegEdit
-                            style={{ width: "30px", height: "40px", marginLeft: '10px', color: 'lightgreen' }}
+                            style={{ width: "25px", height: "40px", marginLeft: '10px', color: '#1F316F' }}
                             onClick={() => editClick(row.original.user_id)} // 수정 버튼 클릭 시 user_id 전달
                           />
                           <MdDeleteForever
-                            style={{ width: "30px", height: "40px", marginLeft: '5px', color: 'red' }}
-                            onClickCapture={() => deleteMember(row.original.user_id)} // 삭제 버튼 클릭 시 user_id 전달
+                            style={{ width: "25px", height: "40px", marginLeft: '5px', color: 'grey' }}
+                            onClickCapture={() => deleteMember(row.original.user_id, row.original.member_jic)} // 삭제 버튼 클릭 시 user_id 전달
                           />
                         </InputGroup>
                       ),

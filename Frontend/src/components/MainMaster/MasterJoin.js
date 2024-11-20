@@ -16,7 +16,7 @@ const options = {
       position: 'top',
     },
     datalabels: {
-      color: '#fff', // 데이터 레이블 색상
+      color: 'black', // 데이터 레이블 색상
       anchor: 'center',
       align: 'center',
       display: function(context) {
@@ -83,22 +83,22 @@ const MasterJoin = () => {
             {
               label: '관리자',
               data: adminData,
-              backgroundColor: 'rgba(255, 99, 132, 0.6)',
-              borderColor: 'rgba(255, 99, 132, 1)',
+              backgroundColor: '#FF8C9E',
+              borderColor: '#FF8C9E',
               borderWidth: 1,
             },
             {
               label: '경비원',
               data: guardData,
-              backgroundColor: 'rgba(54, 162, 235, 0.6)',
-              borderColor: 'rgba(54, 162, 235, 1)',
+              backgroundColor: '#F6EACB',
+              borderColor: '#F6EACB',
               borderWidth: 1,
             },
             {
               label: '일반 사용자',
               data: userData,
-              backgroundColor: 'rgba(75, 192, 192, 0.6)',
-              borderColor: 'rgba(75, 192, 192, 1)',
+              backgroundColor: '#B9E5E8',
+              borderColor: '#B9E5E8',
               borderWidth: 1,
             },
           ],

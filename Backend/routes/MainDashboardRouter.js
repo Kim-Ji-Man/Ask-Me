@@ -33,6 +33,39 @@ router.get('/users', async (req, res) => {
     }
 });
 
+
+router.get('/admin/people-count/:year/:month/:day', async (req, res) => {
+  const { year, month, day } = req.params;
+  console.log( year, month, day,"잘 나오니???");
+  
+  const query = `
+    SELECT 
+      SUM(people_count_in) AS total_in,
+      SUM(people_count_out) AS total_out
+    FROM 
+      CCTV_Person
+    WHERE 
+      YEAR(pedetection_time) = ?
+      AND MONTH(pedetection_time) = ?
+      AND DAY(pedetection_time) = ?;
+  `;
+
+  try {
+    // MySQL 쿼리 실행 (async/await 사용)
+    const rows = await db.executeQuery(query, [year, month, day]);
+
+    // 결과가 없으면 기본값으로 설정
+    const result = rows[0] || { total_in: 0, total_out: 0 };
+
+    // 결과를 JSON 형식으로 반환
+    res.json(result);
+  } catch (error) {
+    console.error('데이터베이스 쿼리 오류:', error);
+    res.status(500).json({ error: '데이터를 가져오는 중 오류가 발생했습니다.' });
+  }
+});
+
+
 router.get('/people/:month', async (req, res) => {
   const month = req.params.month;
   console.log(month,"123");

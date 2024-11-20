@@ -133,7 +133,7 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
     <Modal show={show} onHide={() => handleClose(null)}>
       <Modal.Header
         closeButton
-        style={{ backgroundColor: "black", color: "white" }}
+        style={{ backgroundColor: "#1F316F", color: "white" }}
       >
         <Modal.Title>회원수정</Modal.Title>
       </Modal.Header>
@@ -242,7 +242,7 @@ const UserModal = ({ show, handleClose, selectedMember }) => {
         <Button variant="secondary" onClick={() => handleClose(null)}>
           닫기
         </Button>
-        <Button variant="primary" onClick={handelSave}>
+        <Button style={{background:"#1F316F",border:"#1F316F"}} onClick={handelSave}>
           저장
         </Button>
       </Modal.Footer>

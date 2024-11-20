@@ -114,14 +114,14 @@ const Main = () => {
         <Row className="g-4">
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: "500px" }}>
-              <h6 style={{ fontSize: "24px" }}>cctv 통계</h6>
+              <h6 style={{ fontSize: "24px" }}>일별 출입 통계</h6>
               {/* <Barchart /> */}
               <Chart1 />
             </div>
           </Col>
           <Col md={6} lg={6}>
             <div className="card p-3" style={{ height: "500px" }}>
-              <h6 style={{ fontSize: "24px" }}>알림결과</h6>
+              <h6 style={{ fontSize: "24px" }}>감지 결과</h6>
               <PieChart />
             </div>
           </Col>

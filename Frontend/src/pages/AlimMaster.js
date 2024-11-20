@@ -81,9 +81,9 @@ const AlimMaster = () => {
                     Cell: ({ row }) => (
                       <Button
                         style={{
-                          backgroundColor: row.values.status === '가입' ? '#BAF2E5' : '#FFC5C5',
-                          color: row.values.status === '가입' ? '#008767' : 'red',
-                          borderColor: row.values.status === '가입' ? '#16C098' : '#FFC5C5',
+                          backgroundColor: row.values.status === '가입' ? '#D1E9F6' : '#FFC6C6',
+                          color: row.values.status === '가입' ? '#1F316F' : '#921A40',
+                          borderColor: row.values.status === '가입' ? '#D1E9F6' : '#FFC6C6',
                         }}
                       >
                         {row.values.status === '가입' ? '가입' : '신고'}

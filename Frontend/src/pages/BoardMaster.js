@@ -163,7 +163,7 @@ const BoardMaster = () => {
                             width: "30px",
                             height: "40px",
                             marginLeft: "5px",
-                            color: "red",
+                            color: "grey",
                           }}
                         />
                       </InputGroup>
@@ -214,14 +214,14 @@ const BoardMaster = () => {
                   {
                     accessor: "content",
                     Header: "댓글내용",
-                    width: "30%",
+                    width: "40%",
                     Cell: ({ row }) => (
                       <span onClick={() => handlePostClick(row.original.post_id)}>
                         {row.values.content}
                       </span>
                     ),
                   },
-                  { accessor: "created_at", Header: "날짜" },
+                  { accessor: "created_at", Header: "날짜" ,width:"20%"},
                   { accessor: "user_id", Header: "작성자" },
                   { accessor: "heart", Header: "좋아요" },
                   { accessor: "no", Header: "신고" },
@@ -236,7 +236,7 @@ const BoardMaster = () => {
                             width: "30px",
                             height: "40px",
                             marginLeft: "5px",
-                            color: "red",
+                            color: "grey",
                           }}
                         />
                       </InputGroup>
@@ -251,8 +251,8 @@ const BoardMaster = () => {
 
       {/* 신고 모달 */}
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>신고 내역</Modal.Title>
+        <Modal.Header closeButton style={{background:"#1F316F"}}>
+          <Modal.Title style={{color:"white"}}>신고 내역</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Container className="report-category-table">

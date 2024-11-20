@@ -143,6 +143,7 @@ async function login(req, res) {
             success: true, 
             userId: user.user_id,
             username: user.username,
+            role:user.role,
             account_status: user.account_status, 
             message: 'Login successful', 
             token 

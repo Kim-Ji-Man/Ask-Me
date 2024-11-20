@@ -82,8 +82,8 @@ const MasterGender = () => {
       {
         label: `${selectedGender === 'man' ? '남성' : '여성'}`,
         data: ageData,
-        backgroundColor: selectedGender === 'man' ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255,99,132,0.6)',
-        borderColor: selectedGender === 'man' ? 'rgba(75,192,192,1)' : 'rgba(255,99,132,1)',
+        backgroundColor: selectedGender === 'man' ? '#D1E9F6' : '#FFC6C6',
+        borderColor: selectedGender === 'man' ? '#D1E9F6' : '#FFC6C6',
         borderWidth: 1,
       },
     ],

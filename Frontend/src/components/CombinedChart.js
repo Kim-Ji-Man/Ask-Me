@@ -132,7 +132,7 @@ const dataForChartDisplay = {
 
 return (
     <div style={{ padding:'10px' }}>
-        <h5 className="text-center mb-5" style={{ fontSize:'24px' }}>월 시간별 통계</h5>
+        <h5 className="text-center mb-5" style={{ fontSize:'24px' }}>월 시간별 출입 통계</h5>
         <div style={{ display:'flex', justifyContent:'right', gap:'10px', marginTop:'20px' }}>
             <Form.Select aria-label="Select month" onChange={handleMonthChange} value={selectedMonth} style={{ width:"150px", margin:"0", display:"block" }}>
                 <option value="">월 선택</option>

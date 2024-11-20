@@ -149,7 +149,7 @@ def save_counts_every_10_seconds(device_id):
         except Exception as e:
             logging.error(f"DB 저장 중 오류 발생: {e}")
         
-        time.sleep(10)  # 10초 대기 (테스트용)
+        time.sleep(300)  # 10초 대기 (테스트용)
 
 # FastAPI 서버 시작 시 스레드로 주기적으로 카운트 저장 작업 시작
 @app.on_event("startup")
@@ -209,12 +209,12 @@ async def video_feed1(record: bool = False):
 
 @app.get('/video_feed2')
 async def video_feed2(record: bool = False):
-    return StreamingResponse(generate_frames(1, "yolo11n-seg.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(generate_frames(0, "yolo11n-seg.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
 
 # 카운트 
 @app.get('/video_feed3')
 async def video_feed3():
-    return StreamingResponse(counter_frames(0), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(counter_frames(1), media_type='multipart/x-mixed-replace; boundary=frame')
 
 # 히트맵
 @app.get('/video_feed4')

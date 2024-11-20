@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import webSocketService from '../websocketService';
 import CctvWebSocket from"../components/CctvWebSocket"
 import axios from "../axios";
+import { FaCaretDown } from 'react-icons/fa';
 
 const CCTV = () => {
   const [showAlert, setShowAlert] = useState(false);
@@ -214,6 +215,7 @@ CctvWebSocket();
                           }}
                         >
                           {alert.anomaly_type}
+                          <FaCaretDown style={{ marginLeft: '8px' }} />
                         </Button>
                       </div>
                     </div>
@@ -226,7 +228,7 @@ CctvWebSocket();
         )}
         {/* 선택된 이미지 모달 */}
         <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
-          <Modal.Header closeButton>
+          <Modal.Header closeButton style={{background:"#1F316F",color:"white"}}>
             <Modal.Title>이상내역</Modal.Title>
           </Modal.Header>
           <Modal.Body className="cctvmodalerror_body">
