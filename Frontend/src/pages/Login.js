@@ -78,65 +78,57 @@ const Login = () => {
 
   return (
     <div className="main-contents">
-      <Container className='mt-5'>
-        <Row className='mt-3 mb-3'>
-          <Col md={6} className='d-flex justify-content-center align-items-center g-0'>
-            <Image src="/img/office.jpg" alt="Login Image" className="login-image" fluid />
-          </Col>
-          <Col md={6} xs={12} className='d-flex justify-content-left titles g-0'>
-            <Form className='loginForm' style={{ width: '100%' }} onSubmit={handleLogin}>
-              <Row>
-                <Col>
-                  <Image src='img/AskMeLogo1.png' style={{ width: '100%' ,height:'200px',marginBottom:"25px"}} />
-                </Col>
-              </Row>
-              {/* <Row>
-                <Col style={{marginBottom:"25px"}}>
-                  <p style={{fontSize:"2.0rem"}}>로그인</p>
-                </Col>
-              </Row> */}
-              <Row>
-                <Col>
-                  <input
-                    type="text"
-                    className="userId"
-                    id="userId"
-                    placeholder="아이디"
-                    autoFocus
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </Col>
-              </Row>
-              <Row>
-                <Col className='logbtncol'>
-                  <input
-                    type="password"
-                    className="password"
-                    id="password"
-                    placeholder="비밀번호"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <button id="loginBut" type="submit" disabled={isLoading}>
-                    {isLoading ? '로그인 중...' : '로그인'}
-                  </button>
-                </Col>
-              </Row>
-              <div className="link">
-                <Link to={"/Findaccount"}>아이디ㆍ비밀번호 찾기</Link>
-                <span className="vertical-line"></span>
-                <Link to={"/RegisterUser"}>회원가입</Link>
-              </div>
-            </Form>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+    <Container className='mt-5'>
+      <Row className='mt-3 mb-3 justify-content-center align-items-center'>
+        <Col md={6} lg={6} xs={12}  className='d-flex justify-content-center titles g-0'>
+          <Form className='loginForm' style={{ width: '100%' }} onSubmit={handleLogin}>
+            <Row>
+              <Col className="d-flex justify-content-center">
+                <Image src='img/logo1234.png' style={{ width: '100%' ,height:'200px',marginBottom:"25px"}} />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <input
+                  type="text"
+                  className="userId"
+                  id="userId"
+                  placeholder="아이디"
+                  autoFocus
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col className='logbtncol'>
+                <input
+                  type="password"
+                  className="password"
+                  id="password"
+                  placeholder="비밀번호"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <button id="loginBut" type="submit" disabled={isLoading}>
+                  {isLoading ? '로그인 중...' : '로그인'}
+                </button>
+              </Col>
+            </Row>
+            <div className="link">
+              <Link to={"/Findaccount"}>아이디ㆍ비밀번호 찾기</Link>
+              <span className="vertical-line"></span>
+              <Link to={"/RegisterUser"}>회원가입</Link>
+            </div>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
+  </div>
   );
 };
 

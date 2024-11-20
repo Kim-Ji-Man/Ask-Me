@@ -80,7 +80,7 @@ const FindAccount = () => {
             value={idPhoneNumber}
             onChange={(e) => setIdPhoneNumber(e.target.value)}
           />
-          <button onClick={handleFindId}>아이디 찾기</button>
+          <button onClick={handleFindId} style={{background:"#1F316F"}}>아이디 찾기</button>
         </div>
 
         {/* 비밀번호 재설정 */}
@@ -98,7 +98,7 @@ const FindAccount = () => {
             value={passwordPhoneNumber}
             onChange={(e) => setPasswordPhoneNumber(e.target.value)}
           />
-          <button onClick={handleResetPassword}>비밀번호 재설정</button>
+          <button onClick={handleResetPassword} style={{background:"#1F316F"}} >비밀번호 재설정</button>
         </div>
         <a href="/" className="login-link">로그인</a>
       </div>

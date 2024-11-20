@@ -1,8 +1,8 @@
 
-div h5 {
+/* div h5 {
     margin-bottom: 3px; 
     color: rgb(107, 107, 107);
-}
+} */
 
 
 /* 로그인 폼 스타일 */
@@ -29,15 +29,15 @@ div h5 {
 }
 
 /* 로그인 제목 */
-h1#login_title {
-    margin-bottom: 30px; /* 제목 간격 조정 */
-}
+/* h1#login_title {
+    margin-bottom: 30px; 
+} */
 
 
 /* 로그인 제목 */
-h1#login_title {
+/* h1#login_title {
     margin-bottom: 50px;
-}
+} */
 
 .userId, .password {
     width: 300px;
@@ -46,23 +46,23 @@ h1#login_title {
     border-radius: 5px;
     padding: 0 10px;
     margin-bottom: 10px;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 /* 로그인 버튼 스타일 */
 #loginBut {
-    background-color: skyblue;
+    background-color: #1F316F;
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 17px;
+    font-size: 18px;
     height: 50px;
     width: 300px;
     margin: 20px 0 10px 0;
 }
 
 #loginBut:hover {
-    background-color: #2883eb;
+    background-color: #1F316F;
 }
 
 /* 로그인 이미지 */
@@ -75,20 +75,27 @@ h1#login_title {
 .vertical-line {
     display: inline-block;
     width: 1px;          /* 세로선의 두께 */
-    height: 15px;        /* 세로선의 길이 */
-    background-color: #6b6b6b; /* 세로선의 색상 */
-    margin: 0 10px;      /* 아이디 찾기, 비밀번호 찾기 사이의 간격 */
+    height: 20px;        /* 세로선의 길이 */
+    background-color: lightgray; /* 세로선의 색상 */
+    margin: 0 12px;      /* 아이디 찾기, 비밀번호 찾기 사이의 간격 */
     vertical-align: middle; /* 가운데 정렬 */
+
 }
 
 .link a {
     text-decoration: none; /* 밑줄 제거 */
-    color: rgb(107, 107, 107); /* 색상 변경 */
-    font-size: 20px;
+    color: lightgray; /* 색상 변경 */
+    font-size: 12px;
+    vertical-align: middle; /* 가운데 정렬 */
+
 }
 
 .link a:hover {
     color: #9e9e9e; /* 마우스 호버 시 색상 변경 */
+}
+
+.link{
+   margin-right: 10px;
 }
 
 /* 로그인 이미지 */
