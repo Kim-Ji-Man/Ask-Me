@@ -176,8 +176,8 @@ function RegisterStore() {
               <Form onSubmit={handleSubmit}>
                 {/* 매장명 입력 필드 */}
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    <FontAwesomeIcon icon={faStore} />
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faStore}  style={{color:"white"}}/>
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
@@ -190,8 +190,8 @@ function RegisterStore() {
 
                 {/* 매장 주소 입력 필드 */}
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    <FontAwesomeIcon icon={faMapMarkerAlt} />
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faMapMarkerAlt} style={{color:"white"}}/>
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
@@ -204,8 +204,8 @@ function RegisterStore() {
 
                 {/* 사업자번호 입력 필드 */}
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    <FontAwesomeIcon icon={faIdBadge} />
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faIdBadge} style={{color:"white"}}/>
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
@@ -218,12 +218,12 @@ function RegisterStore() {
 
                 {/* 매장 전화 입력 필드 */}
                 <InputGroup className="mb-3">
-                  <InputGroup.Text>
-                    <FontAwesomeIcon icon={faPhoneAlt} />
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faPhoneAlt} style={{color:"white"}}/>
                   </InputGroup.Text>
                   <Form.Control
                     type="text"
-                    placeholder="매장 전화번호"
+                    placeholder="매장 전화번호 (062-xxx-xxxx)"
                     name="store_phone"
                     value={formData.store_phone}
                     onChange={handleInputChange}

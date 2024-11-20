@@ -34,30 +34,30 @@
   }
   
   .btn-success {
-    background-color: skyblue;
-    border-color: skyblue;
+    background-color: #1F316F;
+    border-color: #1F316F;
     color: white;
     font-weight: bold;
-    --bs-btn-hover-color : skyblue;
-    --bs-btn-active-bg : skyblue;
-    --bs-btn-active-color : white;
-    --bs-btn-active-border-color : skyblue;
+    --bs-btn-hover-color : #1F316F;
+    --bs-btn-active-bg : #1F316F;
+    --bs-btn-active-color :#1F316F;
+    --bs-btn-active-border-color : #1F316F;
   
   
   
   }
   
   .btn-success:active {
-    background-color: skyblue;
-    border-color: skyblue;
+    background-color: #1F316F;
+    border-color: #1F316F;
     color: white;
     font-weight: bold;
    
   }
   
   .btn-success:hover {
-    background-color: skyblue;
-    border-color: skyblue;
+    background-color: #1F316F;
+    border-color: #1F316F;
     color: white;
     font-weight: bold;
    
@@ -94,7 +94,11 @@
     border-radius: 0.25rem;
   }
 
-  
+  .idblank{
+    position: relative;
+    bottom: 10px;
+  }
+
   .input-group-text {
     display: flex; /* flexbox를 사용하여 내부 요소를 정렬 */
     align-items: center; /* 세로 축 중앙 정렬 */
@@ -110,11 +114,14 @@
   .input-group
   .genderselect {
     height: 40px; /* 아이콘과 인풋 필드의 높이를 동일하게 설정 */
-    font-size: 16px; /* 폰트 사이즈도 일치시킵니다 */
+    font-size: 12px; /* 폰트 사이즈도 일치시킵니다 */
     border: 1px solid #ced4da;
     border-radius: 0.25rem;
     margin-top: 0px;
+
   }
+
+
   
   /* 버튼과 링크의 너비도 조절할 수 있습니다. */
   .login-button,

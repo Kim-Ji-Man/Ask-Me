@@ -46,7 +46,7 @@
     border-radius: 5px;
     padding: 0 10px;
     margin-bottom: 10px;
-    font-size: 16px;
+    font-size: 12px;
 }
 
 /* 로그인 버튼 스타일 */
@@ -85,7 +85,7 @@
 .link a {
     text-decoration: none; /* 밑줄 제거 */
     color: lightgray; /* 색상 변경 */
-    font-size: 12px;
+    font-size: 14px;
     vertical-align: middle; /* 가운데 정렬 */
 
 }

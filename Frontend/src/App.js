@@ -56,7 +56,7 @@ function App({ children }) {  // children을 props로 받기
         )}
 
         <Modal show={showMapModal} onHide={handleCloseMap} centered size="lg">
-          <Modal.Header closeButton>
+          <Modal.Header style={{background:"#1F316F", color: 'white'}} closeButton>
             <Modal.Title>지도</Modal.Title>
           </Modal.Header>
           <Modal.Body>

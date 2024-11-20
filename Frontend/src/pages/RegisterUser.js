@@ -31,10 +31,10 @@ function RegisterUser() {
     confirm_pw: "",
     mem_phone: "",
     mem_email: "",
-    mem_birth:"",
-    mem_gender:"",
-    mem_name:"",
-    mem_role:"admin",
+    mem_birth: "",
+    mem_gender: "",
+    mem_name: "",
+    mem_role: "admin",
   });
 
 
@@ -57,7 +57,7 @@ function RegisterUser() {
       if (validId) {
         const response = await axios.get(`/Member/checkId/${value}`);
         console.log(response.data);
-        
+
         // response.data.count를 사용하여 아이디 사용 여부를 명확하게 확인
         setIsIdValid(response.data[0].count === 0);
         setErrorMessage(response.data[0].count !== 0 ? "이미 사용중인 아이디입니다." : "사용 가능한 아이디입니다.");
@@ -67,8 +67,8 @@ function RegisterUser() {
     }
   };
 
-  
-  
+
+
   function validateId(id) {
     const re = /^[A-Za-z0-9]{8,}$/;
     return re.test(id);
@@ -82,12 +82,13 @@ function RegisterUser() {
   const handleBlur = (e) => {
     const { name, value } = e.target;
     if (name === "mem_id" && value.length < 8) {
-      Swal.fire({
-        icon: "warning",
-        text: "아이디는 8글자 이상이어야 합니다.",
-        confirmButtonText: "확인",
-      });
       setIsIdValid(false);
+      // Swal.fire({
+      //   icon: "warning",
+      //   text: "아이디는 8글자 이상이어야 합니다.",
+      //   confirmButtonText: "확인",
+      // });
+      // setIsIdValid(false);
     }
   };
 
@@ -98,45 +99,53 @@ function RegisterUser() {
     if (!formData.mem_name.trim()) {
       Swal.fire({
         icon: 'error',
-        text: '이름을 읿력해주세요.',
+        text: '이름을 입력해주세요.',
         confirmButtonText: '확인'
       });
       return;
     }
 
     if (!isIdValid) {
-      Swal.fire({
-        icon: 'error',
-        text: '아이디 중복 확인을 해주세요.',
-        confirmButtonText: '확인'
-      });
+      console.log("아이디 중복 확인을 해주세요.");
       return;
+      // Swal.fire({
+      //   icon: 'error',
+      //   text: '아이디 중복 확인을 해주세요.',
+      //   confirmButtonText: '확인'
+      // });
+      // return;
     }
     if (formData.mem_pw !== formData.confirm_pw) {
-      Swal.fire({
-        icon: 'error',
-        text: '비밀번호가 일치하지 않습니다..',
-        confirmButtonText: '확인'
-      });
+      console.log("비밀번호가 일치하지 않습니다.");
       return;
+      // Swal.fire({
+      //   icon: 'error',
+      //   text: '비밀번호가 일치하지 않습니다..',
+      //   confirmButtonText: '확인'
+      // });
+      // return;
     }
 
-    if (!formData.mem_pw.trim() ) {
-      Swal.fire({
-        icon: 'error',
-        text: '비밀번호를 입력해주세요',
-        confirmButtonText: '확인'
-      });
+    if (!formData.mem_pw.trim()) {
+      console.log("비밀번호를 입력해주세요.");
       return;
+      // Swal.fire({
+      //   icon: 'error',
+      //   text: '비밀번호를 입력해주세요',
+      //   confirmButtonText: '확인'
+      // });
+      // return;
     }
 
-    if (!formData.confirm_pw.trim() ) {
-      Swal.fire({
-        icon: 'error',
-        text: '비밀번호 확인을 입력해주세요',
-        confirmButtonText: '확인'
-      });
+    if (!formData.confirm_pw.trim()) {
+      console.log("비밀번호 확인을 입력해주세요.");
       return;
+      // Swal.fire({
+      //   icon: 'error',
+      //   text: '비밀번호 확인을 입력해주세요',
+      //   confirmButtonText: '확인'
+      // });
+      // return;
     }
     if (!formData.mem_email.trim()) {
       Swal.fire({
@@ -163,30 +172,30 @@ function RegisterUser() {
       return;
     }
 
-    
-  if (formData.mem_gender === '') {
-    Swal.fire({
+
+    if (formData.mem_gender === '') {
+      Swal.fire({
         icon: 'error',
         text: '성별을 선택해주세요',
         confirmButtonText: '확인'
-    });
-    return;
-}
+      });
+      return;
+    }
 
     const userData = {
       username: formData.mem_id,
       password: formData.mem_pw,
       phone_number: formData.mem_phone,
       email: formData.mem_email,
-      birth:formData.mem_birth,
+      birth: formData.mem_birth,
       role: formData.mem_role,
-      gender:formData.mem_gender,
-      mem_name :formData.mem_name,
+      gender: formData.mem_gender,
+      mem_name: formData.mem_name,
     };
 
-      setUser(userData); 
-      console.log("다음단계 이동");
-      navigate("/RegisterStore");
+    setUser(userData);
+    console.log("다음단계 이동");
+    navigate("/RegisterStore");
 
   };
 
@@ -199,165 +208,169 @@ function RegisterUser() {
 
   return (
     <>
-    <Row className="mt-5">
-    </Row>
-    <div className="register-pag my-5">
-      <Container className="my-5">
-        <Row className="justify-content-md-center">
-          <Col md={6} className="login-form-container">
-          <div className="text-center mb-2">
+      <Row className="mt-5">
+      </Row>
+      <div className="register-pag my-5">
+        <Container className="my-5">
+          <Row className="justify-content-md-center">
+            <Col md={6} className="login-form-container">
+              <div className="text-center mb-2">
                 <img
                   src="/img/AskMeLogo1.png"
                   alt="Read Fit 로고"
                   className="login-logo"
                 />
               </div>
-            {/* <h2 className="text-center mb-1">회원가입</h2> */}
-            <Form onSubmit={handleSubmit}>
-            <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faUser} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="이름"
-                  name="mem_name"
-                  value={formData.mem_name}
-                  onChange={handleInputChange}
-                />
-              </InputGroup>
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faUser} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="아이디"
-                  name="mem_id"
-                  value={formData.mem_id}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                />
-              </InputGroup>
-              <Form.Text className={isIdValid ? "text-success" : "text-danger"}>
-                {errorMessage}
-              </Form.Text>
+              {/* <h2 className="text-center mb-1">회원가입</h2> */}
+              <Form onSubmit={handleSubmit}>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faUser} style={{color:"white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="이름"
+                    name="mem_name"
+                    value={formData.mem_name}
+                    onChange={handleInputChange}
+                  
+                  />
+                </InputGroup>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faUser} style={{color:"white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="아이디"
+                    name="mem_id"
+                    value={formData.mem_id}
+                    onChange={handleInputChange}
+                    onBlur={handleBlur}
+                  />
+                </InputGroup>
+                <Form.Text className={isIdValid ? "text-success idblank" : "text-danger idblank"} >
+                  {errorMessage}
+                </Form.Text>
 
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faLock} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="password"
-                  placeholder="비밀번호"
-                  name="mem_pw"
-                  value={formData.mem_pw}
-                  onChange={handleInputChange}
-                />
-              </InputGroup>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faLock} style={{color: "white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="password"
+                    placeholder="비밀번호"
+                    name="mem_pw"
+                    value={formData.mem_pw}
+                    onChange={handleInputChange}
+                  />
+                </InputGroup>
 
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faLock} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="password"
-                  placeholder="비밀번호 확인"
-                  name="confirm_pw"
-                  value={formData.confirm_pw}
-                  onChange={handleInputChange}
-                />
-              </InputGroup>
-              <Form.Text
-                className={
-                  formData.mem_pw && formData.confirm_pw
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faLock} style={{color: "white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="password"
+                    placeholder="비밀번호 확인"
+                    name="confirm_pw"
+                    value={formData.confirm_pw}
+                    onChange={handleInputChange}
+                  />
+                </InputGroup>
+                <Form.Text
+                  className={
+                    formData.mem_pw && formData.confirm_pw
+                      ? isPasswordMatching(formData.mem_pw, formData.confirm_pw)
+                        ? "text-success idblank"
+                        : "text-danger idblank"
+                      : ""
+                  }
+                >
+                  {formData.mem_pw && formData.confirm_pw
                     ? isPasswordMatching(formData.mem_pw, formData.confirm_pw)
-                      ? "text-success"
-                      : "text-danger"
-                    : ""
-                }
-              >
-                {formData.mem_pw && formData.confirm_pw
-                  ? isPasswordMatching(formData.mem_pw, formData.confirm_pw)
-                    ? "비밀번호가 일치합니다."
-                    : "비밀번호가 불일치합니다."
-                  : ""}
-              </Form.Text>
+                      ? "비밀번호가 일치합니다."
+                      : "비밀번호가 불일치합니다."
+                    : ""}
+                </Form.Text>
 
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faEnvelope} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="email"
-                  placeholder="이메일"
-                  name="mem_email"
-                  value={formData.mem_email}
-                  onChange={handleInputChange}
-                />
-              </InputGroup>
-          
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                <FontAwesomeIcon icon={faCalendarDays} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="생년월일(000000)"
-                  name="mem_birth"
-                  value={formData.mem_birth}
-                  onChange={handleInputChange}
-                  maxLength="6"
-                />
-              </InputGroup>
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                <FontAwesomeIcon icon={faVenusMars} />
-                </InputGroup.Text>
-                <Form.Select  name="mem_gender"  value={formData.mem_gender} onChange={handleInputChange} className="genderselect">
-                  <option value="">선택하세요</option>
-                  <option value='man'>남자</option>
-                  <option value='woman'>여자</option>
-                </Form.Select>
-              </InputGroup>
-              <InputGroup className="mb-3" style={{display:"none"}}>
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faCommentDots} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  name="mem_role"
-                  value={formData.mem_role}
-                  disabled
-                />
-              </InputGroup>
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faEnvelope} style={{color: "white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="email"
+                    placeholder="이메일"
+                    name="mem_email"
+                    value={formData.mem_email}
+                    onChange={handleInputChange}
+                  />
+                </InputGroup>
 
-              <InputGroup className="mb-3">
-                <InputGroup.Text>
-                  <FontAwesomeIcon icon={faMobile} />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="전화번호 (010-xxxx-xxxx)"
-                  name="mem_phone"
-                  value={formData.mem_phone}
-                  onChange={handleInputChange}
-                  maxLength="13"
-                />
-              </InputGroup>
+                <Row className="mb-3">
+                  {/* 생년월일 입력 */}
+                  <Col md={6}>
+                    <InputGroup>
+                      <InputGroup.Text style={{background:"#1F316F"}}>
+                        <FontAwesomeIcon icon={faCalendarDays} style={{color:"white"}}/>
+                      </InputGroup.Text>
+                      <Form.Control
+                        type="text"
+                        placeholder="생년월일(000000)"
+                        name="mem_birth"
+                        value={formData.mem_birth}
+                        onChange={handleInputChange}
+                        maxLength="6"
+                      />
+                    </InputGroup>
+                  </Col>
 
-              <Button
-                variant="success"
-                type="submit"
-                className="login-button mb-3"
-              >
-                다음
-              </Button>
-            </Form>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+                  {/* 성별 선택 */}
+                  <Col md={6}>
+                    <InputGroup>
+                      <InputGroup.Text style={{background:"#1F316F"}}>
+                        <FontAwesomeIcon icon={faVenusMars} style={{color:"white"}}/>
+                      </InputGroup.Text>
+                      <Form.Select
+                        name="mem_gender"
+                        value={formData.mem_gender}
+                        onChange={handleInputChange}
+                        className="genderselect"
+                      >
+                        <option value="">선택하세요</option>
+                        <option value="man">남자</option>
+                        <option value="woman">여자</option>
+                      </Form.Select>
+                    </InputGroup>
+                  </Col>
+                </Row>
+
+                <InputGroup className="mb-3">
+                  <InputGroup.Text style={{background:"#1F316F"}}>
+                    <FontAwesomeIcon icon={faMobile} style={{color:"white"}}/>
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="전화번호 (010-xxxx-xxxx)"
+                    name="mem_phone"
+                    value={formData.mem_phone}
+                    onChange={handleInputChange}
+                    maxLength="13"
+                  />
+                </InputGroup>
+
+                <Button
+                  variant="success"
+                  type="submit"
+                  className="login-button mb-3"
+                >
+                  다음
+                </Button>
+              </Form>
+            </Col>
+          </Row>
+        </Container>
+      </div>
     </>
   );
 }

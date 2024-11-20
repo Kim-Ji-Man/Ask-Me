@@ -51,7 +51,8 @@
   
 
   .cancel-button {
-    background-color: #f1f1f1;
+    background-color: gray;
+    color: white;
     border: 1px solid #ccc;
     padding: 10px 20px;
     margin-right: 10px;
@@ -62,7 +63,8 @@
   
 
   .save-button {
-    background-color: skyblue;
+    background-color: #1F316F;
+    color: white;
     border: none;
     padding: 10px 20px;
     border-radius: 4px;
