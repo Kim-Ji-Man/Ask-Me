@@ -209,12 +209,12 @@ async def video_feed1(record: bool = False):
 
 @app.get('/video_feed2')
 async def video_feed2(record: bool = False):
-    return StreamingResponse(generate_frames(0, "yolo11n-seg.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(generate_frames(1, "yolo11n-seg.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
 
 # 카운트 
 @app.get('/video_feed3')
 async def video_feed3():
-    return StreamingResponse(counter_frames(1), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(counter_frames(0), media_type='multipart/x-mixed-replace; boundary=frame')
 
 # 히트맵
 @app.get('/video_feed4')
@@ -249,7 +249,7 @@ async def detect_weapon(data: DetectionData):
                 VALUES (%s, %s, %s, %s, %s, %s)
             """
             cursor.execute(insert_query, (
-                datetime.datetime.now(), 'Knife', level, data.device_id, image_filename, video_filename))
+                datetime.now(), 'Knife', level, data.device_id, image_filename, video_filename))
             
             # 생성된 alert_id 가져오기
             alert_id = cursor.lastrowid
@@ -341,7 +341,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # 카메라 프론트에 연결
 @app.get('/capture_image')
 async def capture_image():
-    camera_id = 0
+    camera_id = 1
     cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
         return JSONResponse(status_code=500, content={"error": "Cannot access camera"})
