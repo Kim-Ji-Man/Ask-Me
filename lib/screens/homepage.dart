@@ -206,74 +206,82 @@ class HomePageContent extends StatelessWidget {
   final int totalAlerts;
   final int todayAlerts;
 
-  HomePageContent({required this.alerts, required this.nick,    required this.totalAlerts,
-    required this.todayAlerts,});
+  HomePageContent({
+    required this.alerts,
+    required this.nick,
+    required this.totalAlerts,
+    required this.todayAlerts,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 상단 색상 배경 영역을 대체하는 'AppBar' 형태의 Container
-        Container(
-          color: Colors.indigo[800],
-          padding: EdgeInsets.fromLTRB(20, 24, 20, 10), // 위쪽 여백 추가
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset(
-                  'images/logo2.png', // 로고 이미지
-                  height: 50, // 로고 크기 조정
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          // 상단 색상 배경 영역을 대체하는 'AppBar' 형태의 Container
+          Container(
+            color: Colors.indigo[800],
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 10), // 위쪽 여백 추가
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Image.asset(
+                    'images/logo2.png', // 로고 이미지
+                    height: 50, // 로고 크기 조정
+                  ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.logout, color: Colors.white),
-                onPressed: () {
-                  final logoutService = LogoutService();
-                  logoutService.logoutUser(context);
-                },
-              ),
-            ],
+                IconButton(
+                  icon: Icon(Icons.logout, color: Colors.white),
+                  onPressed: () {
+                    final logoutService = LogoutService();
+                    logoutService.logoutUser(context);
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-        // 상단 색상 배경 아래에 프로필 영역 추가
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.fromLTRB(20, 40, 20, 40),
-          color: Colors.indigo[800], // 배경색을 상단과 맞춤
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: MediaQuery.of(context).size.width * 0.08, // 화면 너비에 따라 동적 크기
-                backgroundColor: Colors.grey[300],
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              SizedBox(width: MediaQuery.of(context).size.width * 0.04), // 여백 반응형
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '$nick 님,',
-                    style: TextStyle(color: Colors.white,
+          // 상단 색상 배경 아래에 프로필 영역 추가
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(20, 40, 20, 40),
+            color: Colors.indigo[800], // 배경색을 상단과 맞춤
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: MediaQuery.of(context).size.width * 0.08, // 화면 너비에 따라 동적 크기
+                  backgroundColor: Colors.grey[300],
+                  child: Icon(Icons.person, color: Colors.white),
+                ),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.04), // 여백 반응형
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$nick 님,',
+                      style: TextStyle(
+                        color: Colors.white,
                         fontSize: MediaQuery.of(context).size.width * 0.06,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '안녕하세요',
-                    style: TextStyle(color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '안녕하세요',
+                      style: TextStyle(
+                        color: Colors.white,
                         fontSize: MediaQuery.of(context).size.width * 0.04,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        // 흰색 배경의 카드 영역
-        Expanded(
-          child: Container(
+          // 흰색 배경의 카드 영역
+          Container(
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -298,7 +306,7 @@ class HomePageContent extends StatelessWidget {
                           '$totalAlerts',
                           Icons.notifications_active,
                           Color(0xFF569BFA),
-                      ),
+                        ),
                       ),
                       SizedBox(width: 20),
                       SizedBox(
@@ -319,8 +327,8 @@ class HomePageContent extends StatelessWidget {
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -343,8 +351,7 @@ class HomePageContent extends StatelessWidget {
                 topRight: Radius.circular(12),
               ),
             ),
-            child: Icon(iconData, size: MediaQuery.of(context).size.width * 0.05,
-                color: Colors.white),
+            child: Icon(iconData, size: MediaQuery.of(context).size.width * 0.05, color: Colors.white),
           ),
           // 텍스트 부분
           Padding(
@@ -378,61 +385,56 @@ class HomePageContent extends StatelessWidget {
       ),
     );
   }
-}
 
-// 메뉴 그리드 위젯
-Widget _buildMenuGrid(BuildContext context) {
-  // 각 아이템에 페이지를 연결
-  List<Map<String, dynamic>> menuItems = [
-    {"icon": Icons.campaign, "label": "공지사항", "color": Colors.red, "page": NoticePage()},
-    {"icon": Icons.person, "label": "내정보", "color": Colors.indigo, "page": MyInfoPage()},
-    {"icon": Icons.notifications, "label": "알림설정", "color": Colors.orange, "page": NotificationSettings()},
-    {"icon": Icons.article, "label": "내가작성한글", "color": Colors.teal, "page": MyPostPage()},
-    {"icon": Icons.question_answer, "label": "내가작성한댓글", "color": Colors.indigoAccent, "page": MyCommentPage()},
-    {"icon": Icons.support_agent, "label": "고객지원", "color": Colors.purple, "page": UserSupport()},
-  ];
+  // 메뉴 그리드
+  Widget _buildMenuGrid(BuildContext context) {
+    List<Map<String, dynamic>> menuItems = [
+      {"icon": Icons.campaign, "label": "공지사항", "color": Colors.red, "page": NoticePage()},
+      {"icon": Icons.person, "label": "내정보", "color": Colors.indigo, "page": MyInfoPage()},
+      {"icon": Icons.notifications, "label": "알림설정", "color": Colors.orange, "page": NotificationSettings()},
+      {"icon": Icons.article, "label": "내가작성한글", "color": Colors.teal, "page": MyPostPage()},
+      {"icon": Icons.question_answer, "label": "내가작성한댓글", "color": Colors.indigoAccent, "page": MyCommentPage()},
+      {"icon": Icons.support_agent, "label": "고객지원", "color": Colors.purple, "page": UserSupport()},
+    ];
 
-  return GridView.builder(
-    shrinkWrap: true,
-    physics: NeverScrollableScrollPhysics(),
-    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
       crossAxisCount: 3,
       childAspectRatio: 0.95,
-    ),
-    itemCount: menuItems.length,
-    itemBuilder: (context, index) {
-      return GestureDetector(
-        onTap: () {
-          // 페이지로 이동
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => menuItems[index]["page"]),
-          );
-        },
-        child: Column(
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width * 0.175,
-              height: MediaQuery.of(context).size.width * 0.175,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
+      children: menuItems.map((item) {
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => item["page"]),
+            );
+          },
+          child: Column(
+            children: [
+              Container(
+                width: MediaQuery.of(context).size.width * 0.175,
+                height: MediaQuery.of(context).size.width * 0.175,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  item['icon'],
+                  size: MediaQuery.of(context).size.width * 0.07,
+                  color: item['color'], // 각 아이콘 색상 설정
+                ),
               ),
-              child: Icon(
-                menuItems[index]['icon'],
-                size: MediaQuery.of(context).size.width * 0.07,
-                color: menuItems[index]['color'], // 각 아이콘 색상 설정
+              SizedBox(height: MediaQuery.of(context).size.width * 0.02),
+              Text(
+                item['label'],
+                style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
+                textAlign: TextAlign.center,
               ),
-            ),
-            SizedBox(height: MediaQuery.of(context).size.width * 0.02),
-            Text(
-              menuItems[index]['label'],
-              style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.03),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      );
-    },
-  );
+            ],
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

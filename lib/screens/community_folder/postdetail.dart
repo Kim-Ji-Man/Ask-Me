@@ -973,12 +973,15 @@ class _PostDetailState extends State<PostDetail> {
             if (widget.post.image != null && widget.post.image!.isNotEmpty)
               Container(
                 width: double.infinity,
-                height: 200,
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: NetworkImage(imageUrl),
-                    fit: BoxFit.cover,
+                    fit: BoxFit.contain, // 이미지가 잘리지 않고 원본 비율 유지
                   ),
+                ),
+                child: AspectRatio(
+                  aspectRatio: 16 / 9, // 원하는 비율로 설정 (예: 16:9)
+                  child: Container(), // AspectRatio를 유지하기 위해 빈 컨테이너 추가
                 ),
               ),
             SizedBox(height: 20),

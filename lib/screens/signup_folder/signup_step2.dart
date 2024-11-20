@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'signup_step3.dart';
-import 'package:provider/provider.dart'; // Provider 패키지 임포트
+import 'package:provider/provider.dart';
 import 'package:flutter_askme/models/signup_data.dart';
 
 class SignUpStep2 extends StatefulWidget {
@@ -13,7 +13,7 @@ class _SignUpStep2State extends State<SignUpStep2> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  TextEditingController();
 
   // 아이디 유효성 검사 함수
   String? validateUserId(String userId) {
@@ -87,84 +87,113 @@ class _SignUpStep2State extends State<SignUpStep2> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                // 아이디 입력 필드
-                TextFormField(
-                  controller: _idController,
-                  decoration: InputDecoration(labelText: '아이디'),
-                  validator: (value) => validateUserId(value ?? ""),
-                ),
-                SizedBox(height: 16),
-                // 비밀번호 입력 필드
-                TextFormField(
-                  controller: _passwordController,
-                  obscureText: true, // 비밀번호 숨김
-                  decoration: InputDecoration(labelText: '비밀번호'),
-                  validator: (value) => validatePassword(value ?? ""),
-                ),
-                SizedBox(height: 16),
-                // 비밀번호 확인 입력 필드
-                TextFormField(
-                  controller: _confirmPasswordController,
-                  obscureText: true, // 비밀번호 숨김
-                  decoration: InputDecoration(labelText: '비밀번호 확인'),
-                  validator: (value) {
-                    if (value != _passwordController.text) {
-                      return '비밀번호가 일치하지 않습니다';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  height: 60,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF0F148D),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        // SignUpData에 데이터를 저장
-                        final signUpData =
-                            Provider.of<SignUpData>(context, listen: false);
-
-                        // 인스턴스 메서드 호출
-                        signUpData.setStep2(
-                          _idController.text, // 아이디 저장
-                          _passwordController.text, // 비밀번호 저장
-                        );
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SignUpStep3(),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+              ),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // 아이디 입력 필드
+                              TextFormField(
+                                controller: _idController,
+                                decoration:
+                                InputDecoration(labelText: '아이디'),
+                                validator: (value) =>
+                                    validateUserId(value ?? ""),
+                              ),
+                              SizedBox(height: 16),
+                              // 비밀번호 입력 필드
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: true,
+                                decoration:
+                                InputDecoration(labelText: '비밀번호'),
+                                validator: (value) =>
+                                    validatePassword(value ?? ""),
+                              ),
+                              SizedBox(height: 16),
+                              // 비밀번호 확인 입력 필드
+                              TextFormField(
+                                controller: _confirmPasswordController,
+                                obscureText: true,
+                                decoration:
+                                InputDecoration(labelText: '비밀번호 확인'),
+                                validator: (value) {
+                                  if (value != _passwordController.text) {
+                                    return '비밀번호가 일치하지 않습니다';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              SizedBox(height: 20),
+                            ],
                           ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('입력 정보를 다시 확인해 주세요.'),
-                          ),
-                        );
-                      }
-                    },
-                    child: Text(
-                      "다음",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ),
+                    // 버튼
+                    Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        height: 60,
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFF0F148D),
+                          ),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              final signUpData = Provider.of<SignUpData>(
+                                  context,
+                                  listen: false);
+
+                              signUpData.setStep2(
+                                _idController.text,
+                                _passwordController.text,
+                              );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SignUpStep3(),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('입력 정보를 다시 확인해 주세요.'),
+                                ),
+                              );
+                            }
+                          },
+                          child: Text(
+                            "다음",
+                            style:
+                            TextStyle(fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

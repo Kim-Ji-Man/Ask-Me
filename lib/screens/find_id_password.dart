@@ -149,7 +149,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
             Container(
               height: 60, // 컨테이너 높이
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(30), // 둥근 테두리
               ),
               child: Row(
@@ -165,7 +165,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                       child: Container(
                         alignment: Alignment.center, // 버튼 텍스트를 정확히 가운데 정렬
                         decoration: BoxDecoration(
-                          color: isIdSelected ? Colors.white : Colors.grey[300],
+                          color: isIdSelected ? Colors.white : Colors.grey[100],
                           borderRadius: BorderRadius.circular(30),
                           border: isIdSelected
                               ? Border.all(color: Color(0xFF0F148D), width: 1)
@@ -195,7 +195,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                       child: Container(
                         alignment: Alignment.center, // 버튼 텍스트를 정확히 가운데 정렬
                         decoration: BoxDecoration(
-                          color: !isIdSelected ? Colors.white : Colors.grey[300],
+                          color: !isIdSelected ? Colors.white : Colors.grey[100],
                           borderRadius: BorderRadius.circular(30),
                           border: !isIdSelected
                               ? Border.all(color: Color(0xFF0F148D), width: 1)
@@ -225,7 +225,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 controller: nameController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: '이름 *', // labelText로 제목 추가
+                  labelText: '이름', // labelText로 제목 추가
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -239,7 +239,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 controller: phoneController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: '휴대전화번호 *', // labelText로 제목 추가
+                  labelText: '휴대전화번호', // labelText로 제목 추가
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -273,7 +273,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 controller: idController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: '아이디 *', // labelText로 제목 추가
+                  labelText: '아이디', // labelText로 제목 추가
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -287,7 +287,7 @@ class _FindIdPasswordPageState extends State<FindIdPasswordPage> {
                 controller: phoneController,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: '휴대전화번호 *', // labelText로 제목 추가
+                  labelText: '휴대전화번호', // labelText로 제목 추가
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
