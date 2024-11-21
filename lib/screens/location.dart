@@ -295,15 +295,16 @@ class _LocationState extends State<Location> {
           fillOpacity: 0.3,
           zIndex: 5,
           strokeOpacity: 1));
+
       circles.add(Circle(
           circleId: 'current_location_range',
           center: currentLocation!,
-          radius: 2000,
-          strokeColor: Colors.green,
+          radius: 1500,
+          strokeColor: Colors.red,
           strokeStyle: StrokeStyle.solid,
-          strokeWidth: 5,
-          fillColor: Colors.green.withOpacity(0.4),
-          fillOpacity: 0.4,
+          strokeWidth: 2,
+          fillColor: Colors.red.withOpacity(0.2),
+          fillOpacity: 0.2,
           zIndex: 5,
           strokeOpacity: 1));
     });
