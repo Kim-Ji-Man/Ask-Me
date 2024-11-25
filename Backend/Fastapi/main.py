@@ -90,31 +90,42 @@ def generate_frames(camera_id=0, model_name="yolo11n.pt", record_video=False, sa
         ret, frame = cap.read()
         if not ret:
             break
-        
-        # YOLO 모델을 사용하여 프레임 추적
-        results = model.track(frame, classes=[0, 43], persist=True)
 
+        # YOLO 모델 추적 및 탐지
+        results = model.track(frame, classes=[0, 43], persist=True)  # 클래스: 0(사람), 43(흉기)
+
+        detected_weapon = False
+        device_id = 1  # 예시용 기기 ID
         if results and results[0].boxes is not None:
-            # YOLO 기본 스타일로 시각화
             annotated_frame = results[0].plot()
             boxes = results[0].boxes.xywh.cpu().numpy().astype(int) if results[0].boxes.xywh is not None else []
             track_ids = results[0].boxes.id.int().cpu().tolist() if results[0].boxes.id is not None else []
+            class_ids = results[0].boxes.cls.int().cpu().tolist() if results[0].boxes.cls is not None else []
 
-            # Track 시각화 추가
-            for box, track_id in zip(boxes, track_ids):
+            for box, track_id, class_id in zip(boxes, track_ids, class_ids):
                 x, y, w, h = box
                 center_x, center_y = x, y
 
                 # 트랙 히스토리에 좌표 추가
                 track_history[track_id].append((center_x, center_y))
-                if len(track_history[track_id]) > 30:  # 최대 30개 점 유지
+                if len(track_history[track_id]) > 30:
                     track_history[track_id].pop(0)
 
-                # 트랙 경로 시각화
+                # 흉기 탐지 확인
+                if class_id == 43:  # 흉기 클래스 ID
+                    detected_weapon = True
+                    print(f"Weapon detected! Track ID: {track_id}, Bounding Box: {box}")
+                
+                # 경로 시각화
                 points = np.array(track_history[track_id], dtype=np.int32).reshape((-1, 1, 2))
                 cv2.polylines(annotated_frame, [points], isClosed=False, color=(0, 255, 255), thickness=2)
         else:
             annotated_frame = frame
+
+        # 탐지 이벤트 트리거
+        if detected_weapon:
+            data = DetectionData(detected=True, device_id=device_id)
+            asyncio.run(detect_weapon(data))  # FastAPI 함수 호출
 
         # 프레임을 비디오로 녹화
         if record_video:
@@ -203,23 +214,23 @@ def save_person_count_to_db(device_id, in_count, out_count):
 
 
 # 비디오 스트리밍 라우트에서 녹화 기능 비활성화
-@app.get('/video_feed1')
-async def video_feed1(record: bool = False):
-    return StreamingResponse(generate_frames(0, "yolo11n.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
+# @app.get('/video_feed1')
+# async def video_feed1(record: bool = False):
+#     return StreamingResponse(generate_frames(1, "yolo11n.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
 
 @app.get('/video_feed2')
 async def video_feed2(record: bool = False):
-    return StreamingResponse(generate_frames(1, "yolo11n-seg.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(generate_frames(0, "best.pt", record_video=record), media_type='multipart/x-mixed-replace; boundary=frame')
 
-# 카운트 
-@app.get('/video_feed3')
-async def video_feed3():
-    return StreamingResponse(counter_frames(2), media_type='multipart/x-mixed-replace; boundary=frame')
+# # 카운트 
+# @app.get('/video_feed3')
+# async def video_feed3():
+#     return StreamingResponse(counter_frames(2), media_type='multipart/x-mixed-replace; boundary=frame')
 
-# 히트맵
-@app.get('/video_feed4')
-async def video_feed4():
-    return StreamingResponse(heatmaps_frames(3), media_type='multipart/x-mixed-replace; boundary=frame')
+# # 히트맵
+# @app.get('/video_feed4')
+# async def video_feed4():
+#     return StreamingResponse(heatmaps_frames(3), media_type='multipart/x-mixed-replace; boundary=frame')
 
 class DetectionData(BaseModel):
     detected: bool
@@ -227,14 +238,13 @@ class DetectionData(BaseModel):
     image_path: str = None
     video_path: str = None
 
-@app.post('/detect_weapon')
+# 데이터 저장 및 알림 전송 함수
 async def detect_weapon(data: DetectionData):
     save_directory_img = "../uploads/images"
     save_directory_vid = "../uploads/videos"
-
     level = 'high'
 
-    # 새로운 파일 이름 생성 (단 한번만 호출)
+    # 새로운 파일 이름 생성
     image_filename = generate_unique_filename(save_directory_img, "captured", ".jpg")
     video_filename = generate_unique_filename(save_directory_vid, "video", ".mp4")
 
@@ -306,7 +316,20 @@ async def detect_weapon(data: DetectionData):
         }
 
     except Exception as e:
-        return {"error": f"예기치 않은 오류 발생: {str(e)}"}
+        print(f"오류 발생: {e}")
+
+# 백그라운드 탐지 이벤트 트리거
+async def detection_listener(camera_id=0):
+    """
+    CCTV 실시간 데이터를 가져와 탐지 이벤트를 트리거
+    """
+    generate_frames(camera_id=camera_id, record_video=True)
+
+# FastAPI 시작 시 탐지 프로세스 시작
+@app.on_event("startup")
+async def start_listener():
+    camera_url = 0  # 로컬 카메라 또는 RTSP URL
+    asyncio.create_task(detection_listener(camera_id=camera_url))
 
 # 파일 이름 생성 함수
 def generate_unique_filename(directory, base_filename, extension):
@@ -341,7 +364,7 @@ async def websocket_endpoint(websocket: WebSocket):
 # 카메라 프론트에 연결
 @app.get('/capture_image')
 async def capture_image():
-    camera_id = 1
+    camera_id = 0
     cap = cv2.VideoCapture(camera_id)
     if not cap.isOpened():
         return JSONResponse(status_code=500, content={"error": "Cannot access camera"})

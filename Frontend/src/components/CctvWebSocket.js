@@ -12,6 +12,11 @@ const CctvWebSocket = () => {
   // 웹소켓 메시지 처리 함수
   const handleMessage = async (data) => {
     if (data.type === 'alert') {
+      if (localStorage.getItem('aaa') === 'true') {
+        console.log('이미지 캡처 비활성화됨');
+        return; // 조건을 만족하면 함수 종료
+      }
+      
       try {
         // 이미지 캡처 API 호출
         const response = await axios.get("https://localhost:8000/capture_image", {
@@ -38,6 +43,7 @@ const CctvWebSocket = () => {
             // 트래킹 모드 시작
             localStorage.setItem('startTrackingMode', 'true');
             window.location.reload(); // 페이지 새로 고침
+            localStorage.setItem('aaa', 'true');
           }
         });
       } catch (error) {
@@ -65,7 +71,8 @@ const CctvWebSocket = () => {
       allowEscapeKey: false,
       allowEnterKey: false
     }).then(() => {
-        window.location.reload(); // 페이지 새로 고침
+      localStorage.removeItem('aaa'); // 값 제거
+      window.location.reload(); // 페이지 새로 고침
     });
   };
 
